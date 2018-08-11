@@ -44,6 +44,7 @@ x86/
 bld/
 [Bb]in/
 [Oo]bj/
+.vs/
 # Roslyn cache directories
 *.ide/
 # MSTest test Results

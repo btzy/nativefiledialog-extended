@@ -16,15 +16,16 @@ extern "C" {
 
 #include <stddef.h>
 
+#ifdef _WIN32
+/* denotes UTF-16 char */
+typedef wchar_t nfdchar_t;
+#else
 /* denotes UTF-8 char */
 typedef char nfdchar_t;
+#endif
 
 /* opaque data structure -- see NFD_PathSet_* */
-typedef struct {
-    nfdchar_t *buf;
-    size_t *indices; /* byte offsets into buf */
-    size_t count;    /* number of indices into buf */
-}nfdpathset_t;
+typedef void nfdpathset_t;
 
 typedef enum {
     NFD_ERROR,       /* programmatic error */
@@ -33,36 +34,62 @@ typedef enum {
 }nfdresult_t;
     
 
+typedef struct {
+    const nfdchar_t *name;
+    const nfdchar_t *spec;
+} nfdfilteritem_t;
+
+
 /* nfd_<targetplatform>.c */
 
-/* single file open dialog */    
-nfdresult_t NFD_OpenDialog( const nfdchar_t *filterList,
+/* free a file path that was returned */
+void NFD_FreePath(nfdchar_t *outPath);
+
+/* initialize NFD - call this for every thread that might use NFD, before calling any other NFD functions on that thread */
+nfdresult_t NFD_Init(void);
+
+/* call this to de-initialize NFD, if NFD_Init returned NFD_OKAY */
+void NFD_Quit(void);
+
+/* single file open dialog */
+/* It is the caller's responsibility to free `outPath` via NFD_FreePath() if this function returns NFD_OKAY */
+nfdresult_t NFD_OpenDialog( const nfdfilteritem_t *filterList,
+                            size_t count,
                             const nfdchar_t *defaultPath,
                             nfdchar_t **outPath );
 
 /* multiple file open dialog */    
-nfdresult_t NFD_OpenDialogMultiple( const nfdchar_t *filterList,
+nfdresult_t NFD_OpenDialogMultiple( const nfdfilteritem_t *filterList,
+                                    size_t count,
                                     const nfdchar_t *defaultPath,
-                                    nfdpathset_t *outPaths );
+                                    nfdpathset_t **outPaths );
 
 /* save dialog */
-nfdresult_t NFD_SaveDialog( const nfdchar_t *filterList,
+/* It is the caller's responsibility to free `outPath` via NFD_FreePath() if this function returns NFD_OKAY */
+nfdresult_t NFD_SaveDialog( const nfdfilteritem_t *filterList,
+                            size_t count,
                             const nfdchar_t *defaultPath,
                             nfdchar_t **outPath );
 
 
 /* select folder dialog */
 nfdresult_t NFD_PickFolder( const nfdchar_t *defaultPath,
-                            nfdchar_t **outPath);
+                            nfdchar_t **outPath );
 
-/* nfd_common.c */
 
 /* get last error -- set when nfdresult_t returns NFD_ERROR */
-const char *NFD_GetError( void );
+const char *NFD_GetError(void);
+
+
+/* path set operations */
+typedef unsigned long nfd_pathsetsize_t;
+
 /* get the number of entries stored in pathSet */
-size_t      NFD_PathSet_GetCount( const nfdpathset_t *pathSet );
+/* note that some might be invalid (NFD_ERROR will be returned by NFD_PathSet_GetPath) */
+nfdresult_t NFD_PathSet_GetCount( const nfdpathset_t *pathSet, nfd_pathsetsize_t* count );
 /* Get the UTF-8 path at offset index */
-nfdchar_t  *NFD_PathSet_GetPath( const nfdpathset_t *pathSet, size_t index );
+/* It is the caller's responsibility to free `outPath` via NFD_FreePath() if this function returns NFD_OKAY */
+nfdresult_t NFD_PathSet_GetPath( const nfdpathset_t *pathSet, nfd_pathsetsize_t index, nfdchar_t **outPath );
 /* Free the pathSet */    
 void        NFD_PathSet_Free( nfdpathset_t *pathSet );
 
