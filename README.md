@@ -2,6 +2,8 @@
 
 **This library is based on (but incompatible with) [mlabbe/nativefiledialog](https://github.com/mlabbe/nativefiledialog).  Everything below this line is about the original Native File Dialog, and not my fork.  There is no readme for my fork yet.**
 
+-----
+
 A tiny, neat C library that portably invokes native file open, folder select and save dialogs.  Write dialog code once and have it pop up native dialogs on all supported platforms.  Avoid linking large dependencies like wxWidgets and qt.
 
 Features:
