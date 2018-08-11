@@ -11,15 +11,15 @@ int main( void )
     // initialize NFD (once per thread only)
     NFD_Init();
 
-    nfdchar_t *outPath = NULL;
+    nfdu8char_t *outPath = NULL;
     // 
-    nfdfilteritem_t filterItem[2] = { { L"Source code", L"c,cpp,cc" }, { L"Headers", L"h,hpp" } };
-    nfdresult_t result = NFD_OpenDialog(&filterItem, 2, NULL, &outPath);
+    nfdu8filteritem_t filterItem[2] = { { "Source code", "c,cpp,cc" }, { "Headers", "h,hpp" } };
+    nfdresult_t result = NFD_OpenDialogU8(&filterItem, 2, NULL, &outPath);
     if ( result == NFD_OKAY )
     {
         puts("Success!");
-        fputws(outPath, stdout);
-        NFD_FreePath(outPath);
+        puts(outPath);
+        NFD_FreePathU8(outPath);
     }
     else if ( result == NFD_CANCEL )
     {
