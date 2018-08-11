@@ -1,6 +1,6 @@
-# Native File Dialog 2 #
+# Native File Dialog Extended #
 
-**This library is based on (but incompatible with) [mlabbe/nativefiledialog](https://github.com/mlabbe/nativefiledialog).  Everything below this line is about the original Native File Dialog, and not my fork.  There is no readme for my fork yet.**
+**This library is based on (but incompatible with) [mlabbe/nativefiledialog](https://github.com/mlabbe/nativefiledialog).  Everything below this line is about the original Native File Dialog, and not this version.  There is no readme for Native File Dialog Extended yet.**
 
 -----
 
