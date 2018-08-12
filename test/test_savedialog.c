@@ -15,7 +15,7 @@ int main( void )
     nfdchar_t *savePath;
 
     // prepare filters for the dialog
-    nfdfilteritem_t filterItem[2] = { { "Source code", "c" },{ "Header", "h" } };
+    nfdfilteritem_t filterItem[2] = { { "Source code", "c,cpp,cc" },{ "Header", "h,hpp" } };
 
     nfdresult_t result = NFD_SaveDialog(filterItem, 2, NULL, &savePath );
     if ( result == NFD_OKAY )

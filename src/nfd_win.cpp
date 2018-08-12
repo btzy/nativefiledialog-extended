@@ -81,11 +81,6 @@ namespace {
 
     nfdresult_t AddFiltersToDialog(::IFileDialog *fileOpenDialog, const nfdnfilteritem_t *filterList, nfd_filtersize_t filterCount)
     {
-        /* if the filterList is null, adding filters is a no-op and we are done */
-        if (!filterList) {
-            assert(!filterCount);
-            return NFD_OKAY;
-        }
 
         /* filterCount plus 1 because we hardcode the *.* wildcard after the while loop */
         COMDLG_FILTERSPEC *specList = NFDi_Malloc<COMDLG_FILTERSPEC>(sizeof(COMDLG_FILTERSPEC) * (filterCount + 1));
@@ -109,55 +104,61 @@ namespace {
 
         COMDLG_FILTERSPEC_Guard specListGuard(specList);
 
-        // use the index that comes from the RAII object (instead of making a copy), so the RAII object will know which memory to free
-        nfd_filtersize_t& index = specListGuard.index;
+        if (filterCount) {
+            assert(filterList);
 
-        for (; index != filterCount; ++index) {
-            // set the friendly name of this filter
-            specList[index].pszName = filterList[index].name;
+            // we have filters to add ... format and add them
 
-            // set the specification of this filter...
+            // use the index that comes from the RAII object (instead of making a copy), so the RAII object will know which memory to free
+            nfd_filtersize_t& index = specListGuard.index;
 
-            // count number of file extensions
-            size_t sep = 1;
-            for (const nfdnchar_t *p_spec = filterList[index].spec; *p_spec; ++p_spec) {
-                if (*p_spec == L',') {
-                    ++sep;
+            for (; index != filterCount; ++index) {
+                // set the friendly name of this filter
+                specList[index].pszName = filterList[index].name;
+
+                // set the specification of this filter...
+
+                // count number of file extensions
+                size_t sep = 1;
+                for (const nfdnchar_t *p_spec = filterList[index].spec; *p_spec; ++p_spec) {
+                    if (*p_spec == L',') {
+                        ++sep;
+                    }
                 }
-            }
 
-            // calculate space needed (including the trailing '\0')
-            size_t specSize = sep * 2 + wcslen(filterList[index].spec) + 1;
+                // calculate space needed (including the trailing '\0')
+                size_t specSize = sep * 2 + wcslen(filterList[index].spec) + 1;
 
-            // malloc the required memory and populate it
-            nfdnchar_t *specBuf = NFDi_Malloc<nfdnchar_t>(sizeof(nfdnchar_t) * specSize);
+                // malloc the required memory and populate it
+                nfdnchar_t *specBuf = NFDi_Malloc<nfdnchar_t>(sizeof(nfdnchar_t) * specSize);
 
-            if (!specBuf) {
-                // automatic freeing of memory via COMDLG_FILTERSPEC_Guard
-                return NFD_ERROR;
-            }
-
-            // convert "png,jpg" to "*.png;*.jpg" as required by Windows ...
-            nfdnchar_t *p_specBuf = specBuf;
-            *p_specBuf++ = L'*';
-            *p_specBuf++ = L'.';
-            for (const nfdnchar_t *p_spec = filterList[index].spec; *p_spec; ++p_spec) {
-                if (*p_spec == L',') {
-                    *p_specBuf++ = L';';
-                    *p_specBuf++ = L'*';
-                    *p_specBuf++ = L'.';
+                if (!specBuf) {
+                    // automatic freeing of memory via COMDLG_FILTERSPEC_Guard
+                    return NFD_ERROR;
                 }
-                else {
-                    *p_specBuf++ = *p_spec;
+
+                // convert "png,jpg" to "*.png;*.jpg" as required by Windows ...
+                nfdnchar_t *p_specBuf = specBuf;
+                *p_specBuf++ = L'*';
+                *p_specBuf++ = L'.';
+                for (const nfdnchar_t *p_spec = filterList[index].spec; *p_spec; ++p_spec) {
+                    if (*p_spec == L',') {
+                        *p_specBuf++ = L';';
+                        *p_specBuf++ = L'*';
+                        *p_specBuf++ = L'.';
+                    }
+                    else {
+                        *p_specBuf++ = *p_spec;
+                    }
                 }
+                *p_specBuf++ = L'\0';
+
+                // assert that we had allocated exactly the correct amount of memory that we used
+                assert(p_specBuf - specBuf == specSize);
+
+                // save the buffer to the guard object
+                specList[index].pszSpec = specBuf;
             }
-            *p_specBuf++ = L'\0';
-
-            // assert that we had allocated exactly the correct amount of memory that we used
-            assert(p_specBuf - specBuf == specSize);
-
-            // save the buffer to the guard object
-            specList[index].pszSpec = specBuf;
         }
 
         /* Add wildcard */
