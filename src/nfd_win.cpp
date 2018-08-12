@@ -87,8 +87,6 @@ namespace {
             return NFD_OKAY;
         }
 
-
-
         /* filterCount plus 1 because we hardcode the *.* wildcard after the while loop */
         COMDLG_FILTERSPEC *specList = NFDi_Malloc<COMDLG_FILTERSPEC>(sizeof(COMDLG_FILTERSPEC) * (filterCount + 1));
         if (!specList)
@@ -173,6 +171,59 @@ namespace {
         return NFD_OKAY;
     }
 
+    /* call after AddFiltersToDialog */
+    nfdresult_t SetDefaultExtension(::IFileDialog *fileOpenDialog, const nfdnfilteritem_t *filterList, nfd_filtersize_t filterCount)
+    {
+        // if there are no filters, then don't set default extensions
+        if (!filterCount) {
+            return NFD_OKAY;
+        }
+
+        assert(filterList);
+
+        // set the first item as the default index, and set the default extension
+        if (!SUCCEEDED(fileOpenDialog->SetFileTypeIndex(1))) {
+            return NFD_ERROR;
+        }
+
+        // set the first item as the default file extension
+        const nfdnchar_t *p_spec = filterList[0].spec;
+        for (; *p_spec; ++p_spec) {
+            if (*p_spec == ';') {
+                break;
+            }
+        }
+        if (*p_spec) {
+            // multiple file extensions for this type (need to allocate memory)
+            size_t numChars = p_spec - filterList[0].spec;
+            // allocate one more char space for the '\0'
+            nfdnchar_t *extnBuf = NFDi_Malloc<nfdnchar_t>(sizeof(nfdnchar_t) * (numChars + 1));
+            if (!extnBuf) {
+                return NFD_ERROR;
+            }
+            Free_Guard<nfdnchar_t> extnBufGuard(extnBuf);
+
+            // copy the extension
+            for (size_t i = 0; i != numChars; ++i) {
+                extnBuf[i] = filterList[0].spec[i];
+            }
+            // pad with trailing '\0'
+            extnBuf[numChars] = L'\0';
+
+            if (!SUCCEEDED(fileOpenDialog->SetDefaultExtension(extnBuf))) {
+                return NFD_ERROR;
+            }
+        }
+        else {
+            // single file extension for this type (no need to allocate memory)
+            if (!SUCCEEDED(fileOpenDialog->SetDefaultExtension(filterList[0].spec))) {
+                return NFD_ERROR;
+            }
+        }
+
+        return NFD_OKAY;
+    }
+
     nfdresult_t SetDefaultPath(IFileDialog *dialog, const nfdnchar_t *defaultPath)
     {
         if (!defaultPath || wcslen(defaultPath) == 0)
@@ -199,6 +250,21 @@ namespace {
 
         folder->Release();
 
+        return NFD_OKAY;
+    }
+
+    nfdresult_t AddOptions(IFileDialog *dialog, FILEOPENDIALOGOPTIONS options) {
+        FILEOPENDIALOGOPTIONS existingOptions;
+        if (!SUCCEEDED(dialog->GetOptions(&existingOptions)))
+        {
+            NFDi_SetError("Could not get options.");
+            return NFD_ERROR;
+        }
+        if (!SUCCEEDED(dialog->SetOptions(existingOptions | options)))
+        {
+            NFDi_SetError("Could not set options.");
+            return NFD_ERROR;
+        }
         return NFD_OKAY;
     }
 }
@@ -267,12 +333,23 @@ nfdresult_t NFD_OpenDialogN( const nfdnfilteritem_t *filterList,
         return NFD_ERROR;
     }
 
+    // Set auto-completed default extension
+    if (!SetDefaultExtension(fileOpenDialog, filterList, count))
+    {
+        return NFD_ERROR;
+    }
+
     // Set the default path
     if ( !SetDefaultPath( fileOpenDialog, defaultPath ) )
     {
         return NFD_ERROR;
-    }    
+    }
 
+    // Only show file system items
+    if (!AddOptions(fileOpenDialog, ::FOS_FORCEFILESYSTEM)) {
+        return NFD_ERROR;
+    }
+    
     // Show the dialog.
     result = fileOpenDialog->Show(nullptr);
     if ( SUCCEEDED(result) )
@@ -337,24 +414,20 @@ nfdresult_t NFD_OpenDialogMultipleN( const nfdnfilteritem_t *filterList,
         return NFD_ERROR;
     }
 
+    // Set auto-completed default extension
+    if (!SetDefaultExtension(fileOpenDialog, filterList, count))
+    {
+        return NFD_ERROR;
+    }
+
     // Set the default path
     if ( !SetDefaultPath( fileOpenDialog, defaultPath ) )
     {
         return NFD_ERROR;
     }
 
-    // Set a flag for multiple options
-    DWORD dwFlags;
-    result = fileOpenDialog->GetOptions(&dwFlags);
-    if ( !SUCCEEDED(result) )
-    {
-        NFDi_SetError("Could not get options.");
-        return NFD_ERROR;
-    }
-    result = fileOpenDialog->SetOptions(dwFlags | FOS_ALLOWMULTISELECT);
-    if ( !SUCCEEDED(result) )
-    {
-        NFDi_SetError("Could not set options.");
+    // Set a flag for multiple options and file system items only
+    if (!AddOptions(fileOpenDialog, ::FOS_FORCEFILESYSTEM | ::FOS_ALLOWMULTISELECT)) {
         return NFD_ERROR;
     }
  
@@ -414,9 +487,20 @@ nfdresult_t NFD_SaveDialogN( const nfdnfilteritem_t *filterList,
         return NFD_ERROR;
     }
 
+    // Set default extension
+    if (!SetDefaultExtension(fileSaveDialog, filterList, count))
+    {
+        return NFD_ERROR;
+    }
+
     // Set the default path
     if ( !SetDefaultPath( fileSaveDialog, defaultPath ) )
     {
+        return NFD_ERROR;
+    }
+
+    // Only show file system items
+    if (!AddOptions(fileSaveDialog, ::FOS_FORCEFILESYSTEM)) {
         return NFD_ERROR;
     }
 
@@ -480,18 +564,8 @@ nfdresult_t NFD_PickFolderN(const nfdnchar_t *defaultPath,
         return NFD_ERROR;
     }
 
-    // Get the dialogs options
-    DWORD dwOptions = 0;
-    if (!SUCCEEDED(fileOpenDialog->GetOptions(&dwOptions)))
-    {
-        NFDi_SetError("GetOptions for IFileDialog failed.");
-        return NFD_ERROR;
-    }
-
-    // Add in FOS_PICKFOLDERS which hides files and only allows selection of folders
-    if (!SUCCEEDED(fileOpenDialog->SetOptions(dwOptions | FOS_PICKFOLDERS)))
-    {
-        NFDi_SetError("SetOptions for IFileDialog failed.");
+    // Only show items that are folders and on the file system
+    if (!AddOptions(fileOpenDialog, ::FOS_FORCEFILESYSTEM | ::FOS_PICKFOLDERS)) {
         return NFD_ERROR;
     }
 

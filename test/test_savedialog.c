@@ -7,13 +7,23 @@
 
 int main( void )
 {
-    nfdchar_t *savePath = NULL;
-    nfdresult_t result = NFD_SaveDialog( "png,jpg;pdf", NULL, &savePath );
+    // initialize NFD
+    // either call NFD_Init at the start of your program and NFD_Quit at the end of your program,
+    // or before/after every time you want to show a file dialog.
+    NFD_Init();
+
+    nfdchar_t *savePath;
+
+    // prepare filters for the dialog
+    nfdfilteritem_t filterItem[2] = { { "Source code", "c" },{ "Header", "h" } };
+
+    nfdresult_t result = NFD_SaveDialog(filterItem, 2, NULL, &savePath );
     if ( result == NFD_OKAY )
     {
         puts("Success!");
         puts(savePath);
-        free(savePath);
+        // remember to free the memory (since NFD_OKAY is returned)
+        NFD_FreePath(savePath);
     }
     else if ( result == NFD_CANCEL )
     {
@@ -23,6 +33,9 @@ int main( void )
     {
         printf("Error: %s\n", NFD_GetError() );
     }
+
+    // Quit NFD
+    NFD_Quit();
 
     return 0;
 }

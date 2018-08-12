@@ -84,9 +84,10 @@ nfdresult_t NFD_PickFolderN( const nfdnchar_t *defaultPath,
                              nfdnchar_t **outPath );
 
 
-/* get last error -- set when nfdresult_t returns NFD_ERROR */
-/* Returns the last error that was set, or NULL if there is no error */
-/* The memory is owned by NFD and should not be freed by user code */
+/* Get last error -- set when nfdresult_t returns NFD_ERROR */
+/* Returns the last error that was set, or NULL if there is no error. */
+/* The memory is owned by NFD and should not be freed by user code. */
+/* This is *always* ASCII printable characters, so it can be interpreted as UTF-8 without any conversion. */
 const char *NFD_GetError(void);
 /* clear the error */
 void NFD_ClearError(void);
