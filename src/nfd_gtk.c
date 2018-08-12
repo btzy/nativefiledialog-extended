@@ -12,6 +12,7 @@
 #include "nfd_common.h"
 
 
+
 const char INIT_FAIL_MSG[] = "gtk_init_check failed to initilaize GTK+";
 
 

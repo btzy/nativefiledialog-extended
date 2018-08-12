@@ -78,16 +78,22 @@ namespace NFD {
         ::NFD_ClearError();
     }
 
-    inline nfdresult_t CountPaths(const nfdpathset_t* pathSet, nfd_pathsetsize_t& count) noexcept {
-        return ::NFD_PathSet_GetCount(pathSet, &count);
-    }
+    namespace PathSet {
+        inline nfdresult_t Count(const nfdpathset_t* pathSet, nfd_pathsetsize_t& count) noexcept {
+            return ::NFD_PathSet_GetCount(pathSet, &count);
+        }
 
-    inline nfdresult_t GetPath(const nfdpathset_t *pathSet, nfd_pathsetsize_t index, nfdnchar_t *&outPath) noexcept {
-        return ::NFD_PathSet_GetPathN(pathSet, index, &outPath);
-    }
+        inline nfdresult_t GetPath(const nfdpathset_t *pathSet, nfd_pathsetsize_t index, nfdnchar_t *&outPath) noexcept {
+            return ::NFD_PathSet_GetPathN(pathSet, index, &outPath);
+        }
 
-    inline void NFD_FreePathSet(const nfdpathset_t *pathSet) noexcept {
-        ::NFD_PathSet_Free(pathSet);
+        inline nfdresult_t FreePath(const nfdpathset_t *pathSet, nfd_pathsetsize_t index, nfdnchar_t *&outPath) noexcept {
+            return ::NFD_PathSet_FreePathN(pathSet, index, &outPath);
+        }
+
+        inline void Free(const nfdpathset_t *pathSet) noexcept {
+            ::NFD_PathSet_Free(pathSet);
+        }
     }
 
 #ifdef NFD_DIFFERENT_NATIVE_FUNCTIONS
@@ -113,8 +119,13 @@ namespace NFD {
         ::NFD_PickFolderU8(defaultPath, &outPath);
     }
 
-    inline nfdresult_t GetPath(const nfdpathset_t *pathSet, nfd_pathsetsize_t index, nfdu8char_t *&outPath) noexcept {
-        ::NFD_PathSet_GetPathU8(pathSet, index, &outPath);
+    namespace PathSet {
+        inline nfdresult_t GetPath(const nfdpathset_t *pathSet, nfd_pathsetsize_t index, nfdu8char_t *&outPath) noexcept {
+            ::NFD_PathSet_GetPathU8(pathSet, index, &outPath);
+        }
+        inline nfdresult_t FreePath(const nfdpathset_t *pathSet, nfd_pathsetsize_t index, nfdu8char_t *&outPath) noexcept {
+            return ::NFD_PathSet_FreePathU8(pathSet, index, &outPath);
+        }
     }
 #endif
 }

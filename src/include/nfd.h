@@ -29,7 +29,6 @@ typedef char nfdnchar_t;
 /* opaque data structure -- see NFD_PathSet_* */
 typedef void nfdpathset_t;
 
-
 typedef unsigned int nfd_filtersize_t;
 
 typedef enum {
@@ -47,8 +46,9 @@ typedef struct {
 
 /* nfd_<targetplatform>.c */
 
-/* free a file path that was returned */
-void NFD_FreePathN(nfdnchar_t *outPath);
+/* free a file path that was returned by the dialogs */
+/* Note: use NFD_PathSet_FreePath to free path from pathset instead */
+void NFD_FreePathN(nfdnchar_t *filePath);
 
 /* initialize NFD - call this for every thread that might use NFD, before calling any other NFD functions on that thread */
 nfdresult_t NFD_Init(void);
@@ -94,14 +94,24 @@ void NFD_ClearError(void);
 
 
 /* path set operations */
+#ifdef _WIN32
 typedef unsigned long nfd_pathsetsize_t;
+#else
+typedef unsigned int nfd_pathsetsize_t;
+#endif
 
 /* get the number of entries stored in pathSet */
 /* note that some might be invalid (NFD_ERROR will be returned by NFD_PathSet_GetPath) */
 nfdresult_t NFD_PathSet_GetCount( const nfdpathset_t *pathSet, nfd_pathsetsize_t* count );
 /* Get the UTF-8 path at offset index */
-/* It is the caller's responsibility to free `outPath` via NFD_FreePathN() if this function returns NFD_OKAY */
+/* It is the caller's responsibility to free `outPath` via NFD_PathSet_FreePathN() if this function returns NFD_OKAY */
 nfdresult_t NFD_PathSet_GetPathN( const nfdpathset_t *pathSet, nfd_pathsetsize_t index, nfdnchar_t **outPath );
+/* Free the path gotten by NFD_PathSet_GetPathN */
+#ifdef _WIN32
+#define NFD_PathSet_FreePathN NFD_FreePathN
+#else
+void        NFD_PathSet_FreePathN( const nfdnchar_t *filePath);
+#endif
 /* Free the pathSet */    
 void        NFD_PathSet_Free( const nfdpathset_t *pathSet );
 
@@ -155,6 +165,8 @@ nfdresult_t NFD_PickFolderU8( const nfdu8char_t *defaultPath,
 /* It is the caller's responsibility to free `outPath` via NFD_FreePathU8() if this function returns NFD_OKAY */
 nfdresult_t NFD_PathSet_GetPathU8(const nfdpathset_t *pathSet, nfd_pathsetsize_t index, nfdu8char_t **outPath);
 
+#define NFD_PathSet_FreePathU8 NFD_FreePathU8
+
 #ifdef NFD_NATIVE
 typedef nfdnchar_t nfdchar_t;
 typedef nfdnfilteritem_t nfdfilteritem_t;
@@ -164,6 +176,7 @@ typedef nfdnfilteritem_t nfdfilteritem_t;
 #define NFD_SaveDialog NFD_SaveDialogN
 #define NFD_PickFolder NFD_PickFolderN
 #define NFD_PathSet_GetPath NFD_PathSet_GetPathN
+#define NFD_PathSet_FreePath NFD_PathSet_FreePathN
 #else
 typedef nfdu8char_t nfdchar_t;
 typedef nfdu8filteritem_t nfdfilteritem_t;
@@ -173,6 +186,7 @@ typedef nfdu8filteritem_t nfdfilteritem_t;
 #define NFD_SaveDialog NFD_SaveDialogU8
 #define NFD_PickFolder NFD_PickFolderU8
 #define NFD_PathSet_GetPath NFD_PathSet_GetPathU8
+#define NFD_PathSet_FreePath NFD_PathSet_FreePathU8
 #endif
 
 #else
@@ -186,6 +200,7 @@ typedef nfdnfilteritem_t nfdfilteritem_t;
 #define NFD_SaveDialog NFD_SaveDialogN
 #define NFD_PickFolder NFD_PickFolderN
 #define NFD_PathSet_GetPath NFD_PathSet_GetPathN
+#define NFD_PathSet_FreePath NFD_PathSet_FreePathN
 typedef nfdu8char_t nfdchar_t;
 typedef nfdu8filteritem_t nfdfilteritem_t;
 #define NFD_FreePathU8 NFD_FreePathN
@@ -194,6 +209,7 @@ typedef nfdu8filteritem_t nfdfilteritem_t;
 #define NFD_SaveDialogU8 NFD_SaveDialogN
 #define NFD_PickFolderU8 NFD_PickFolderN
 #define NFD_PathSet_GetPathU8 NFD_PathSet_GetPathN
+#define NFD_PathSet_FreePathU8 NFD_PathSet_FreePathN
 
 #endif // _WIN32
 
