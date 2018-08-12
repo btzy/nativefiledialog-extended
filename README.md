@@ -1,6 +1,25 @@
 # Native File Dialog Extended #
 
-**This library is based on (but incompatible with) [mlabbe/nativefiledialog](https://github.com/mlabbe/nativefiledialog).  Everything below this line is about the original Native File Dialog, and not this version.  There is no readme for Native File Dialog Extended yet.**
+**This library is based on (but incompatible with) [mlabbe/nativefiledialog](https://github.com/mlabbe/nativefiledialog).**  Things might break if you use both in the same project.
+
+Changes from original Native File Dialog:
+
+- Friendly names for filters (e.g. `C/C++ Source files (*.c;*.cpp)` instead of `(*.c;*.cpp)`
+- Native (suffixed with `N`) and UTF-8 (suffixed with `U8`) versions of all functions (Native is UTF-16 for Windows and UTF-8 for Mac and Linux)
+- Initialization and de-initialization of platform library (e.g. COM (Windows) / GTK (Linux)) decoupled from dialog functions, so applications can choose when to initialize/de-initialize the platform library
+- C++ scoped guards for initialization and de-initialization
+- Various bug fixes
+
+Customization macros (define them *before* including `nfd.h`/`nfd.hpp`):
+
+- `NFD_NATIVE`: Define this before including `nfd.h` to make non-suffixed function names and typedefs (e.g. `NFD_OpenDialog`) aliases for the native functions (e.g. `NFD_OpenDialogN`) instead of aliases for the UTF-8 functions (e.g. `NFD_OpenDialogU8`).  This macro does not affect `nfd.hpp`.
+- `NFD_GUARD_THROWS_EXCEPTION`: Define this before including `nfd.hpp` to make `NFD::Guard` construction throw `std::runtime_error` if `NFD_Init` fails.  Otherwise, there is no way to detect failure in `NFD::Guard` construction.
+
+Macros that might be defined by `nfd.h`:
+
+- `NFD_DIFFERENT_NATIVE_FUNCTIONS`: Defined if the native and UTF-8 versions of functions are different (i.e. compiling for Windows); not defined otherwise.  If `NFD_DIFFERENT_NATIVE_FUNCTIONS` is not defined, then the UTF-8 versions of functions are aliases for the native versions.  This might be useful if you are writing a function that wants to provide overloads depending on whether the native functions and UTF-8 functions are the same.
+
+**Everything below this line is about the original Native File Dialog, and not Native File Dialog Extended.  The README for Native File Dialog Extended is still under construction.**
 
 -----
 
