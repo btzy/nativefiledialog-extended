@@ -8,18 +8,24 @@
 
 int main( void )
 {
-    // initialize NFD (once per thread only)
+    // initialize NFD
+    // either call NFD_Init at the start of your program and NFD_Quit at the end of your program,
+    // or before/after every time you want to show a file dialog.
     NFD_Init();
 
-    nfdu8char_t *outPath = NULL;
-    // 
-    nfdu8filteritem_t filterItem[2] = { { "Source code", "c,cpp,cc" }, { "Headers", "h,hpp" } };
-    nfdresult_t result = NFD_OpenDialogU8(&filterItem, 2, NULL, &outPath);
+    nfdchar_t *outPath;
+
+    // prepare filters for the dialog
+    nfdfilteritem_t filterItem[2] = { { "Source code", "c,cpp,cc" }, { "Headers", "h,hpp" } };
+
+    // show the dialog
+    nfdresult_t result = NFD_OpenDialog(filterItem, 2, NULL, &outPath);
     if ( result == NFD_OKAY )
     {
         puts("Success!");
         puts(outPath);
-        NFD_FreePathU8(outPath);
+        // remember to free the memory (since NFD_OKAY is returned)
+        NFD_FreePath(outPath);
     }
     else if ( result == NFD_CANCEL )
     {

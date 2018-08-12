@@ -1,6 +1,8 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27703.2047
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "nfd", "nfd.vcxproj", "{5D94880B-C99D-887C-5219-9F7CBE21947C}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_pickfolder", "test_pickfolder.vcxproj", "{C7D1F254-335D-6019-3C6E-E30DA878BC19}"
@@ -22,6 +24,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_savedialog", "test_sav
 	ProjectSection(ProjectDependencies) = postProject
 		{5D94880B-C99D-887C-5219-9F7CBE21947C} = {5D94880B-C99D-887C-5219-9F7CBE21947C}
 	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_opendialog_cpp", "test_opendialog_cpp.vcxproj", "{2642E247-4866-4EB4-8BEB-4A39EF1A6DF1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -71,8 +75,19 @@ Global
 		{23941773-8F1F-8537-9830-082C043BE137}.Release|Win32.Build.0 = Release|Win32
 		{23941773-8F1F-8537-9830-082C043BE137}.Release|x64.ActiveCfg = Release|x64
 		{23941773-8F1F-8537-9830-082C043BE137}.Release|x64.Build.0 = Release|x64
+		{2642E247-4866-4EB4-8BEB-4A39EF1A6DF1}.Debug|Win32.ActiveCfg = Debug|Win32
+		{2642E247-4866-4EB4-8BEB-4A39EF1A6DF1}.Debug|Win32.Build.0 = Debug|Win32
+		{2642E247-4866-4EB4-8BEB-4A39EF1A6DF1}.Debug|x64.ActiveCfg = Debug|x64
+		{2642E247-4866-4EB4-8BEB-4A39EF1A6DF1}.Debug|x64.Build.0 = Debug|x64
+		{2642E247-4866-4EB4-8BEB-4A39EF1A6DF1}.Release|Win32.ActiveCfg = Release|Win32
+		{2642E247-4866-4EB4-8BEB-4A39EF1A6DF1}.Release|Win32.Build.0 = Release|Win32
+		{2642E247-4866-4EB4-8BEB-4A39EF1A6DF1}.Release|x64.ActiveCfg = Release|x64
+		{2642E247-4866-4EB4-8BEB-4A39EF1A6DF1}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {527FA5F4-3041-415F-9473-22CE1CBBDFED}
 	EndGlobalSection
 EndGlobal

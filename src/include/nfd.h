@@ -29,6 +29,9 @@ typedef char nfdnchar_t;
 /* opaque data structure -- see NFD_PathSet_* */
 typedef void nfdpathset_t;
 
+
+typedef unsigned int nfd_filtersize_t;
+
 typedef enum {
     NFD_ERROR,       /* programmatic error */
     NFD_OKAY,        /* user pressed okay, or successful return */
@@ -56,21 +59,21 @@ void NFD_Quit(void);
 /* single file open dialog */
 /* It is the caller's responsibility to free `outPath` via NFD_FreePathN() if this function returns NFD_OKAY */
 nfdresult_t NFD_OpenDialogN( const nfdnfilteritem_t *filterList,
-                             size_t count,
+                             nfd_filtersize_t filterCount,
                              const nfdnchar_t *defaultPath,
                              nfdnchar_t **outPath );
 
 /* multiple file open dialog */    
 /* It is the caller's responsibility to free `outPaths` via NFD_PathSet_Free() if this function returns NFD_OKAY */
 nfdresult_t NFD_OpenDialogMultipleN( const nfdnfilteritem_t *filterList,
-                                     size_t count,
+                                     nfd_filtersize_t filterCount,
                                      const nfdnchar_t *defaultPath,
-                                     nfdpathset_t **outPaths );
+                                     const nfdpathset_t **outPaths );
 
 /* save dialog */
 /* It is the caller's responsibility to free `outPath` via NFD_FreePathN() if this function returns NFD_OKAY */
 nfdresult_t NFD_SaveDialogN( const nfdnfilteritem_t *filterList,
-                             size_t count,
+                             nfd_filtersize_t filterCount,
                              const nfdnchar_t *defaultPath,
                              nfdnchar_t **outPath );
 
@@ -82,7 +85,11 @@ nfdresult_t NFD_PickFolderN( const nfdnchar_t *defaultPath,
 
 
 /* get last error -- set when nfdresult_t returns NFD_ERROR */
+/* Returns the last error that was set, or NULL if there is no error */
+/* The memory is owned by NFD and should not be freed by user code */
 const char *NFD_GetError(void);
+/* clear the error */
+void NFD_ClearError(void);
 
 
 /* path set operations */
@@ -95,11 +102,13 @@ nfdresult_t NFD_PathSet_GetCount( const nfdpathset_t *pathSet, nfd_pathsetsize_t
 /* It is the caller's responsibility to free `outPath` via NFD_FreePathN() if this function returns NFD_OKAY */
 nfdresult_t NFD_PathSet_GetPathN( const nfdpathset_t *pathSet, nfd_pathsetsize_t index, nfdnchar_t **outPath );
 /* Free the pathSet */    
-void        NFD_PathSet_Free( nfdpathset_t *pathSet );
+void        NFD_PathSet_Free( const nfdpathset_t *pathSet );
 
 
 #ifdef _WIN32
-/* nfd_winglue.cpp */
+
+/* say that the U8 versions of functions are not just #defined to be the native versions */
+#define NFD_DIFFERENT_NATIVE_FUNCTIONS
 
 typedef char nfdu8char_t;
 
@@ -108,29 +117,30 @@ typedef struct {
     const nfdu8char_t *spec;
 } nfdu8filteritem_t;
 
+/* UTF-8 compatibility functions */
+
 /* free a file path that was returned */
 void NFD_FreePathU8(nfdu8char_t *outPath);
 
-/* UTF-8 compatibility functions */
 
 /* single file open dialog */
 /* It is the caller's responsibility to free `outPath` via NFD_FreePathU8() if this function returns NFD_OKAY */
 nfdresult_t NFD_OpenDialogU8( const nfdu8filteritem_t *filterList,
-                              size_t count,
+                              nfd_filtersize_t count,
                               const nfdu8char_t *defaultPath,
                               nfdu8char_t **outPath );
 
 /* multiple file open dialog */    
 /* It is the caller's responsibility to free `outPaths` via NFD_PathSet_Free() if this function returns NFD_OKAY */
 nfdresult_t NFD_OpenDialogMultipleU8( const nfdu8filteritem_t *filterList,
-                                      size_t count,
+                                      nfd_filtersize_t count,
                                       const nfdu8char_t *defaultPath,
-                                      nfdpathset_t **outPaths );
+                                      const nfdpathset_t **outPaths );
 
 /* save dialog */
 /* It is the caller's responsibility to free `outPath` via NFD_FreePathU8() if this function returns NFD_OKAY */
 nfdresult_t NFD_SaveDialogU8( const nfdu8filteritem_t *filterList,
-                              size_t count,
+                              nfd_filtersize_t count,
                               const nfdu8char_t *defaultPath,
                               nfdu8char_t **outPath );
 
@@ -144,8 +154,47 @@ nfdresult_t NFD_PickFolderU8( const nfdu8char_t *defaultPath,
 /* It is the caller's responsibility to free `outPath` via NFD_FreePathU8() if this function returns NFD_OKAY */
 nfdresult_t NFD_PathSet_GetPathU8(const nfdpathset_t *pathSet, nfd_pathsetsize_t index, nfdu8char_t **outPath);
 
-
+#ifdef NFD_NATIVE
+typedef nfdnchar_t nfdchar_t;
+typedef nfdnfilteritem_t nfdfilteritem_t;
+#define NFD_FreePath NFD_FreePathN
+#define NFD_OpenDialog NFD_OpenDialogN
+#define NFD_OpenDialogMultiple NFD_OpenDialogMultipleN
+#define NFD_SaveDialog NFD_SaveDialogN
+#define NFD_PickFolder NFD_PickFolderN
+#define NFD_PathSet_GetPath NFD_PathSet_GetPathN
+#else
+typedef nfdu8char_t nfdchar_t;
+typedef nfdu8filteritem_t nfdfilteritem_t;
+#define NFD_FreePath NFD_FreePathU8
+#define NFD_OpenDialog NFD_OpenDialogU8
+#define NFD_OpenDialogMultiple NFD_OpenDialogMultipleU8
+#define NFD_SaveDialog NFD_SaveDialogU8
+#define NFD_PickFolder NFD_PickFolderU8
+#define NFD_PathSet_GetPath NFD_PathSet_GetPathU8
 #endif
+
+#else
+
+/* the native charset is already UTF-8 */
+typedef nfdnchar_t nfdchar_t;
+typedef nfdnfilteritem_t nfdfilteritem_t;
+#define NFD_FreePath NFD_FreePathN
+#define NFD_OpenDialog NFD_OpenDialogN
+#define NFD_OpenDialogMultiple NFD_OpenDialogMultipleN
+#define NFD_SaveDialog NFD_SaveDialogN
+#define NFD_PickFolder NFD_PickFolderN
+#define NFD_PathSet_GetPath NFD_PathSet_GetPathN
+typedef nfdu8char_t nfdchar_t;
+typedef nfdu8filteritem_t nfdfilteritem_t;
+#define NFD_FreePathU8 NFD_FreePathN
+#define NFD_OpenDialogU8 NFD_OpenDialogN
+#define NFD_OpenDialogMultipleU8 NFD_OpenDialogMultipleN
+#define NFD_SaveDialogU8 NFD_SaveDialogN
+#define NFD_PickFolderU8 NFD_PickFolderN
+#define NFD_PathSet_GetPathU8 NFD_PathSet_GetPathN
+
+#endif // _WIN32
 
 
 #ifdef __cplusplus

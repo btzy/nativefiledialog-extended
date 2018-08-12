@@ -10,6 +10,9 @@
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\simple_exec.h" />
+    <ClInclude Include="..\..\src\include\nfd.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\nfd_win.cpp" />

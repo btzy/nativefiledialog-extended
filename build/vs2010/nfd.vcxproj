@@ -157,6 +157,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\include\nfd.h" />
+    <ClInclude Include="..\..\src\include\nfd.hpp" />
     <ClInclude Include="..\..\src\simple_exec.h" />
   </ItemGroup>
   <ItemGroup>
