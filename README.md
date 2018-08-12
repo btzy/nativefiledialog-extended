@@ -5,6 +5,7 @@
 Changes from original Native File Dialog:
 
 - Friendly names for filters (e.g. `C/C++ Source files (*.c;*.cpp)` instead of `(*.c;*.cpp)`)
+- Automatically append file extension when left out by user
 - Native (suffixed with `N`) and UTF-8 (suffixed with `U8`) versions of all functions (Native is UTF-16 (`wchar_t`) for Windows and UTF-8 (`char`) for Mac/Linux)
 - Initialization and de-initialization of platform library (e.g. COM (Windows) / GTK (Linux)) decoupled from dialog functions, so applications can choose when to initialize/de-initialize the platform library
 - C++ scoped guards for initialization and de-initialization
