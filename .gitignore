@@ -180,3 +180,9 @@ UpgradeLog*.htm
 *.bim_*.settings
 # Microsoft Fakes
 FakesAssemblies/
+
+# Xcode project user data
+xcuserdata/
+
+# Mac OS X rubbish
+.DS_Store

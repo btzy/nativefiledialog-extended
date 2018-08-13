@@ -47,7 +47,7 @@ typedef struct {
 /* nfd_<targetplatform>.c */
 
 /* free a file path that was returned by the dialogs */
-/* Note: use NFD_PathSet_FreePath to free path from pathset instead */
+/* Note: use NFD_PathSet_FreePath to free path from pathset instead of this function */
 void NFD_FreePathN(nfdnchar_t *filePath);
 
 /* initialize NFD - call this for every thread that might use NFD, before calling any other NFD functions on that thread */
@@ -96,6 +96,8 @@ void NFD_ClearError(void);
 /* path set operations */
 #ifdef _WIN32
 typedef unsigned long nfd_pathsetsize_t;
+#elif __APPLE__
+typedef unsigned long nfd_pathsetsize_t;
 #else
 typedef unsigned int nfd_pathsetsize_t;
 #endif
@@ -108,6 +110,8 @@ nfdresult_t NFD_PathSet_GetCount( const nfdpathset_t *pathSet, nfd_pathsetsize_t
 nfdresult_t NFD_PathSet_GetPathN( const nfdpathset_t *pathSet, nfd_pathsetsize_t index, nfdnchar_t **outPath );
 /* Free the path gotten by NFD_PathSet_GetPathN */
 #ifdef _WIN32
+#define NFD_PathSet_FreePathN NFD_FreePathN
+#elif __APPLE__
 #define NFD_PathSet_FreePathN NFD_FreePathN
 #else
 void        NFD_PathSet_FreePathN( const nfdnchar_t *filePath);
@@ -201,8 +205,8 @@ typedef nfdnfilteritem_t nfdfilteritem_t;
 #define NFD_PickFolder NFD_PickFolderN
 #define NFD_PathSet_GetPath NFD_PathSet_GetPathN
 #define NFD_PathSet_FreePath NFD_PathSet_FreePathN
-typedef nfdu8char_t nfdchar_t;
-typedef nfdu8filteritem_t nfdfilteritem_t;
+typedef nfdnchar_t nfdu8char_t;
+typedef nfdnfilteritem_t nfdu8filteritem_t;
 #define NFD_FreePathU8 NFD_FreePathN
 #define NFD_OpenDialogU8 NFD_OpenDialogN
 #define NFD_OpenDialogMultipleU8 NFD_OpenDialogMultipleN
@@ -211,7 +215,7 @@ typedef nfdu8filteritem_t nfdfilteritem_t;
 #define NFD_PathSet_GetPathU8 NFD_PathSet_GetPathN
 #define NFD_PathSet_FreePathU8 NFD_PathSet_FreePathN
 
-#endif // _WIN32
+#endif // _WIN32s
 
 
 #ifdef __cplusplus

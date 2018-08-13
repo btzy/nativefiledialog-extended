@@ -227,7 +227,7 @@ namespace {
 
     nfdresult_t SetDefaultPath(IFileDialog *dialog, const nfdnchar_t *defaultPath)
     {
-        if (!defaultPath || wcslen(defaultPath) == 0)
+        if (!defaultPath || !*defaultPath)
             return NFD_OKAY;
 
 

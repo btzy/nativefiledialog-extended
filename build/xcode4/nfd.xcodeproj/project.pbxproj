@@ -8,17 +8,14 @@
 
 /* Begin PBXBuildFile section */
 		1C90C430815210EDACF88C838F91900E86F3E974C114F4E /* nfd_cocoa.m in Sources */ = {isa = PBXBuildFile; fileRef = 34E106E7906CCB5636EF0483B692FB084BFD2E771D99F196 /* nfd_cocoa.m */; };
-		462F490FF946FD227AC6FBA4F308B9946F2B61852D07BB62 /* nfd_common.c in Sources */ = {isa = PBXBuildFile; fileRef = EE4CAC755A7B972AABD081B3A2EC7B5C3D10F61CE78B4D6A /* nfd_common.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		2D5FAE075E955E064E132FE62063038F3D4856EE372D446 /* common.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = common.h; path = ../../src/common.h; sourceTree = "<group>"; };
 		34E106E7906CCB5636EF0483B692FB084BFD2E771D99F196 /* nfd_cocoa.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = nfd_cocoa.m; path = ../../src/nfd_cocoa.m; sourceTree = "<group>"; };
-		BEE4B8BD4E280AA796E0E38E7CCE5E9967D0FD53D60FB8E7 /* libnfd.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; name = libnfd.a; path = libnfd.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		BEE4B8BD4E280AA796E0E38E7CCE5E9967D0FD53D60FB8E7 /* libnfd.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; name = libnfd.a; path = libnfd_d.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		C64D5F6A6832C6178443FE300B20ECC9FD55AEC69A46CC57 /* nfd.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = nfd.h; path = ../../src/include/nfd.h; sourceTree = "<group>"; };
 		CD5B55A942F539D0FB29739B6B2FF282DE58A76852CB8010 /* simple_exec.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = simple_exec.h; path = ../../src/simple_exec.h; sourceTree = "<group>"; };
-		D038169AF016F6348DBBEBD93887DA661EFC60427D26AC74 /* nfd_common.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = nfd_common.h; path = ../../src/nfd_common.h; sourceTree = "<group>"; };
-		EE4CAC755A7B972AABD081B3A2EC7B5C3D10F61CE78B4D6A /* nfd_common.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = nfd_common.c; path = ../../src/nfd_common.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -46,8 +43,6 @@
 				2D5FAE075E955E064E132FE62063038F3D4856EE372D446 /* common.h */,
 				7806C7175E8C72505F8A8A5402DF10029C2CF7B715175890 /* include */,
 				34E106E7906CCB5636EF0483B692FB084BFD2E771D99F196 /* nfd_cocoa.m */,
-				EE4CAC755A7B972AABD081B3A2EC7B5C3D10F61CE78B4D6A /* nfd_common.c */,
-				D038169AF016F6348DBBEBD93887DA661EFC60427D26AC74 /* nfd_common.h */,
 				CD5B55A942F539D0FB29739B6B2FF282DE58A76852CB8010 /* simple_exec.h */,
 				DE2FD571A6C936B48E134D4D9B3FADE6BA17F9BDEA134CF4 /* Products */,
 			);
@@ -87,14 +82,20 @@
 /* Begin PBXProject section */
 		08FB7793FE84155DC02AAC07 /* Project object */ = {
 			isa = PBXProject;
+			attributes = {
+			};
 			buildConfigurationList = 1DEB928908733DD80010E9CD /* Build configuration list for PBXProject "nfd" */;
 			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = en;
 			hasScannedForEncodings = 1;
+			knownRegions = (
+				en,
+			);
 			mainGroup = A07348950F305D815022F345C23B5CA1BA741BAB5C63418 /* nfd */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				EE83A092ED35A9ADD60763CF9188475F12A9D132A3C08FED /* libnfd.a */,
+				EE83A092ED35A9ADD60763CF9188475F12A9D132A3C08FED /* nfd */,
 			);
 		};
 /* End PBXProject section */
@@ -115,21 +116,17 @@
 			buildActionMask = 2147483647;
 			files = (
 				1C90C430815210EDACF88C838F91900E86F3E974C114F4E /* nfd_cocoa.m in Sources */,
-				462F490FF946FD227AC6FBA4F308B9946F2B61852D07BB62 /* nfd_common.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
-
-/* Begin PBXVariantGroup section */
-/* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
 		113D36768FABFCB67F3BB37DE6396728388AB50FBEB27AF6 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				CONFIGURATION_BUILD_DIR = ../lib/Release/x86;
+				CONFIGURATION_BUILD_DIR = ../lib/Release/x64;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_DYNAMIC_NO_PIC = NO;
 				INSTALL_PATH = /usr/local/lib;
@@ -140,28 +137,22 @@
 		848988B667308967E6DCBDCC13934999A547B4A8D21BBFA7 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = i386;
+				ARCHS = "$(ARCHS_STANDARD)";
 				CONFIGURATION_BUILD_DIR = "$(SYMROOT)";
 				CONFIGURATION_TEMP_DIR = "$(OBJROOT)";
 				COPY_PHASE_STRIP = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_ENABLE_FIX_AND_CONTINUE = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					DEBUG,
-				);
+				GCC_PREPROCESSOR_DEFINITIONS = DEBUG;
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				OBJROOT = ../obj/x86/Debug/nfd;
+				OBJROOT = ../obj/x64/Debug/nfd;
 				ONLY_ACTIVE_ARCH = YES;
-				OTHER_CFLAGS = (
-					"-fno-exceptions",
-				);
-				SYMROOT = ../lib/Debug/x86;
-				USER_HEADER_SEARCH_PATHS = (
-					../../src/include,
-				);
+				OTHER_CFLAGS = "-fno-exceptions";
+				SYMROOT = ../lib/Debug/x64;
+				USER_HEADER_SEARCH_PATHS = ../../src/include;
 			};
 			name = Debug;
 		};
@@ -169,7 +160,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				CONFIGURATION_BUILD_DIR = ../lib/Debug/x86;
+				CONFIGURATION_BUILD_DIR = ../lib/Debug/x64;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_DYNAMIC_NO_PIC = NO;
 				INSTALL_PATH = /usr/local/lib;
@@ -180,26 +171,20 @@
 		CD5AC992E9E05961114F9AC539F3EE131653BBCBBC721FA1 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = i386;
+				ARCHS = "$(ARCHS_STANDARD)";
 				CONFIGURATION_BUILD_DIR = "$(SYMROOT)";
 				CONFIGURATION_TEMP_DIR = "$(OBJROOT)";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_OPTIMIZATION_LEVEL = 3;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					NDEBUG,
-				);
+				GCC_PREPROCESSOR_DEFINITIONS = NDEBUG;
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				OBJROOT = ../obj/x86/Release/nfd;
+				OBJROOT = ../obj/x64/Release/nfd;
 				ONLY_ACTIVE_ARCH = NO;
-				OTHER_CFLAGS = (
-					"-fno-exceptions",
-				);
-				SYMROOT = ../lib/Release/x86;
-				USER_HEADER_SEARCH_PATHS = (
-					../../src/include,
-				);
+				OTHER_CFLAGS = "-fno-exceptions";
+				SYMROOT = ../lib/Release/x64;
+				USER_HEADER_SEARCH_PATHS = ../../src/include;
 			};
 			name = Release;
 		};
@@ -217,7 +202,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		751A9FD849040CF637A997549B8A37E8DD31D92B6DCE9B36 /* Build configuration list for PBXNativeTarget "libnfd.a" */ = {
+		751A9FD849040CF637A997549B8A37E8DD31D92B6DCE9B36 /* Build configuration list for PBXNativeTarget "nfd" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				113D36768FABFCB67F3BB37DE6396728388AB50FBEB27AF6 /* Release */,
@@ -229,6 +214,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-};
-rootObject = 08FB7793FE84155DC02AAC07 /* Project object */;
+	};
+	rootObject = 08FB7793FE84155DC02AAC07 /* Project object */;
 }

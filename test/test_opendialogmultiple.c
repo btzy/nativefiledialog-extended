@@ -7,28 +7,51 @@
 
 int main( void )
 {
-    nfdchar_t *outPath = NULL;
-
-    nfdpathset_t pathSet;
-    nfdresult_t result = NFD_OpenDialogMultiple( "png,jpg;pdf", NULL, &pathSet );
+    // initialize NFD
+    // either call NFD_Init at the start of your program and NFD_Quit at the end of your program,
+    // or before/after every time you want to show a file dialog.
+    NFD_Init();
+    
+    const nfdpathset_t *outPaths;
+    
+    // prepare filters for the dialog
+    nfdfilteritem_t filterItem[2] = { { "Source code", "c,cpp,cc" }, { "Headers", "h,hpp" } };
+    
+    // show the dialog
+    nfdresult_t result = NFD_OpenDialogMultiple(filterItem, 2, NULL, &outPaths);
+    
     if ( result == NFD_OKAY )
     {
-        size_t i;
-        for ( i = 0; i < NFD_PathSet_GetCount(&pathSet); ++i )
+        puts("Success!");
+        
+        nfd_pathsetsize_t numPaths;
+        NFD_PathSet_GetCount(result, &numPaths);
+        
+        nfd_pathsetsize_t i;
+        for ( i = 0; i < numPaths; ++i )
         {
-            nfdchar_t *path = NFD_PathSet_GetPath(&pathSet, i);
+            nfdchar_t *path;
+            NFD_PathSet_GetPath(outPaths, i, &path);
             printf("Path %i: %s\n", (int)i, path );
+            
+            // remember to free the pathset path with NFD_PathSet_FreePath (not NFD_FreePath!)
+            NFD_PathSet_FreePath(path);
         }
-        NFD_PathSet_Free(&pathSet);
+        
+        // remember to free the pathset memory (since NFD_OKAY is returned)
+        NFD_PathSet_Free(&outPaths);
     }
     else if ( result == NFD_CANCEL )
     {
         puts("User pressed cancel.");
     }
-    else 
+    else
     {
         printf("Error: %s\n", NFD_GetError() );
     }
-
+    
+    // Quit NFD
+    NFD_Quit();
+    
     return 0;
 }

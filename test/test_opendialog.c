@@ -17,7 +17,7 @@ int main( void )
 
     // prepare filters for the dialog
     nfdfilteritem_t filterItem[2] = { { "Source code", "c,cpp,cc" }, { "Headers", "h,hpp" } };
-
+    
     // show the dialog
     nfdresult_t result = NFD_OpenDialog(filterItem, 2, NULL, &outPath);
     if ( result == NFD_OKAY )

@@ -154,7 +154,7 @@ namespace {
 
     void SetDefaultPath(GtkFileChooser *chooser, const char *defaultPath)
     {
-        if (!defaultPath || strlen(defaultPath) == 0)
+        if (!defaultPath || !*defaultPath)
             return;
 
         /* GTK+ manual recommends not specifically setting the default path.

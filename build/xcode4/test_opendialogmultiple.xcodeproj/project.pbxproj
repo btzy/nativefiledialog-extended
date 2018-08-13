@@ -33,8 +33,8 @@
 /* Begin PBXFileReference section */
 		71D6295A4B74DEAEC0EF210A2FBBE6E04EE73ACBB3A914EE /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		78D846004522884C1A475441F1E97367344D54B22EF2EC4 /* test_opendialogmultiple.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = test_opendialogmultiple.c; path = ../../test/test_opendialogmultiple.c; sourceTree = "<group>"; };
-		9C4B208142B285D2A252A5750767DC44B0DF2675BBD68412 /* libnfd.a */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "nfd.xcodeproj"; path = nfd.xcodeproj; sourceTree = SOURCE_ROOT; };
-		B767DBEF5EEA00563A1A7ADC2255C208C62713C360F96696 /* test_opendialogmultiple */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = test_opendialogmultiple; path = test_opendialogmultiple; sourceTree = BUILT_PRODUCTS_DIR; };
+		9C4B208142B285D2A252A5750767DC44B0DF2675BBD68412 /* nfd.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = nfd.xcodeproj; sourceTree = SOURCE_ROOT; };
+		B767DBEF5EEA00563A1A7ADC2255C208C62713C360F96696 /* test_opendialogmultiple */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = test_opendialogmultiple; path = test_opendialogmultiple_d; sourceTree = BUILT_PRODUCTS_DIR; };
 		DBBC4EDA893A8412D5925C05D69D7A449728CBB74CBC7A52 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -81,7 +81,6 @@
 			isa = PBXGroup;
 			children = (
 				9C4B208142B285D2A252A5750767DC44B0DF2675BBD68412 /* nfd.xcodeproj */,
-				9C4B208142B285D2A252A5750767DC44B0DF2675BBD68412 /* nfd.xcodeproj */,
 			);
 			name = Projects;
 			sourceTree = "<group>";
@@ -125,16 +124,18 @@
 /* Begin PBXProject section */
 		08FB7793FE84155DC02AAC07 /* Project object */ = {
 			isa = PBXProject;
+			attributes = {
+			};
 			buildConfigurationList = 1DEB928908733DD80010E9CD /* Build configuration list for PBXProject "test_opendialogmultiple" */;
 			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = en;
 			hasScannedForEncodings = 1;
+			knownRegions = (
+				en,
+			);
 			mainGroup = E2F87E433323A4ED5FC2F5BD33D6A1DFFB0AB925A7B8732D /* test_opendialogmultiple */;
 			projectDirPath = "";
 			projectReferences = (
-				{
-					ProductGroup = C1B317315D4848BAD7CC7DEB745AE3ECDC0CAE626476DEFA /* Products */;
-					ProjectRef = 9C4B208142B285D2A252A5750767DC44B0DF2675BBD68412 /* nfd.xcodeproj */;
-				},
 				{
 					ProductGroup = C1B317315D4848BAD7CC7DEB745AE3ECDC0CAE626476DEFA /* Products */;
 					ProjectRef = 9C4B208142B285D2A252A5750767DC44B0DF2675BBD68412 /* nfd.xcodeproj */;
@@ -151,7 +152,8 @@
 		EDF42C3AA2F9D637D2AB422FE4526695D9A0C5EC770C77 /* libnfd.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
-			path = libnfd.a;
+			name = libnfd.a;
+			path = libnfd_d.a;
 			remoteRef = F815FDB657D02ABAD15C3BB351362C2C5DA27B0844D188FA /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
@@ -186,9 +188,6 @@
 		};
 /* End PBXTargetDependency section */
 
-/* Begin PBXVariantGroup section */
-/* End PBXVariantGroup section */
-
 /* Begin XCBuildConfiguration section */
 		4D67FC88298419259C80F4380DCB21572A790DF991B84F65 /* Release */ = {
 			isa = XCBuildConfiguration;
@@ -205,31 +204,23 @@
 		9F8CEB9AA461F01C795A4EB7C62D9D4EE525A95D02E2C65C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = i386;
+				ARCHS = "$(ARCHS_STANDARD)";
 				CONFIGURATION_BUILD_DIR = "$(SYMROOT)";
 				CONFIGURATION_TEMP_DIR = "$(OBJROOT)";
 				COPY_PHASE_STRIP = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_ENABLE_FIX_AND_CONTINUE = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					DEBUG,
-				);
+				GCC_PREPROCESSOR_DEFINITIONS = DEBUG;
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				LIBRARY_SEARCH_PATHS = (
-					../lib/Debug/x86,
-				);
-				OBJROOT = ../obj/x86/Debug/test_opendialogmultiple;
+				LIBRARY_SEARCH_PATHS = ../lib/Debug/x64;
+				OBJROOT = ../obj/x64/Debug/test_opendialogmultiple;
 				ONLY_ACTIVE_ARCH = YES;
-				OTHER_LDFLAGS = (
-					"-lnfd_d",
-				);
+				OTHER_LDFLAGS = "-lnfd_d";
 				SYMROOT = ../bin;
-				USER_HEADER_SEARCH_PATHS = (
-					../../src/include,
-				);
+				USER_HEADER_SEARCH_PATHS = ../../src/include;
 			};
 			name = Debug;
 		};
@@ -248,26 +239,20 @@
 		B6C2767B3906415639751567FC720308C581AE4F3B15A796 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = i386;
+				ARCHS = "$(ARCHS_STANDARD)";
 				CONFIGURATION_BUILD_DIR = "$(SYMROOT)";
 				CONFIGURATION_TEMP_DIR = "$(OBJROOT)";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_OPTIMIZATION_LEVEL = 3;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					NDEBUG,
-				);
+				GCC_PREPROCESSOR_DEFINITIONS = NDEBUG;
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				LIBRARY_SEARCH_PATHS = (
-					../lib/Release/x86,
-				);
-				OBJROOT = ../obj/x86/Release/test_opendialogmultiple;
+				LIBRARY_SEARCH_PATHS = ../lib/Release/x64;
+				OBJROOT = ../obj/x64/Release/test_opendialogmultiple;
 				ONLY_ACTIVE_ARCH = NO;
 				SYMROOT = ../bin;
-				USER_HEADER_SEARCH_PATHS = (
-					../../src/include,
-				);
+				USER_HEADER_SEARCH_PATHS = ../../src/include;
 			};
 			name = Release;
 		};
@@ -297,6 +282,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-};
-rootObject = 08FB7793FE84155DC02AAC07 /* Project object */;
+	};
+	rootObject = 08FB7793FE84155DC02AAC07 /* Project object */;
 }
