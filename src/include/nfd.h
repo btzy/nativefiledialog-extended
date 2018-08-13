@@ -58,6 +58,8 @@ void NFD_Quit(void);
 
 /* single file open dialog */
 /* It is the caller's responsibility to free `outPath` via NFD_FreePathN() if this function returns NFD_OKAY */
+/* If filterCount is zero, filterList is ignored (you can use NULL) */
+/* If defaultPath is NULL, the operating system will decide */
 nfdresult_t NFD_OpenDialogN( const nfdnfilteritem_t *filterList,
                              nfd_filtersize_t filterCount,
                              const nfdnchar_t *defaultPath,
@@ -65,6 +67,8 @@ nfdresult_t NFD_OpenDialogN( const nfdnfilteritem_t *filterList,
 
 /* multiple file open dialog */    
 /* It is the caller's responsibility to free `outPaths` via NFD_PathSet_Free() if this function returns NFD_OKAY */
+/* If filterCount is zero, filterList is ignored (you can use NULL) */
+/* If defaultPath is NULL, the operating system will decide */
 nfdresult_t NFD_OpenDialogMultipleN( const nfdnfilteritem_t *filterList,
                                      nfd_filtersize_t filterCount,
                                      const nfdnchar_t *defaultPath,
@@ -72,6 +76,8 @@ nfdresult_t NFD_OpenDialogMultipleN( const nfdnfilteritem_t *filterList,
 
 /* save dialog */
 /* It is the caller's responsibility to free `outPath` via NFD_FreePathN() if this function returns NFD_OKAY */
+/* If filterCount is zero, filterList is ignored (you can use NULL) */
+/* If defaultPath is NULL, the operating system will decide */
 nfdresult_t NFD_SaveDialogN( const nfdnfilteritem_t *filterList,
                              nfd_filtersize_t filterCount,
                              const nfdnchar_t *defaultPath,
@@ -80,6 +86,7 @@ nfdresult_t NFD_SaveDialogN( const nfdnfilteritem_t *filterList,
 
 /* select folder dialog */
 /* It is the caller's responsibility to free `outPath` via NFD_FreePathN() if this function returns NFD_OKAY */
+/* If defaultPath is NULL, the operating system will decide */
 nfdresult_t NFD_PickFolderN( const nfdnchar_t *defaultPath,
                              nfdnchar_t **outPath );
 
@@ -103,7 +110,7 @@ typedef unsigned int nfd_pathsetsize_t;
 #endif
 
 /* get the number of entries stored in pathSet */
-/* note that some might be invalid (NFD_ERROR will be returned by NFD_PathSet_GetPath) */
+/* note that some paths might be invalid (NFD_ERROR will be returned by NFD_PathSet_GetPath), so we might not actually have this number of usable paths */
 nfdresult_t NFD_PathSet_GetCount( const nfdpathset_t *pathSet, nfd_pathsetsize_t* count );
 /* Get the UTF-8 path at offset index */
 /* It is the caller's responsibility to free `outPath` via NFD_PathSet_FreePathN() if this function returns NFD_OKAY */
