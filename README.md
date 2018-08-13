@@ -135,6 +135,8 @@ A wildcard filter is always added to every dialog.
 
 *Note 2: You must ensure that the specification string is non-empty and that every file extension has at least one character.  Otherwise, bad things might ensue.*
 
+*Note 3: On Linux, the file extension is never automatically appended.  This is usual GTK behaviour and users expect it.*
+
 ## Iterating Over PathSets
 
 See [test_opendialogmultiple.c](test/test_opendialogmultiple.c).
@@ -163,7 +165,7 @@ Please use the Github issue tracker to report bugs or to contribute to this repo
 
 # Credit #
 
-Bernard Teo (me) for everything that was modified from Michael Labbe's Native File Dialog ([mlabbe/nativefiledialog](https://github.com/mlabbe/nativefiledialog)).
+Bernard Teo (me) for everything that was modified from Michael Labbe's [Native File Dialog](https://github.com/mlabbe/nativefiledialog)).
 
 [Michael Labbe](https://github.com/mlabbe) for his awesome Native File Dialog library, and other contributors to that library.
 
