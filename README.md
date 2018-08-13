@@ -157,7 +157,8 @@ Macros that might be defined by `nfd.h`:
  - No support for Windows XP's legacy dialogs such as `GetOpenFileName`.  (There are no plans to support this; you shouldn't be still using Windows XP anyway.)
  - Iterating the path set on Linux when opening multiple files is an O(N<sup>2</sup>) operation because Linux uses linked lists.
  - No Emscripten (WebAssembly) bindings.  (This might get implemented if I decide to port Circuit Sandbox for the web, but I don't think there is any way to implement a web-based folder picker.)
- - This library is not compatible with the original Native File Dialog library.  Things might break if you use both in the same project.
+ - GTK dialogs don't set the existing window as parent, so if users click the existing window then the GTK window will go behind it.
+ - This library is not compatible with the original Native File Dialog library.  Things might break if you use both in the same project.  (There are no plans to support this; you have to use one or the other.)
 
 # Reporting Bugs #
 
