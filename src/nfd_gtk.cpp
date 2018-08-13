@@ -67,16 +67,16 @@ namespace {
         return out;
     }
 
-    void AddFiltersToDialog(GtkFileChooser* chooser, const nfdnchar_t* filterList, nfdfiltersize_t filterCount) {
+    void AddFiltersToDialog(GtkFileChooser* chooser, const nfdnfilteritem_t* filterList, nfd_filtersize_t filterCount) {
         
         if (filterCount) {
             assert(filterList);
 
             // we have filters to add ... format and add them
 
-            for (nfdfiltersize_t index = 0; index != filterCount; ++index) {
+            for (nfd_filtersize_t index = 0; index != filterCount; ++index) {
 
-                GtkFilter* filter = gtk_file_filter_new();
+                GtkFileFilter* filter = gtk_file_filter_new();
 
                 // count number of file extensions
                 size_t sep = 1;
@@ -89,7 +89,7 @@ namespace {
                 // friendly name conversions: "png,jpg" -> "Image files (png, jpg)"
 
                 // calculate space needed (including the trailing '\0')
-                size_t nameSize = sep + strlen(filterList[index].spec) + 2 + strlen(filterList[index].name);
+                size_t nameSize = sep + strlen(filterList[index].spec) + 3 + strlen(filterList[index].name);
                 
                 // malloc the required memory
                 nfdnchar_t *nameBuf = NFDi_Malloc<nfdnchar_t>(sizeof(nfdnchar_t) * nameSize);
@@ -100,17 +100,20 @@ namespace {
                 }
                 *p_nameBuf++ = ' ';
                 *p_nameBuf++ = '(';
-                nfdnchar_t *p_extensionStart = filterList[index].spec;
+                const nfdnchar_t *p_extensionStart = filterList[index].spec;
                 for (const nfdnchar_t *p_spec = filterList[index].spec; true; ++p_spec) {
                     if (*p_spec == ',' || !*p_spec) {
-                        *p_nameBuf++ = ',';
-                        *p_nameBuf++ = ' ';
+                        if (*p_spec == ',') {
+                            *p_nameBuf++ = ',';
+                            *p_nameBuf++ = ' ';
+                        }
 
                         // +1 for the trailing '\0'
                         nfdnchar_t *extnBuf = NFDi_Malloc<nfdnchar_t>(sizeof(nfdnchar_t) * (p_spec - p_extensionStart + 3));
+                        nfdnchar_t *p_extnBufEnd = extnBuf;
                         *p_extnBufEnd++ = '*';
                         *p_extnBufEnd++ = '.';
-                        nfdnchar_t *p_extnBufEnd = copy(p_extensionStart, p_spec, extnBuf);
+                        p_extnBufEnd = copy(p_extensionStart, p_spec, p_extnBufEnd);
                         *p_extnBufEnd++ = '\0';
                         assert(p_extnBufEnd - extnBuf == sizeof(nfdnchar_t) * (p_spec - p_extensionStart + 3));
                         gtk_file_filter_add_pattern(filter, extnBuf);
@@ -146,7 +149,7 @@ namespace {
 
         /* always append a wildcard option to the end*/
 
-        filter = gtk_file_filter_new();
+        GtkFileFilter*  filter = gtk_file_filter_new();
         gtk_file_filter_set_name(filter, "All files");
         gtk_file_filter_add_pattern(filter, "*");
         gtk_file_chooser_add_filter(chooser, filter);
@@ -275,7 +278,7 @@ nfdresult_t NFD_OpenDialogMultipleN( const nfdnfilteritem_t *filterList,
 
     if (gtk_dialog_run(GTK_DIALOG(widget)) == GTK_RESPONSE_ACCEPT) {
         // write out the file name
-        GSList *fileList = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(widget));
+        GSList *fileList = gtk_file_chooser_get_filenames(GTK_FILE_CHOOSER(widget));
 
         *outPaths = static_cast<void*>(fileList);
         return NFD_OKAY;
@@ -293,7 +296,7 @@ nfdresult_t NFD_SaveDialogN( const nfdnfilteritem_t *filterList,
     GtkWidget* widget = gtk_file_chooser_dialog_new(
         "Save File",
         nullptr,
-        GTK_FILE_CHOOSER_ACTION_OPEN,
+        GTK_FILE_CHOOSER_ACTION_SAVE,
         "_Cancel", GTK_RESPONSE_CANCEL,
         "_Save", GTK_RESPONSE_ACCEPT,
         nullptr
@@ -372,12 +375,12 @@ nfdresult_t NFD_PathSet_GetPathN(const nfdpathset_t *pathSet, nfd_pathsetsize_t 
     GSList *fileList = const_cast<GSList*>(static_cast<const GSList*>(pathSet));
 
     // Note: this takes linear time... but should be good enough
-    *outPath = g_slist_nth_data(name, index);
+    *outPath = static_cast<nfdnchar_t*>(g_slist_nth_data(fileList, index));
 
     return NFD_OKAY;
 }
 
-void NFD_PathSet_FreePathN(nfdnchar_t* filePath) {
+void NFD_PathSet_FreePathN(const nfdnchar_t* filePath) {
     assert(filePath);
     // no-op, because NFD_PathSet_Free does the freeing for us
 }

@@ -1,4 +1,4 @@
-#include "nfd.h"
+#include <nfd.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -25,7 +25,7 @@ int main( void )
         puts("Success!");
         
         nfd_pathsetsize_t numPaths;
-        NFD_PathSet_GetCount(result, &numPaths);
+        NFD_PathSet_GetCount(outPaths, &numPaths);
         
         nfd_pathsetsize_t i;
         for ( i = 0; i < numPaths; ++i )
@@ -39,7 +39,7 @@ int main( void )
         }
         
         // remember to free the pathset memory (since NFD_OKAY is returned)
-        NFD_PathSet_Free(&outPaths);
+        NFD_PathSet_Free(outPaths);
     }
     else if ( result == NFD_CANCEL )
     {
