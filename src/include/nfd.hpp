@@ -14,7 +14,7 @@ Refer to documentation on nfd.h for instructions on how to use these functions.
 #ifndef _NFD_HPP
 #define _NFD_HPP
 
-#include "nfd.h"
+#include <nfd.h>
 #include <cstddef> // for std::size_t
 #include <memory> // for std::unique_ptr
 #ifdef NFD_THROWS_EXCEPTIONS

@@ -29,14 +29,14 @@ static void NFDi_Free(void *ptr)
     free(ptr);
 }
 
-static NSArray *BuildAllowedFileTypes( const nfdnfilteritem_t *filterList, nfd_filtersize_t filterCount )
+static NSArray *BuildAllowedFileTypes( const nfdnfilteritem_t *filterList, nfdfiltersize_t filterCount )
 {
     // Commas and semicolons are the same thing on this platform
 
     NSMutableArray *buildFilterList = [[NSMutableArray alloc] init];
     
     
-    for (nfd_filtersize_t filterIndex = 0; filterIndex != filterCount ; ++filterIndex)
+    for (nfdfiltersize_t filterIndex = 0; filterIndex != filterCount ; ++filterIndex)
     {
         // this is the spec to parse (we don't use the friendly name on OS X)
         const nfdnchar_t *filterSpec = filterList[filterIndex].spec;
@@ -65,7 +65,7 @@ static NSArray *BuildAllowedFileTypes( const nfdnfilteritem_t *filterList, nfd_f
     return returnArray;
 }
 
-static void AddFilterListToDialog( NSSavePanel *dialog, const nfdnfilteritem_t *filterList, nfd_filtersize_t filterCount )
+static void AddFilterListToDialog( NSSavePanel *dialog, const nfdnfilteritem_t *filterList, nfdfiltersize_t filterCount )
 {
     // note: NSOpenPanel inherits from NSSavePanel.
     
@@ -113,7 +113,7 @@ void NFD_Quit(void) {}
 
 
 nfdresult_t NFD_OpenDialogN( const nfdnfilteritem_t *filterList,
-                             nfd_filtersize_t filterCount,
+                             nfdfiltersize_t filterCount,
                              const nfdnchar_t *defaultPath,
                              nfdnchar_t **outPath )
 {
@@ -154,7 +154,7 @@ nfdresult_t NFD_OpenDialogN( const nfdnfilteritem_t *filterList,
 
 
 nfdresult_t NFD_OpenDialogMultipleN( const nfdnfilteritem_t *filterList,
-                                     nfd_filtersize_t filterCount,
+                                     nfdfiltersize_t filterCount,
                                      const nfdnchar_t *defaultPath,
                                      const nfdpathset_t **outPaths )
 {
@@ -191,7 +191,7 @@ nfdresult_t NFD_OpenDialogMultipleN( const nfdnfilteritem_t *filterList,
 
 
 nfdresult_t NFD_SaveDialogN( const nfdnfilteritem_t *filterList,
-                             nfd_filtersize_t filterCount,
+                             nfdfiltersize_t filterCount,
                              const nfdnchar_t *defaultPath,
                              nfdnchar_t **outPath )
 {
@@ -272,14 +272,14 @@ nfdresult_t NFD_PickFolderN( const nfdnchar_t *defaultPath,
 
 
 
-nfdresult_t NFD_PathSet_GetCount( const nfdpathset_t *pathSet, nfd_pathsetsize_t* count )
+nfdresult_t NFD_PathSet_GetCount( const nfdpathset_t *pathSet, nfdpathsetsize_t* count )
 {
     const NSArray *urls = (const NSArray*)pathSet;
     *count = [urls count];
     return NFD_OKAY;
 }
 
-nfdresult_t NFD_PathSet_GetPathN( const nfdpathset_t *pathSet, nfd_pathsetsize_t index, nfdnchar_t **outPath )
+nfdresult_t NFD_PathSet_GetPathN( const nfdpathset_t *pathSet, nfdpathsetsize_t index, nfdnchar_t **outPath )
 {
     const NSArray *urls = (const NSArray*)pathSet;
     const NSURL *url = [urls objectAtIndex:index];

@@ -215,6 +215,7 @@
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = ../../src/include;
 				LIBRARY_SEARCH_PATHS = ../lib/Debug/x64;
 				OBJROOT = ../obj/x64/Debug/test_opendialogmultiple;
 				ONLY_ACTIVE_ARCH = YES;
@@ -248,6 +249,7 @@
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = ../../src/include;
 				LIBRARY_SEARCH_PATHS = ../lib/Release/x64;
 				OBJROOT = ../obj/x64/Release/test_opendialogmultiple;
 				ONLY_ACTIVE_ARCH = NO;
