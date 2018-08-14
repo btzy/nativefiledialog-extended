@@ -17,7 +17,7 @@ Refer to documentation on nfd.h for instructions on how to use these functions.
 #include "nfd.h"
 #include <cstddef> // for std::size_t
 #include <memory> // for std::unique_ptr
-#ifdef NFD_GUARD_THROWS_EXCEPTION
+#ifdef NFD_THROWS_EXCEPTIONS
 #include <stdexcept>
 #endif
 
@@ -48,7 +48,7 @@ namespace NFD {
     }
 
     inline nfdresult_t PickFolder(const nfdnchar_t *defaultPath, nfdnchar_t *&outPath) noexcept {
-        ::NFD_PickFolderN(defaultPath, &outPath);
+        return ::NFD_PickFolderN(defaultPath, &outPath);
     }
 
     inline const char *GetError() noexcept {
@@ -97,12 +97,12 @@ namespace NFD {
     }
 
     inline nfdresult_t PickFolder(const nfdu8char_t *defaultPath, nfdu8char_t *&outPath) noexcept {
-        ::NFD_PickFolderU8(defaultPath, &outPath);
+        return ::NFD_PickFolderU8(defaultPath, &outPath);
     }
 
     namespace PathSet {
         inline nfdresult_t GetPath(const nfdpathset_t *pathSet, nfdpathsetsize_t index, nfdu8char_t *&outPath) noexcept {
-            ::NFD_PathSet_GetPathU8(pathSet, index, &outPath);
+            return ::NFD_PathSet_GetPathU8(pathSet, index, &outPath);
         }
         inline void FreePath(nfdu8char_t *filePath) noexcept {
             ::NFD_PathSet_FreePathU8(filePath);
@@ -115,7 +115,7 @@ namespace NFD {
 
     class Guard {
     public:
-#ifndef NFD_CPP_EXCEPTION
+#ifndef NFD_THROWS_EXCEPTIONS
         inline Guard() noexcept {
             Init(); // always assume that initialization succeeds
         }
@@ -169,7 +169,7 @@ namespace NFD {
     inline nfdresult_t OpenDialog(const nfdnfilteritem_t* filterList, nfdfiltersize_t filterCount, const nfdnchar_t* defaultPath, UniquePathN& outPath) noexcept {
         nfdnchar_t* out;
         nfdresult_t res = OpenDialog(filterList, filterCount, defaultPath, out);
-        if (res) {
+        if (res == NFD_OKAY) {
             outPath.reset(out);
         }
         return res;
@@ -178,7 +178,7 @@ namespace NFD {
     inline nfdresult_t OpenDialogMultiple(const nfdnfilteritem_t* filterList, nfdfiltersize_t filterCount, const nfdnchar_t* defaultPath, UniquePathSet& outPaths) noexcept {
         const nfdpathset_t* out;
         nfdresult_t res = OpenDialogMultiple(filterList, filterCount, defaultPath, out);
-        if (res) {
+        if (res == NFD_OKAY) {
             outPaths.reset(out);
         }
         return res;
@@ -187,7 +187,7 @@ namespace NFD {
     inline nfdresult_t SaveDialog(const nfdnfilteritem_t* filterList, nfdfiltersize_t filterCount, const nfdnchar_t* defaultPath, UniquePathN& outPath) noexcept {
         nfdnchar_t* out;
         nfdresult_t res = SaveDialog(filterList, filterCount, defaultPath, out);
-        if (res) {
+        if (res == NFD_OKAY) {
             outPath.reset(out);
         }
         return res;
@@ -196,7 +196,7 @@ namespace NFD {
     inline nfdresult_t PickFolder(const nfdnchar_t* defaultPath, UniquePathN outPath) noexcept {
         nfdnchar_t* out;
         nfdresult_t res = PickFolder(defaultPath, out);
-        if (res) {
+        if (res == NFD_OKAY) {
             outPath.reset(out);
         }
         return res;
@@ -206,7 +206,7 @@ namespace NFD {
     inline nfdresult_t OpenDialog(const nfdu8filteritem_t* filterList, nfdfiltersize_t filterCount, const nfdu8char_t* defaultPath, UniquePathU8& outPath) noexcept {
         nfdu8char_t* out;
         nfdresult_t res = OpenDialog(filterList, filterCount, defaultPath, out);
-        if (res) {
+        if (res == NFD_OKAY) {
             outPath.reset(out);
         }
         return res;
@@ -215,7 +215,7 @@ namespace NFD {
     inline nfdresult_t OpenDialogMultiple(const nfdu8filteritem_t* filterList, nfdfiltersize_t filterCount, const nfdu8char_t* defaultPath, UniquePathSet& outPaths) noexcept {
         const nfdpathset_t* out;
         nfdresult_t res = OpenDialogMultiple(filterList, filterCount, defaultPath, out);
-        if (res) {
+        if (res == NFD_OKAY) {
             outPaths.reset(out);
         }
         return res;
@@ -224,7 +224,7 @@ namespace NFD {
     inline nfdresult_t SaveDialog(const nfdu8filteritem_t* filterList, nfdfiltersize_t filterCount, const nfdu8char_t* defaultPath, UniquePathU8& outPath) noexcept {
         nfdu8char_t* out;
         nfdresult_t res = SaveDialog(filterList, filterCount, defaultPath, out);
-        if (res) {
+        if (res == NFD_OKAY) {
             outPath.reset(out);
         }
         return res;
@@ -233,7 +233,7 @@ namespace NFD {
     inline nfdresult_t PickFolder(const nfdu8char_t* defaultPath, UniquePathU8 outPath) noexcept {
         nfdu8char_t* out;
         nfdresult_t res = PickFolder(defaultPath, out);
-        if (res) {
+        if (res == NFD_OKAY) {
             outPath.reset(out);
         }
         return res;
@@ -247,7 +247,7 @@ namespace NFD {
         inline nfdresult_t GetPath(const UniquePathSet& uniquePathSet, nfdpathsetsize_t index, UniquePathSetPathN& outPath) noexcept {
             nfdnchar_t* out;
             nfdresult_t res = GetPath(uniquePathSet.get(), index, out);
-            if (res) {
+            if (res == NFD_OKAY) {
                 outPath.reset(out);
             }
             return res;
@@ -256,7 +256,7 @@ namespace NFD {
         inline nfdresult_t GetPath(const UniquePathSet& uniquePathSet, nfdpathsetsize_t index, UniquePathSetPathU8& outPath) noexcept {
             nfdu8char_t* out;
             nfdresult_t res = GetPath(uniquePathSet.get(), index, out);
-            if (res) {
+            if (res == NFD_OKAY) {
                 outPath.reset(out);
             }
             return res;

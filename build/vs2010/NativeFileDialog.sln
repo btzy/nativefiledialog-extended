@@ -26,6 +26,14 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_savedialog", "test_sav
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_opendialog_cpp", "test_opendialog_cpp.vcxproj", "{2642E247-4866-4EB4-8BEB-4A39EF1A6DF1}"
+	ProjectSection(ProjectDependencies) = postProject
+		{5D94880B-C99D-887C-5219-9F7CBE21947C} = {5D94880B-C99D-887C-5219-9F7CBE21947C}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_opendialogmultiple_cpp", "test_opendialogmultiple_cpp.vcxproj", "{D3E31A32-D3A2-4B5C-83F8-8A6871567A13}"
+	ProjectSection(ProjectDependencies) = postProject
+		{5D94880B-C99D-887C-5219-9F7CBE21947C} = {5D94880B-C99D-887C-5219-9F7CBE21947C}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -83,6 +91,14 @@ Global
 		{2642E247-4866-4EB4-8BEB-4A39EF1A6DF1}.Release|Win32.Build.0 = Release|Win32
 		{2642E247-4866-4EB4-8BEB-4A39EF1A6DF1}.Release|x64.ActiveCfg = Release|x64
 		{2642E247-4866-4EB4-8BEB-4A39EF1A6DF1}.Release|x64.Build.0 = Release|x64
+		{D3E31A32-D3A2-4B5C-83F8-8A6871567A13}.Debug|Win32.ActiveCfg = Debug|Win32
+		{D3E31A32-D3A2-4B5C-83F8-8A6871567A13}.Debug|Win32.Build.0 = Debug|Win32
+		{D3E31A32-D3A2-4B5C-83F8-8A6871567A13}.Debug|x64.ActiveCfg = Debug|x64
+		{D3E31A32-D3A2-4B5C-83F8-8A6871567A13}.Debug|x64.Build.0 = Debug|x64
+		{D3E31A32-D3A2-4B5C-83F8-8A6871567A13}.Release|Win32.ActiveCfg = Release|Win32
+		{D3E31A32-D3A2-4B5C-83F8-8A6871567A13}.Release|Win32.Build.0 = Release|Win32
+		{D3E31A32-D3A2-4B5C-83F8-8A6871567A13}.Release|x64.ActiveCfg = Release|x64
+		{D3E31A32-D3A2-4B5C-83F8-8A6871567A13}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
