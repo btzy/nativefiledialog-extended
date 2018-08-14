@@ -166,7 +166,7 @@ Please use the Github issue tracker to report bugs or to contribute to this repo
 
 # Credit #
 
-Bernard Teo (me) for everything that was modified from Michael Labbe's [Native File Dialog](https://github.com/mlabbe/nativefiledialog)).
+Bernard Teo (me) for everything that wasn't from Michael Labbe's [Native File Dialog](https://github.com/mlabbe/nativefiledialog)).
 
 [Michael Labbe](https://github.com/mlabbe) for his awesome Native File Dialog library, and other contributors to that library.
 
