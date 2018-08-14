@@ -79,7 +79,7 @@ namespace {
         free(static_cast<void*>(ptr));
     }
 
-    nfdresult_t AddFiltersToDialog(::IFileDialog *fileOpenDialog, const nfdnfilteritem_t *filterList, nfd_filtersize_t filterCount)
+    nfdresult_t AddFiltersToDialog(::IFileDialog *fileOpenDialog, const nfdnfilteritem_t *filterList, nfdfiltersize_t filterCount)
     {
 
         /* filterCount plus 1 because we hardcode the *.* wildcard after the while loop */
@@ -92,10 +92,10 @@ namespace {
         /* ad-hoc RAII object to free memory when destructing */
         struct COMDLG_FILTERSPEC_Guard {
             COMDLG_FILTERSPEC* _specList;
-            nfd_filtersize_t index;
+            nfdfiltersize_t index;
             COMDLG_FILTERSPEC_Guard(COMDLG_FILTERSPEC* specList) noexcept : _specList(specList), index(0) {}
             ~COMDLG_FILTERSPEC_Guard() {
-                for (--index; index != static_cast<nfd_filtersize_t>(-1); --index) {
+                for (--index; index != static_cast<nfdfiltersize_t>(-1); --index) {
                     NFDi_Free(const_cast<nfdnchar_t*>(_specList[index].pszSpec));
                 }
                 NFDi_Free(_specList);
@@ -110,7 +110,7 @@ namespace {
             // we have filters to add ... format and add them
 
             // use the index that comes from the RAII object (instead of making a copy), so the RAII object will know which memory to free
-            nfd_filtersize_t& index = specListGuard.index;
+            nfdfiltersize_t& index = specListGuard.index;
 
             for (; index != filterCount; ++index) {
                 // set the friendly name of this filter
@@ -173,7 +173,7 @@ namespace {
     }
 
     /* call after AddFiltersToDialog */
-    nfdresult_t SetDefaultExtension(::IFileDialog *fileOpenDialog, const nfdnfilteritem_t *filterList, nfd_filtersize_t filterCount)
+    nfdresult_t SetDefaultExtension(::IFileDialog *fileOpenDialog, const nfdnfilteritem_t *filterList, nfdfiltersize_t filterCount)
     {
         // if there are no filters, then don't set default extensions
         if (!filterCount) {
@@ -307,7 +307,7 @@ void NFD_FreePathN(nfdnchar_t* filePath) {
 
 
 nfdresult_t NFD_OpenDialogN( const nfdnfilteritem_t *filterList,
-                            nfd_filtersize_t count,
+                            nfdfiltersize_t count,
                             const nfdnchar_t *defaultPath,
                             nfdnchar_t **outPath )
 {
@@ -389,7 +389,7 @@ nfdresult_t NFD_OpenDialogN( const nfdnfilteritem_t *filterList,
 }
 
 nfdresult_t NFD_OpenDialogMultipleN( const nfdnfilteritem_t *filterList,
-                                    nfd_filtersize_t count,
+                                    nfdfiltersize_t count,
                                     const nfdnchar_t *defaultPath,
                                     const nfdpathset_t **outPaths )
 {
@@ -461,7 +461,7 @@ nfdresult_t NFD_OpenDialogMultipleN( const nfdnfilteritem_t *filterList,
 }
 
 nfdresult_t NFD_SaveDialogN( const nfdnfilteritem_t *filterList,
-                            nfd_filtersize_t count,
+                            nfdfiltersize_t count,
                             const nfdnchar_t *defaultPath,
                             nfdnchar_t **outPath )
 {
@@ -606,7 +606,7 @@ nfdresult_t NFD_PickFolderN(const nfdnchar_t *defaultPath,
 }
 
 
-nfdresult_t NFD_PathSet_GetCount(const nfdpathset_t *pathSet, nfd_pathsetsize_t* count)
+nfdresult_t NFD_PathSet_GetCount(const nfdpathset_t *pathSet, nfdpathsetsize_t* count)
 {
     assert(pathSet);
     // const_cast because methods on IShellItemArray aren't const, but it should act like const to the caller
@@ -623,7 +623,7 @@ nfdresult_t NFD_PathSet_GetCount(const nfdpathset_t *pathSet, nfd_pathsetsize_t*
     return NFD_OKAY;
 }
 
-nfdresult_t NFD_PathSet_GetPathN(const nfdpathset_t *pathSet, nfd_pathsetsize_t index, nfdnchar_t **outPath)
+nfdresult_t NFD_PathSet_GetPathN(const nfdpathset_t *pathSet, nfdpathsetsize_t index, nfdnchar_t **outPath)
 {
     assert(pathSet);
     // const_cast because methods on IShellItemArray aren't const, but it should act like const to the caller
@@ -708,11 +708,11 @@ namespace {
 
     struct FilterItem_Guard {
         nfdnfilteritem_t* data;
-        nfd_filtersize_t index;
+        nfdfiltersize_t index;
         FilterItem_Guard() noexcept : data(nullptr), index(0) {}
         ~FilterItem_Guard() {
             assert(data || index == 0);
-            for (--index; index != static_cast<nfd_filtersize_t>(-1); --index) {
+            for (--index; index != static_cast<nfdfiltersize_t>(-1); --index) {
                 NFDi_Free(const_cast<nfdnchar_t*>(data[index].spec));
                 NFDi_Free(const_cast<nfdnchar_t*>(data[index].name));
             }
@@ -720,7 +720,7 @@ namespace {
         }
     };
 
-    nfdresult_t CopyFilterItem(const nfdu8filteritem_t *filterList, nfd_filtersize_t count, FilterItem_Guard& filterItemsNGuard) {
+    nfdresult_t CopyFilterItem(const nfdu8filteritem_t *filterList, nfdfiltersize_t count, FilterItem_Guard& filterItemsNGuard) {
         if (count) {
             nfdnfilteritem_t*& filterItemsN = filterItemsNGuard.data;
             filterItemsN = NFDi_Malloc<nfdnfilteritem_t>(sizeof(nfdnfilteritem_t) * count);
@@ -728,7 +728,7 @@ namespace {
                 return NFD_ERROR;
             }
 
-            nfd_filtersize_t& index = filterItemsNGuard.index;
+            nfdfiltersize_t& index = filterItemsNGuard.index;
             for (; index != count; ++index) {
 
                 nfdresult_t res = CopyCharToWChar(filterList[index].name, const_cast<nfdnchar_t*&>(filterItemsN[index].name));
@@ -761,7 +761,7 @@ void NFD_FreePathU8(nfdu8char_t *outPath) {
 }
 
 nfdresult_t NFD_OpenDialogU8(const nfdu8filteritem_t *filterList,
-                            nfd_filtersize_t count,
+                            nfdfiltersize_t count,
                             const nfdu8char_t *defaultPath,
                             nfdu8char_t **outPath)
 {
@@ -795,7 +795,7 @@ nfdresult_t NFD_OpenDialogU8(const nfdu8filteritem_t *filterList,
 /* multiple file open dialog */    
 /* It is the caller's responsibility to free `outPaths` via NFD_PathSet_Free() if this function returns NFD_OKAY */
 nfdresult_t NFD_OpenDialogMultipleU8( const nfdu8filteritem_t *filterList,
-                                      nfd_filtersize_t count,
+                                      nfdfiltersize_t count,
                                       const nfdu8char_t *defaultPath,
                                       const nfdpathset_t **outPaths )
 {
@@ -810,14 +810,13 @@ nfdresult_t NFD_OpenDialogMultipleU8( const nfdu8filteritem_t *filterList,
     CopyDefaultPath(defaultPath, defaultPathNGuard);
 
     // call the native function
-    const nfdpathset_t *outPathsN;
-    return NFD_OpenDialogMultipleN(filterItemsNGuard.data, count, defaultPathNGuard.data, &outPathsN);
+    return NFD_OpenDialogMultipleN(filterItemsNGuard.data, count, defaultPathNGuard.data, outPaths);
 }
 
 /* save dialog */
 /* It is the caller's responsibility to free `outPath` via NFD_FreePathU8() if this function returns NFD_OKAY */
 nfdresult_t NFD_SaveDialogU8( const nfdu8filteritem_t *filterList,
-                              nfd_filtersize_t count,
+                              nfdfiltersize_t count,
                               const nfdu8char_t *defaultPath,
                               nfdu8char_t **outPath )
 {
@@ -875,11 +874,18 @@ nfdresult_t NFD_PickFolderU8( const nfdu8char_t *defaultPath,
 
 /* Get the UTF-8 path at offset index */
 /* It is the caller's responsibility to free `outPath` via NFD_FreePathU8() if this function returns NFD_OKAY */
-nfdresult_t NFD_PathSet_GetPathU8(const nfdpathset_t *pathSet, nfd_pathsetsize_t index, nfdu8char_t **outPath)
+nfdresult_t NFD_PathSet_GetPathU8(const nfdpathset_t *pathSet, nfdpathsetsize_t index, nfdu8char_t **outPath)
 {
     // call the native function
     nfdnchar_t *outPathN;
     nfdresult_t res = NFD_PathSet_GetPathN(pathSet, index, &outPathN);
+
+    if (res != NFD_OKAY) {
+        return res;
+    }
+
+    // convert the outPath to UTF-8
+    res = CopyWCharToNFDChar(outPathN, *outPath);
 
     // free the native out path, and return the result
     NFD_FreePathN(outPathN);

@@ -24,10 +24,10 @@ int main( void )
     {
         puts("Success!");
         
-        nfd_pathsetsize_t numPaths;
+        nfdpathsetsize_t numPaths;
         NFD_PathSet_GetCount(outPaths, &numPaths);
         
-        nfd_pathsetsize_t i;
+        nfdpathsetsize_t i;
         for ( i = 0; i < numPaths; ++i )
         {
             nfdchar_t *path;
