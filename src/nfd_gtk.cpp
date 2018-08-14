@@ -67,14 +67,14 @@ namespace {
         return out;
     }
 
-    void AddFiltersToDialog(GtkFileChooser* chooser, const nfdnfilteritem_t* filterList, nfd_filtersize_t filterCount) {
+    void AddFiltersToDialog(GtkFileChooser* chooser, const nfdnfilteritem_t* filterList, nfdfiltersize_t filterCount) {
         
         if (filterCount) {
             assert(filterList);
 
             // we have filters to add ... format and add them
 
-            for (nfd_filtersize_t index = 0; index != filterCount; ++index) {
+            for (nfdfiltersize_t index = 0; index != filterCount; ++index) {
 
                 GtkFileFilter* filter = gtk_file_filter_new();
 
@@ -217,7 +217,7 @@ void NFD_FreePathN(nfdnchar_t* filePath) {
 }
 
 nfdresult_t NFD_OpenDialogN( const nfdnfilteritem_t *filterList,
-                             nfd_filtersize_t count,
+                             nfdfiltersize_t count,
                              const nfdnchar_t *defaultPath,
                              nfdnchar_t **outPath )
 {
@@ -251,7 +251,7 @@ nfdresult_t NFD_OpenDialogN( const nfdnfilteritem_t *filterList,
 }
 
 nfdresult_t NFD_OpenDialogMultipleN( const nfdnfilteritem_t *filterList,
-                                     nfd_filtersize_t count,
+                                     nfdfiltersize_t count,
                                      const nfdnchar_t *defaultPath,
                                      const nfdpathset_t **outPaths )
 {
@@ -289,7 +289,7 @@ nfdresult_t NFD_OpenDialogMultipleN( const nfdnfilteritem_t *filterList,
 }
 
 nfdresult_t NFD_SaveDialogN( const nfdnfilteritem_t *filterList,
-                             nfd_filtersize_t count,
+                             nfdfiltersize_t count,
                              const nfdnchar_t *defaultPath,
                              nfdnchar_t **outPath )
 {
@@ -358,7 +358,7 @@ nfdresult_t NFD_PickFolderN( const nfdnchar_t *defaultPath,
 
 
 
-nfdresult_t NFD_PathSet_GetCount(const nfdpathset_t *pathSet, nfd_pathsetsize_t* count)
+nfdresult_t NFD_PathSet_GetCount(const nfdpathset_t *pathSet, nfdpathsetsize_t* count)
 {
     assert(pathSet);
     // const_cast because methods on GSList aren't const, but it should act like const to the caller
@@ -368,7 +368,7 @@ nfdresult_t NFD_PathSet_GetCount(const nfdpathset_t *pathSet, nfd_pathsetsize_t*
     return NFD_OKAY;
 }
 
-nfdresult_t NFD_PathSet_GetPathN(const nfdpathset_t *pathSet, nfd_pathsetsize_t index, nfdnchar_t **outPath)
+nfdresult_t NFD_PathSet_GetPathN(const nfdpathset_t *pathSet, nfdpathsetsize_t index, nfdnchar_t **outPath)
 {
     assert(pathSet);
     // const_cast because methods on GSList aren't const, but it should act like const to the caller
