@@ -20,7 +20,7 @@ Features:
 - No third party dependencies
 - Visual Studio and Xcode project files
 - Works alongside [SDL2](http://www.libsdl.org) on all platforms
-- (Under development) C++ wrapper with `unique_ptr` semantics, for those using this library from C++
+- (Under development) C++ wrapper with `unique_ptr` auto-freeing semantics, for those using this library from C++
 
 **Comparison with original Native File Dialog:**
 
@@ -32,7 +32,7 @@ Features added in Native File Dialog Extended:
 - Automatically appending file extensions
 - Native character set support on Windows
 - Initialization and de-initialization of platform library decoupled from file dialog functions
-- C++ wrapper with `unique_ptr` semantics
+- C++ wrapper with `unique_ptr` auto-freeing semantics
 
 There is also significant code refractoring, especially for the Windows implementation.
 
