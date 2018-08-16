@@ -66,7 +66,20 @@ namespace {
         }
         return out;
     }
-
+    
+    // Does not own the filter and extension.
+    struct Pair_GtkFileFilter_FileExtension {
+		GtkFileFilter* filter;
+		const nfdnchar_t* extensionBegin;
+		const nfdnchar_t* extensionEnd;
+	};
+	
+	struct ButtonClickedArgs {
+		Pair_GtkFileFilter_FileExtension* map;
+		GtkFileChooser* chooser;
+	};
+	
+	
     void AddFiltersToDialog(GtkFileChooser* chooser, const nfdnfilteritem_t* filterList, nfdfiltersize_t filterCount) {
         
         if (filterCount) {
@@ -149,10 +162,114 @@ namespace {
 
         /* always append a wildcard option to the end*/
 
-        GtkFileFilter*  filter = gtk_file_filter_new();
+        GtkFileFilter* filter = gtk_file_filter_new();
         gtk_file_filter_set_name(filter, "All files");
         gtk_file_filter_add_pattern(filter, "*");
         gtk_file_chooser_add_filter(chooser, filter);
+    }
+    
+    // returns null-terminated map (trailing .filter is null)
+    Pair_GtkFileFilter_FileExtension* AddFiltersToDialogWithMap(GtkFileChooser* chooser, const nfdnfilteritem_t* filterList, nfdfiltersize_t filterCount) {
+        
+        Pair_GtkFileFilter_FileExtension* map = NFDi_Malloc<Pair_GtkFileFilter_FileExtension>(sizeof(Pair_GtkFileFilter_FileExtension) * (filterCount + 1));
+        
+        if (filterCount) {
+            assert(filterList);
+
+            // we have filters to add ... format and add them
+
+            for (nfdfiltersize_t index = 0; index != filterCount; ++index) {
+
+                GtkFileFilter* filter = gtk_file_filter_new();
+                
+                // store filter in map
+                map[index].filter = filter;
+                map[index].extensionBegin = filterList[index].spec;
+                map[index].extensionEnd = nullptr;
+
+                // count number of file extensions
+                size_t sep = 1;
+                for (const nfdnchar_t *p_spec = filterList[index].spec; *p_spec; ++p_spec) {
+                    if (*p_spec == L',') {
+                        ++sep;
+                    }
+                }
+
+                // friendly name conversions: "png,jpg" -> "Image files (png, jpg)"
+
+                // calculate space needed (including the trailing '\0')
+                size_t nameSize = sep + strlen(filterList[index].spec) + 3 + strlen(filterList[index].name);
+                
+                // malloc the required memory
+                nfdnchar_t *nameBuf = NFDi_Malloc<nfdnchar_t>(sizeof(nfdnchar_t) * nameSize);
+
+                nfdnchar_t *p_nameBuf = nameBuf;
+                for (const nfdnchar_t *p_filterName = filterList[index].name; *p_filterName; ++p_filterName) {
+                    *p_nameBuf++ = *p_filterName;
+                }
+                *p_nameBuf++ = ' ';
+                *p_nameBuf++ = '(';
+                const nfdnchar_t *p_extensionStart = filterList[index].spec;
+                for (const nfdnchar_t *p_spec = filterList[index].spec; true; ++p_spec) {
+                    if (*p_spec == ',' || !*p_spec) {
+                        if (*p_spec == ',') {
+                            *p_nameBuf++ = ',';
+                            *p_nameBuf++ = ' ';
+                        }
+
+                        // +1 for the trailing '\0'
+                        nfdnchar_t *extnBuf = NFDi_Malloc<nfdnchar_t>(sizeof(nfdnchar_t) * (p_spec - p_extensionStart + 3));
+                        nfdnchar_t *p_extnBufEnd = extnBuf;
+                        *p_extnBufEnd++ = '*';
+                        *p_extnBufEnd++ = '.';
+                        p_extnBufEnd = copy(p_extensionStart, p_spec, p_extnBufEnd);
+                        *p_extnBufEnd++ = '\0';
+                        assert(p_extnBufEnd - extnBuf == sizeof(nfdnchar_t) * (p_spec - p_extensionStart + 3));
+                        gtk_file_filter_add_pattern(filter, extnBuf);
+                        NFDi_Free(extnBuf);
+                        
+                        // store current pointer in map (if it's the first one)
+                        if (map[index].extensionEnd == nullptr) {
+							map[index].extensionEnd = p_spec;
+						}
+
+                        if (*p_spec) {
+                            // update the extension start point
+                            p_extensionStart = p_spec + 1;
+                        }
+                        else {
+                            // reached the '\0' character
+                            break;
+                        }
+                    }
+                    else {
+                        *p_nameBuf++ = *p_spec;
+                    }
+                }
+                *p_nameBuf++ = ')';
+                *p_nameBuf++ = '\0';
+                assert(p_nameBuf - nameBuf == sizeof(nfdnchar_t) * nameSize);
+                
+                // add to the filter
+                gtk_file_filter_set_name(filter, nameBuf);
+
+                // free the memory
+                NFDi_Free(nameBuf);
+
+                // add filter to chooser
+                gtk_file_chooser_add_filter(chooser, filter);
+            }
+        }
+        // set trailing map index to null
+        map[filterCount].filter = nullptr;
+
+        /* always append a wildcard option to the end*/
+        GtkFileFilter* filter = gtk_file_filter_new();
+        gtk_file_filter_set_name(filter, "All files");
+        gtk_file_filter_add_pattern(filter, "*");
+        gtk_file_chooser_add_filter(chooser, filter);
+        
+        return map;
     }
 
     void SetDefaultPath(GtkFileChooser *chooser, const char *defaultPath)
@@ -182,6 +299,52 @@ namespace {
             WaitForCleanup();
         }
     };
+    
+    static void FileActivatedSignalHandler(GtkButton* saveButton, void* userdata)
+    {
+		ButtonClickedArgs* args = static_cast<ButtonClickedArgs*>(userdata);
+		GtkFileChooser* chooser = args->chooser;
+		char* currentFileName = gtk_file_chooser_get_current_name(chooser);
+		if (*currentFileName) { // string is not empty
+			
+			// find a '.' in the file name
+			const char* p_period = currentFileName;
+			for (;*p_period; ++p_period) {
+				if (*p_period == '.') {
+					break;
+				}
+			}
+			
+			if (!*p_period) { // there is no '.', so append the default extension
+				Pair_GtkFileFilter_FileExtension* filterMap = static_cast<Pair_GtkFileFilter_FileExtension*>(args->map);
+				GtkFileFilter* currentFilter = gtk_file_chooser_get_filter(chooser);
+				if (currentFilter) {
+					for (;filterMap->filter; ++filterMap) {
+						if (filterMap->filter == currentFilter) break;
+					}
+				}
+				if (filterMap->filter) {
+					// memory for appended string (including '.' and trailing '\0')
+					char* appendedFileName = NFDi_Malloc<char>(sizeof(char) * ((p_period - currentFileName) + (filterMap->extensionEnd - filterMap->extensionBegin) + 2));
+					char* p_fileName = copy(currentFileName, p_period, appendedFileName);
+					*p_fileName++ = '.';
+					p_fileName = copy(filterMap->extensionBegin, filterMap->extensionEnd, p_fileName);
+					*p_fileName++ = '\0';
+					
+					assert(p_fileName - appendedFileName == (p_period - currentFileName) + (filterMap->extensionEnd - filterMap->extensionBegin) + 2);
+					
+					// set the appended file name
+					gtk_file_chooser_set_current_name(chooser, appendedFileName);
+					
+					// free the memory
+					NFDi_Free(appendedFileName);
+				}
+			}
+		}
+		
+		// free the memory
+		g_free(currentFileName);
+    }
 }
 
 const char *NFD_GetError(void)
@@ -298,25 +461,38 @@ nfdresult_t NFD_SaveDialogN( const nfdnfilteritem_t *filterList,
         nullptr,
         GTK_FILE_CHOOSER_ACTION_SAVE,
         "_Cancel", GTK_RESPONSE_CANCEL,
-        "_Save", GTK_RESPONSE_ACCEPT,
         nullptr
     );
 
     // guard to destroy the widget when returning from this function
     Widget_Guard widgetGuard(widget);
+    
+    GtkWidget* saveButton = gtk_dialog_add_button(GTK_DIALOG(widget), "_Save", GTK_RESPONSE_ACCEPT);
 
     // Prompt on overwrite
     gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(widget), TRUE);
 
     /* Build the filter list */
-    AddFiltersToDialog(GTK_FILE_CHOOSER(widget), filterList, count);
-
-    // unfortunately it doesn't seem to be possible to auto-fill the extension
-
+    ButtonClickedArgs buttonClickedArgs;
+    buttonClickedArgs.chooser = GTK_FILE_CHOOSER(widget);
+    buttonClickedArgs.map = AddFiltersToDialogWithMap(GTK_FILE_CHOOSER(widget), filterList, count);
+    
     /* Set the default path */
     SetDefaultPath(GTK_FILE_CHOOSER(widget), defaultPath);
-
-    if (gtk_dialog_run(GTK_DIALOG(widget)) == GTK_RESPONSE_ACCEPT) {
+    
+    /* set the handler to add file extension */
+    gulong handlerID = g_signal_connect(G_OBJECT(saveButton), "pressed", G_CALLBACK(FileActivatedSignalHandler), static_cast<void*>(&buttonClickedArgs));
+	
+	/* invoke the dialog (blocks until dialog is closed) */
+	gint result = gtk_dialog_run(GTK_DIALOG(widget));
+	
+	/* unset the handler */
+	g_signal_handler_disconnect(G_OBJECT(saveButton), handlerID);
+	
+	/* free the filter map */
+	NFDi_Free(buttonClickedArgs.map);
+    
+    if (result == GTK_RESPONSE_ACCEPT) {
         // write out the file name
         *outPath = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(widget));
 
