@@ -81,6 +81,7 @@ nfdresult_t NFD_OpenDialogMultipleN( const nfdnfilteritem_t *filterList,
 nfdresult_t NFD_SaveDialogN( const nfdnfilteritem_t *filterList,
                              nfdfiltersize_t filterCount,
                              const nfdnchar_t *defaultPath,
+                             const nfdnchar_t *defaultName,
                              nfdnchar_t **outPath );
 
 
@@ -164,6 +165,7 @@ nfdresult_t NFD_OpenDialogMultipleU8( const nfdu8filteritem_t *filterList,
 nfdresult_t NFD_SaveDialogU8( const nfdu8filteritem_t *filterList,
                               nfdfiltersize_t count,
                               const nfdu8char_t *defaultPath,
+                              const nfdu8char_t *defaultName,
                               nfdu8char_t **outPath );
 
 

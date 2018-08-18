@@ -251,10 +251,27 @@ namespace {
             return NFD_ERROR;
         }
 
-        // Could also call SetDefaultFolder(), but this guarantees defaultPath -- more consistency across API.
-        dialog->SetFolder(folder);
+        // SetDefaultFolder() might use another recently used folder if available, so the user doesn't need to keep navigating back to the default folder (recommended by Windows).
+        // change to SetFolder() if you always want to use the default folder
+        if (!SUCCEEDED(dialog->SetDefaultFolder(folder))) {
+            NFDi_SetError("Error setting default path");
+            return NFD_ERROR;
+        }
 
         folder->Release();
+
+        return NFD_OKAY;
+    }
+
+    nfdresult_t SetDefaultName(IFileDialog *dialog, const nfdnchar_t *defaultName)
+    {
+        if (!defaultName || !*defaultName)
+            return NFD_OKAY;
+
+        if (!SUCCEEDED(dialog->SetFileName(defaultName))) {
+            NFDi_SetError("Error setting default file name");
+            return NFD_ERROR;
+        }
 
         return NFD_OKAY;
     }
@@ -468,6 +485,7 @@ nfdresult_t NFD_OpenDialogMultipleN( const nfdnfilteritem_t *filterList,
 nfdresult_t NFD_SaveDialogN( const nfdnfilteritem_t *filterList,
                             nfdfiltersize_t count,
                             const nfdnchar_t *defaultPath,
+                            const nfdnchar_t *defaultName,
                             nfdnchar_t **outPath )
 {
     
@@ -501,6 +519,12 @@ nfdresult_t NFD_SaveDialogN( const nfdnfilteritem_t *filterList,
 
     // Set the default path
     if ( !SetDefaultPath( fileSaveDialog, defaultPath ) )
+    {
+        return NFD_ERROR;
+    }
+
+    // Set the default name
+    if (!SetDefaultName(fileSaveDialog, defaultName))
     {
         return NFD_ERROR;
     }
@@ -750,9 +774,9 @@ namespace {
         }
         return NFD_OKAY;
     }
-    nfdresult_t CopyDefaultPath(const nfdu8char_t *defaultPath, FreeCheck_Guard<nfdnchar_t>& defaultPathNGuard) {
-        if (defaultPath) {
-            nfdresult_t res = CopyCharToWChar(defaultPath, defaultPathNGuard.data);
+    nfdresult_t ConvertU8ToNative(const nfdu8char_t *u8Text, FreeCheck_Guard<nfdnchar_t>& nativeText) {
+        if (u8Text) {
+            nfdresult_t res = CopyCharToWChar(u8Text, nativeText.data);
             if (!res) {
                 return NFD_ERROR;
             }
@@ -778,7 +802,7 @@ nfdresult_t NFD_OpenDialogU8(const nfdu8filteritem_t *filterList,
 
     // convert the default path, but only if it is not nullptr
     FreeCheck_Guard<nfdnchar_t> defaultPathNGuard;
-    CopyDefaultPath(defaultPath, defaultPathNGuard);
+    ConvertU8ToNative(defaultPath, defaultPathNGuard);
 
     // call the native function
     nfdnchar_t *outPathN;
@@ -812,7 +836,7 @@ nfdresult_t NFD_OpenDialogMultipleU8( const nfdu8filteritem_t *filterList,
 
     // convert the default path, but only if it is not nullptr
     FreeCheck_Guard<nfdnchar_t> defaultPathNGuard;
-    CopyDefaultPath(defaultPath, defaultPathNGuard);
+    ConvertU8ToNative(defaultPath, defaultPathNGuard);
 
     // call the native function
     return NFD_OpenDialogMultipleN(filterItemsNGuard.data, count, defaultPathNGuard.data, outPaths);
@@ -823,6 +847,7 @@ nfdresult_t NFD_OpenDialogMultipleU8( const nfdu8filteritem_t *filterList,
 nfdresult_t NFD_SaveDialogU8( const nfdu8filteritem_t *filterList,
                               nfdfiltersize_t count,
                               const nfdu8char_t *defaultPath,
+                              const nfdu8char_t *defaultName,
                               nfdu8char_t **outPath )
 {
     // populate the real nfdnfilteritem_t
@@ -833,11 +858,15 @@ nfdresult_t NFD_SaveDialogU8( const nfdu8filteritem_t *filterList,
 
     // convert the default path, but only if it is not nullptr
     FreeCheck_Guard<nfdnchar_t> defaultPathNGuard;
-    CopyDefaultPath(defaultPath, defaultPathNGuard);
+    ConvertU8ToNative(defaultPath, defaultPathNGuard);
+
+    // convert the default name, but only if it is not nullptr
+    FreeCheck_Guard<nfdnchar_t> defaultNameNGuard;
+    ConvertU8ToNative(defaultName, defaultNameNGuard);
 
     // call the native function
     nfdnchar_t *outPathN;
-    nfdresult_t res = NFD_SaveDialogN(filterItemsNGuard.data, count, defaultPathNGuard.data, &outPathN);
+    nfdresult_t res = NFD_SaveDialogN(filterItemsNGuard.data, count, defaultPathNGuard.data, defaultNameNGuard.data, &outPathN);
 
     if (res != NFD_OKAY) {
         return res;
@@ -859,7 +888,7 @@ nfdresult_t NFD_PickFolderU8( const nfdu8char_t *defaultPath,
 {
     // convert the default path, but only if it is not nullptr
     FreeCheck_Guard<nfdnchar_t> defaultPathNGuard;
-    CopyDefaultPath(defaultPath, defaultPathNGuard);
+    ConvertU8ToNative(defaultPath, defaultPathNGuard);
 
     // call the native function
     nfdnchar_t *outPathN;
