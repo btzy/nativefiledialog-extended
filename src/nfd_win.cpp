@@ -32,6 +32,32 @@ struct IUnknown; // Workaround for "combaseapi.h(229): error C2187: syntax error
 
 namespace {
 
+    /* current error */
+    const char* g_errorstr = nullptr;
+
+    void NFDi_SetError(const char *msg)
+    {
+        g_errorstr = msg;
+    }
+
+    template <typename T = void>
+    T *NFDi_Malloc(size_t bytes)
+    {
+        void *ptr = malloc(bytes);
+        if (!ptr)
+            NFDi_SetError("NFDi_Malloc failed.");
+
+        return static_cast<T*>(ptr);
+    }
+
+    template <typename T>
+    void NFDi_Free(T *ptr)
+    {
+        assert(ptr);
+        free(static_cast<void*>(ptr));
+    }
+
+    /* guard objects */
     template <typename T>
     struct Release_Guard {
         T* data;
@@ -59,31 +85,7 @@ namespace {
         }
     };
 
-    /* current error */
-    const char* g_errorstr = nullptr;
-
-    void NFDi_SetError(const char *msg)
-    {
-        g_errorstr = msg;
-    }
-
-    template <typename T = void>
-    T *NFDi_Malloc(size_t bytes)
-    {
-        void *ptr = malloc(bytes);
-        if (!ptr)
-            NFDi_SetError("NFDi_Malloc failed.");
-
-        return static_cast<T*>(ptr);
-    }
-
-    template <typename T>
-    void NFDi_Free(T *ptr)
-    {
-        assert(ptr);
-        free(static_cast<void*>(ptr));
-    }
-
+    /* helper functions */
     nfdresult_t AddFiltersToDialog(::IFileDialog *fileOpenDialog, const nfdnfilteritem_t *filterList, nfdfiltersize_t filterCount)
     {
 
@@ -251,14 +253,14 @@ namespace {
             return NFD_ERROR;
         }
 
+        Release_Guard<IShellItem> folderGuard(folder);
+
         // SetDefaultFolder() might use another recently used folder if available, so the user doesn't need to keep navigating back to the default folder (recommended by Windows).
         // change to SetFolder() if you always want to use the default folder
         if (!SUCCEEDED(dialog->SetDefaultFolder(folder))) {
             NFDi_SetError("Error setting default path");
             return NFD_ERROR;
         }
-
-        folder->Release();
 
         return NFD_OKAY;
     }
