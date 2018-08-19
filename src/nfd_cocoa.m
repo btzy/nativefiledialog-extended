@@ -84,9 +84,17 @@ static void SetDefaultPath( NSSavePanel *dialog, const nfdnchar_t *defaultPath )
 {
     if ( !defaultPath || !*defaultPath ) return;
 
-    NSString *defaultPathString = [NSString stringWithUTF8String: defaultPath];
+    NSString *defaultPathString = [NSString stringWithUTF8String:defaultPath];
     NSURL *url = [NSURL fileURLWithPath:defaultPathString isDirectory:YES];
     [dialog setDirectoryURL:url];    
+}
+
+static void SetDefaultName( NSSavePanel *dialog, const nfdnchar_t *defaultName )
+{
+    if ( !defaultName || !*defaultName ) return;
+    
+    NSString *defaultNameString = [NSString stringWithUTF8String:defaultName];
+    [dialog setNameFieldStringValue:defaultNameString];
 }
 
 
@@ -112,10 +120,10 @@ void NFD_Quit(void) {}
 
 
 
-nfdresult_t NFD_OpenDialogN( const nfdnfilteritem_t *filterList,
+nfdresult_t NFD_OpenDialogN( nfdnchar_t **outPath,
+                             const nfdnfilteritem_t *filterList,
                              nfdfiltersize_t filterCount,
-                             const nfdnchar_t *defaultPath,
-                             nfdnchar_t **outPath )
+                             const nfdnchar_t *defaultPath )
 {
     nfdresult_t result = NFD_CANCEL;
     @autoreleasepool {
@@ -153,10 +161,10 @@ nfdresult_t NFD_OpenDialogN( const nfdnfilteritem_t *filterList,
 }
 
 
-nfdresult_t NFD_OpenDialogMultipleN( const nfdnfilteritem_t *filterList,
+nfdresult_t NFD_OpenDialogMultipleN( const nfdpathset_t **outPaths,
+                                     const nfdnfilteritem_t *filterList,
                                      nfdfiltersize_t filterCount,
-                                     const nfdnchar_t *defaultPath,
-                                     const nfdpathset_t **outPaths )
+                                     const nfdnchar_t *defaultPath )
 {
     nfdresult_t result = NFD_CANCEL;
     @autoreleasepool {
@@ -190,10 +198,11 @@ nfdresult_t NFD_OpenDialogMultipleN( const nfdnfilteritem_t *filterList,
 }
 
 
-nfdresult_t NFD_SaveDialogN( const nfdnfilteritem_t *filterList,
+nfdresult_t NFD_SaveDialogN( nfdnchar_t **outPath,
+                             const nfdnfilteritem_t *filterList,
                              nfdfiltersize_t filterCount,
                              const nfdnchar_t *defaultPath,
-                             nfdnchar_t **outPath )
+                             const nfdnchar_t *defaultName )
 {
     nfdresult_t result = NFD_CANCEL;
     @autoreleasepool {
@@ -209,6 +218,9 @@ nfdresult_t NFD_SaveDialogN( const nfdnfilteritem_t *filterList,
         
         // Set the starting directory
         SetDefaultPath(dialog, defaultPath);
+        
+        // Set the default file name
+        SetDefaultName(dialog, defaultName);
         
         if ( [dialog runModal] == NSModalResponseOK )
         {
@@ -232,8 +244,8 @@ nfdresult_t NFD_SaveDialogN( const nfdnfilteritem_t *filterList,
     return result;
 }
 
-nfdresult_t NFD_PickFolderN( const nfdnchar_t *defaultPath,
-                             nfdnchar_t **outPath )
+nfdresult_t NFD_PickFolderN( nfdnchar_t **outPath,
+                             const nfdnchar_t *defaultPath )
 {
     nfdresult_t result = NFD_CANCEL;
     @autoreleasepool {
