@@ -18,7 +18,7 @@ int main( void )
     nfdfilteritem_t filterItem[2] = { { "Source code", "c,cpp,cc" },{ "Header", "h,hpp" } };
 
     // show the dialog
-    nfdresult_t result = NFD_SaveDialog(filterItem, 2, NULL, "Untitled.c", &savePath );
+    nfdresult_t result = NFD_SaveDialog(&savePath, filterItem, 2, NULL, "Untitled.c");
     if ( result == NFD_OKAY )
     {
         puts("Success!");

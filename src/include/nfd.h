@@ -60,36 +60,36 @@ void NFD_Quit(void);
 /* It is the caller's responsibility to free `outPath` via NFD_FreePathN() if this function returns NFD_OKAY */
 /* If filterCount is zero, filterList is ignored (you can use NULL) */
 /* If defaultPath is NULL, the operating system will decide */
-nfdresult_t NFD_OpenDialogN( const nfdnfilteritem_t *filterList,
+nfdresult_t NFD_OpenDialogN( nfdnchar_t **outPath,
+                             const nfdnfilteritem_t *filterList,
                              nfdfiltersize_t filterCount,
-                             const nfdnchar_t *defaultPath,
-                             nfdnchar_t **outPath );
+                             const nfdnchar_t *defaultPath );
 
 /* multiple file open dialog */    
 /* It is the caller's responsibility to free `outPaths` via NFD_PathSet_Free() if this function returns NFD_OKAY */
 /* If filterCount is zero, filterList is ignored (you can use NULL) */
 /* If defaultPath is NULL, the operating system will decide */
-nfdresult_t NFD_OpenDialogMultipleN( const nfdnfilteritem_t *filterList,
+nfdresult_t NFD_OpenDialogMultipleN( const nfdpathset_t **outPaths,
+                                     const nfdnfilteritem_t *filterList,
                                      nfdfiltersize_t filterCount,
-                                     const nfdnchar_t *defaultPath,
-                                     const nfdpathset_t **outPaths );
+                                     const nfdnchar_t *defaultPath );
 
 /* save dialog */
 /* It is the caller's responsibility to free `outPath` via NFD_FreePathN() if this function returns NFD_OKAY */
 /* If filterCount is zero, filterList is ignored (you can use NULL) */
 /* If defaultPath is NULL, the operating system will decide */
-nfdresult_t NFD_SaveDialogN( const nfdnfilteritem_t *filterList,
+nfdresult_t NFD_SaveDialogN( nfdnchar_t **outPath,
+                             const nfdnfilteritem_t *filterList,
                              nfdfiltersize_t filterCount,
                              const nfdnchar_t *defaultPath,
-                             const nfdnchar_t *defaultName,
-                             nfdnchar_t **outPath );
+                             const nfdnchar_t *defaultName );
 
 
 /* select folder dialog */
 /* It is the caller's responsibility to free `outPath` via NFD_FreePathN() if this function returns NFD_OKAY */
 /* If defaultPath is NULL, the operating system will decide */
-nfdresult_t NFD_PickFolderN( const nfdnchar_t *defaultPath,
-                             nfdnchar_t **outPath );
+nfdresult_t NFD_PickFolderN( nfdnchar_t **outPath,
+                             const nfdnchar_t *defaultPath );
 
 
 /* Get last error -- set when nfdresult_t returns NFD_ERROR */
@@ -148,31 +148,31 @@ void NFD_FreePathU8(nfdu8char_t *outPath);
 
 /* single file open dialog */
 /* It is the caller's responsibility to free `outPath` via NFD_FreePathU8() if this function returns NFD_OKAY */
-nfdresult_t NFD_OpenDialogU8( const nfdu8filteritem_t *filterList,
+nfdresult_t NFD_OpenDialogU8( nfdu8char_t **outPath,
+                              const nfdu8filteritem_t *filterList,
                               nfdfiltersize_t count,
-                              const nfdu8char_t *defaultPath,
-                              nfdu8char_t **outPath );
+                              const nfdu8char_t *defaultPath );
 
 /* multiple file open dialog */    
 /* It is the caller's responsibility to free `outPaths` via NFD_PathSet_Free() if this function returns NFD_OKAY */
-nfdresult_t NFD_OpenDialogMultipleU8( const nfdu8filteritem_t *filterList,
+nfdresult_t NFD_OpenDialogMultipleU8( const nfdpathset_t **outPaths,
+                                      const nfdu8filteritem_t *filterList,
                                       nfdfiltersize_t count,
-                                      const nfdu8char_t *defaultPath,
-                                      const nfdpathset_t **outPaths );
+                                      const nfdu8char_t *defaultPath );
 
 /* save dialog */
 /* It is the caller's responsibility to free `outPath` via NFD_FreePathU8() if this function returns NFD_OKAY */
-nfdresult_t NFD_SaveDialogU8( const nfdu8filteritem_t *filterList,
+nfdresult_t NFD_SaveDialogU8( nfdu8char_t **outPath,
+                              const nfdu8filteritem_t *filterList,
                               nfdfiltersize_t count,
                               const nfdu8char_t *defaultPath,
-                              const nfdu8char_t *defaultName,
-                              nfdu8char_t **outPath );
+                              const nfdu8char_t *defaultName );
 
 
 /* select folder dialog */
 /* It is the caller's responsibility to free `outPath` via NFD_FreePathU8() if this function returns NFD_OKAY */
-nfdresult_t NFD_PickFolderU8( const nfdu8char_t *defaultPath,
-                              nfdu8char_t **outPath );
+nfdresult_t NFD_PickFolderU8( nfdu8char_t **outPath,
+                              const nfdu8char_t *defaultPath );
 
 /* Get the UTF-8 path at offset index */
 /* It is the caller's responsibility to free `outPath` via NFD_FreePathU8() if this function returns NFD_OKAY */

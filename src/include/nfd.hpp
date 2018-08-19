@@ -35,20 +35,20 @@ namespace NFD {
         ::NFD_FreePathN(outPath);
     }
 
-    inline nfdresult_t OpenDialog(const nfdnfilteritem_t *filterList, nfdfiltersize_t filterCount, const nfdnchar_t *defaultPath, nfdnchar_t *&outPath) noexcept {
-        return ::NFD_OpenDialogN(filterList, filterCount, defaultPath, &outPath);
+    inline nfdresult_t OpenDialog(nfdnchar_t *&outPath, const nfdnfilteritem_t *filterList = nullptr, nfdfiltersize_t filterCount = 0, const nfdnchar_t *defaultPath = nullptr) noexcept {
+        return ::NFD_OpenDialogN(&outPath, filterList, filterCount, defaultPath);
     }
 
-    inline nfdresult_t OpenDialogMultiple(const nfdnfilteritem_t *filterList, nfdfiltersize_t filterCount, const nfdnchar_t *defaultPath, const nfdpathset_t *&outPaths) noexcept {
-        return ::NFD_OpenDialogMultipleN(filterList, filterCount, defaultPath, &outPaths);
+    inline nfdresult_t OpenDialogMultiple(const nfdpathset_t *&outPaths, const nfdnfilteritem_t *filterList = nullptr, nfdfiltersize_t filterCount = 0, const nfdnchar_t *defaultPath = nullptr) noexcept {
+        return ::NFD_OpenDialogMultipleN(&outPaths, filterList, filterCount, defaultPath);
     }
 
-    inline nfdresult_t SaveDialog(const nfdnfilteritem_t *filterList, nfdfiltersize_t filterCount, const nfdnchar_t *defaultPath, nfdnchar_t *&outPath) noexcept {
-        return ::NFD_SaveDialogN(filterList, filterCount, defaultPath, &outPath);
+    inline nfdresult_t SaveDialog(nfdnchar_t *&outPath, const nfdnfilteritem_t *filterList = nullptr, nfdfiltersize_t filterCount = 0, const nfdnchar_t *defaultPath = nullptr, const nfdnchar_t *defaultName = nullptr) noexcept {
+        return ::NFD_SaveDialogN(&outPath, filterList, filterCount, defaultPath, defaultName);
     }
 
-    inline nfdresult_t PickFolder(const nfdnchar_t *defaultPath, nfdnchar_t *&outPath) noexcept {
-        return ::NFD_PickFolderN(defaultPath, &outPath);
+    inline nfdresult_t PickFolder(nfdnchar_t *&outPath, const nfdnchar_t *defaultPath = nullptr) noexcept {
+        return ::NFD_PickFolderN(&outPath, defaultPath);
     }
 
     inline const char *GetError() noexcept {
@@ -84,20 +84,20 @@ namespace NFD {
         ::NFD_FreePathU8(outPath);
     }
 
-    inline nfdresult_t OpenDialog(const nfdu8filteritem_t *filterList, nfdfiltersize_t count, const nfdu8char_t *defaultPath, nfdu8char_t *&outPath) noexcept {
-        return ::NFD_OpenDialogU8(filterList, count, defaultPath, &outPath);
+    inline nfdresult_t OpenDialog(nfdu8char_t *&outPath, const nfdu8filteritem_t *filterList = nullptr, nfdfiltersize_t count = 0, const nfdu8char_t *defaultPath = nullptr) noexcept {
+        return ::NFD_OpenDialogU8(&outPath, filterList, count, defaultPath);
     }
 
-    inline nfdresult_t OpenDialogMultiple(const nfdu8filteritem_t *filterList, nfdfiltersize_t count, const nfdu8char_t *defaultPath, const nfdpathset_t *&outPaths) noexcept {
-        return ::NFD_OpenDialogMultipleU8(filterList, count, defaultPath, &outPaths);
+    inline nfdresult_t OpenDialogMultiple(const nfdpathset_t *&outPaths, const nfdu8filteritem_t *filterList = nullptr, nfdfiltersize_t count = 0, const nfdu8char_t *defaultPath = nullptr) noexcept {
+        return ::NFD_OpenDialogMultipleU8(&outPaths, filterList, count, defaultPath);
     }
 
-    inline nfdresult_t SaveDialog(const nfdu8filteritem_t *filterList, nfdfiltersize_t count, const nfdu8char_t *defaultPath, nfdu8char_t *&outPath) noexcept {
-        return ::NFD_SaveDialogU8(filterList, count, defaultPath, &outPath);
+    inline nfdresult_t SaveDialog(nfdu8char_t *&outPath, const nfdu8filteritem_t *filterList = nullptr, nfdfiltersize_t count = 0, const nfdu8char_t *defaultPath = nullptr, const nfdu8char_t *defaultName = nullptr) noexcept {
+        return ::NFD_SaveDialogU8(&outPath, filterList, count, defaultPath, defaultName);
     }
 
-    inline nfdresult_t PickFolder(const nfdu8char_t *defaultPath, nfdu8char_t *&outPath) noexcept {
-        return ::NFD_PickFolderU8(defaultPath, &outPath);
+    inline nfdresult_t PickFolder(nfdu8char_t *&outPath, const nfdu8char_t *defaultPath = nullptr) noexcept {
+        return ::NFD_PickFolderU8(&outPath, defaultPath);
     }
 
     namespace PathSet {
@@ -166,36 +166,36 @@ namespace NFD {
     typedef std::unique_ptr<nfdu8char_t, PathSetPathDeleter<nfdu8char_t>> UniquePathSetPathU8;
 
     
-    inline nfdresult_t OpenDialog(const nfdnfilteritem_t* filterList, nfdfiltersize_t filterCount, const nfdnchar_t* defaultPath, UniquePathN& outPath) noexcept {
+    inline nfdresult_t OpenDialog(UniquePathN& outPath, const nfdnfilteritem_t* filterList = nullptr, nfdfiltersize_t filterCount = 0, const nfdnchar_t* defaultPath = nullptr) noexcept {
         nfdnchar_t* out;
-        nfdresult_t res = OpenDialog(filterList, filterCount, defaultPath, out);
+        nfdresult_t res = OpenDialog(out, filterList, filterCount, defaultPath);
         if (res == NFD_OKAY) {
             outPath.reset(out);
         }
         return res;
     }
 
-    inline nfdresult_t OpenDialogMultiple(const nfdnfilteritem_t* filterList, nfdfiltersize_t filterCount, const nfdnchar_t* defaultPath, UniquePathSet& outPaths) noexcept {
+    inline nfdresult_t OpenDialogMultiple(UniquePathSet& outPaths, const nfdnfilteritem_t* filterList = nullptr, nfdfiltersize_t filterCount = 0, const nfdnchar_t* defaultPath = nullptr) noexcept {
         const nfdpathset_t* out;
-        nfdresult_t res = OpenDialogMultiple(filterList, filterCount, defaultPath, out);
+        nfdresult_t res = OpenDialogMultiple(out, filterList, filterCount, defaultPath);
         if (res == NFD_OKAY) {
             outPaths.reset(out);
         }
         return res;
     }
 
-    inline nfdresult_t SaveDialog(const nfdnfilteritem_t* filterList, nfdfiltersize_t filterCount, const nfdnchar_t* defaultPath, UniquePathN& outPath) noexcept {
+    inline nfdresult_t SaveDialog(UniquePathN& outPath, const nfdnfilteritem_t* filterList = nullptr, nfdfiltersize_t filterCount = 0, const nfdnchar_t* defaultPath = nullptr, const nfdnchar_t* defaultName = nullptr) noexcept {
         nfdnchar_t* out;
-        nfdresult_t res = SaveDialog(filterList, filterCount, defaultPath, out);
+        nfdresult_t res = SaveDialog(out, filterList, filterCount, defaultPath, defaultName);
         if (res == NFD_OKAY) {
             outPath.reset(out);
         }
         return res;
     }
 
-    inline nfdresult_t PickFolder(const nfdnchar_t* defaultPath, UniquePathN outPath) noexcept {
+    inline nfdresult_t PickFolder(UniquePathN outPath, const nfdnchar_t* defaultPath = nullptr) noexcept {
         nfdnchar_t* out;
-        nfdresult_t res = PickFolder(defaultPath, out);
+        nfdresult_t res = PickFolder(out, defaultPath);
         if (res == NFD_OKAY) {
             outPath.reset(out);
         }
@@ -203,36 +203,36 @@ namespace NFD {
     }
 
 #ifdef NFD_DIFFERENT_NATIVE_FUNCTIONS
-    inline nfdresult_t OpenDialog(const nfdu8filteritem_t* filterList, nfdfiltersize_t filterCount, const nfdu8char_t* defaultPath, UniquePathU8& outPath) noexcept {
+    inline nfdresult_t OpenDialog(UniquePathU8& outPath, const nfdu8filteritem_t* filterList = nullptr, nfdfiltersize_t filterCount = 0, const nfdu8char_t* defaultPath = nullptr) noexcept {
         nfdu8char_t* out;
-        nfdresult_t res = OpenDialog(filterList, filterCount, defaultPath, out);
+        nfdresult_t res = OpenDialog(out, filterList, filterCount, defaultPath);
         if (res == NFD_OKAY) {
             outPath.reset(out);
         }
         return res;
     }
 
-    inline nfdresult_t OpenDialogMultiple(const nfdu8filteritem_t* filterList, nfdfiltersize_t filterCount, const nfdu8char_t* defaultPath, UniquePathSet& outPaths) noexcept {
+    inline nfdresult_t OpenDialogMultiple(UniquePathSet& outPaths, const nfdu8filteritem_t* filterList = nullptr, nfdfiltersize_t filterCount = 0, const nfdu8char_t* defaultPath = nullptr) noexcept {
         const nfdpathset_t* out;
-        nfdresult_t res = OpenDialogMultiple(filterList, filterCount, defaultPath, out);
+        nfdresult_t res = OpenDialogMultiple(out, filterList, filterCount, defaultPath);
         if (res == NFD_OKAY) {
             outPaths.reset(out);
         }
         return res;
     }
 
-    inline nfdresult_t SaveDialog(const nfdu8filteritem_t* filterList, nfdfiltersize_t filterCount, const nfdu8char_t* defaultPath, UniquePathU8& outPath) noexcept {
+    inline nfdresult_t SaveDialog(UniquePathU8& outPath, const nfdu8filteritem_t* filterList = nullptr, nfdfiltersize_t filterCount = 0, const nfdu8char_t* defaultPath = nullptr, const nfdu8char_t* defaultName = nullptr) noexcept {
         nfdu8char_t* out;
-        nfdresult_t res = SaveDialog(filterList, filterCount, defaultPath, out);
+        nfdresult_t res = SaveDialog(out, filterList, filterCount, defaultPath, defaultName);
         if (res == NFD_OKAY) {
             outPath.reset(out);
         }
         return res;
     }
 
-    inline nfdresult_t PickFolder(const nfdu8char_t* defaultPath, UniquePathU8 outPath) noexcept {
+    inline nfdresult_t PickFolder(UniquePathU8 outPath, const nfdu8char_t* defaultPath = nullptr) noexcept {
         nfdu8char_t* out;
-        nfdresult_t res = PickFolder(defaultPath, out);
+        nfdresult_t res = PickFolder(out, defaultPath);
         if (res == NFD_OKAY) {
             outPath.reset(out);
         }
