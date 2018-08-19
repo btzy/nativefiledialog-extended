@@ -284,6 +284,14 @@ namespace {
         to comment out. -ml */
         gtk_file_chooser_set_current_folder(chooser, defaultPath);
     }
+    
+    void SetDefaultName(GtkFileChooser *chooser, const char *defaultName)
+    {
+        if (!defaultName || !*defaultName)
+            return;
+        
+        gtk_file_chooser_set_current_name(chooser, defaultName);
+    }
 
     void WaitForCleanup()
     {
@@ -379,10 +387,10 @@ void NFD_FreePathN(nfdnchar_t* filePath) {
     g_free(filePath);
 }
 
-nfdresult_t NFD_OpenDialogN( const nfdnfilteritem_t *filterList,
-                             nfdfiltersize_t count,
-                             const nfdnchar_t *defaultPath,
-                             nfdnchar_t **outPath )
+nfdresult_t NFD_OpenDialogN( nfdnchar_t **outPath,
+                             const nfdnfilteritem_t *filterList,
+                             nfdfiltersize_t filterCount,
+                             const nfdnchar_t *defaultPath )
 {
     GtkWidget* widget = gtk_file_chooser_dialog_new(
         "Open File",
@@ -397,7 +405,7 @@ nfdresult_t NFD_OpenDialogN( const nfdnfilteritem_t *filterList,
     Widget_Guard widgetGuard(widget);
 
     /* Build the filter list */
-    AddFiltersToDialog(GTK_FILE_CHOOSER(widget), filterList, count);
+    AddFiltersToDialog(GTK_FILE_CHOOSER(widget), filterList, filterCount);
 
     /* Set the default path */
     SetDefaultPath(GTK_FILE_CHOOSER(widget), defaultPath);
@@ -413,10 +421,10 @@ nfdresult_t NFD_OpenDialogN( const nfdnfilteritem_t *filterList,
     }
 }
 
-nfdresult_t NFD_OpenDialogMultipleN( const nfdnfilteritem_t *filterList,
-                                     nfdfiltersize_t count,
-                                     const nfdnchar_t *defaultPath,
-                                     const nfdpathset_t **outPaths )
+nfdresult_t NFD_OpenDialogMultipleN( const nfdpathset_t **outPaths,
+                                     const nfdnfilteritem_t *filterList,
+                                     nfdfiltersize_t filterCount,
+                                     const nfdnchar_t *defaultPath )
 {
     GtkWidget* widget = gtk_file_chooser_dialog_new(
         "Open Files",
@@ -434,7 +442,7 @@ nfdresult_t NFD_OpenDialogMultipleN( const nfdnfilteritem_t *filterList,
     gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(widget), TRUE);
 
     /* Build the filter list */
-    AddFiltersToDialog(GTK_FILE_CHOOSER(widget), filterList, count);
+    AddFiltersToDialog(GTK_FILE_CHOOSER(widget), filterList, filterCount);
 
     /* Set the default path */
     SetDefaultPath(GTK_FILE_CHOOSER(widget), defaultPath);
@@ -451,10 +459,11 @@ nfdresult_t NFD_OpenDialogMultipleN( const nfdnfilteritem_t *filterList,
     }
 }
 
-nfdresult_t NFD_SaveDialogN( const nfdnfilteritem_t *filterList,
-                             nfdfiltersize_t count,
+nfdresult_t NFD_SaveDialogN( nfdnchar_t **outPath,
+                             const nfdnfilteritem_t *filterList,
+                             nfdfiltersize_t filterCount,
                              const nfdnchar_t *defaultPath,
-                             nfdnchar_t **outPath )
+                             const nfdnchar_t *defaultName )
 {
     GtkWidget* widget = gtk_file_chooser_dialog_new(
         "Save File",
@@ -475,10 +484,13 @@ nfdresult_t NFD_SaveDialogN( const nfdnfilteritem_t *filterList,
     /* Build the filter list */
     ButtonClickedArgs buttonClickedArgs;
     buttonClickedArgs.chooser = GTK_FILE_CHOOSER(widget);
-    buttonClickedArgs.map = AddFiltersToDialogWithMap(GTK_FILE_CHOOSER(widget), filterList, count);
+    buttonClickedArgs.map = AddFiltersToDialogWithMap(GTK_FILE_CHOOSER(widget), filterList, filterCount);
     
     /* Set the default path */
     SetDefaultPath(GTK_FILE_CHOOSER(widget), defaultPath);
+    
+    /* Set the default file name */
+    SetDefaultName(GTK_FILE_CHOOSER(widget), defaultName);
     
     /* set the handler to add file extension */
     gulong handlerID = g_signal_connect(G_OBJECT(saveButton), "pressed", G_CALLBACK(FileActivatedSignalHandler), static_cast<void*>(&buttonClickedArgs));
@@ -503,8 +515,8 @@ nfdresult_t NFD_SaveDialogN( const nfdnfilteritem_t *filterList,
     }
 }
 
-nfdresult_t NFD_PickFolderN( const nfdnchar_t *defaultPath,
-                             nfdnchar_t **outPath )
+nfdresult_t NFD_PickFolderN( nfdnchar_t **outPath,
+                             const nfdnchar_t *defaultPath )
 {
     GtkWidget* widget = gtk_file_chooser_dialog_new(
         "Select folder",
