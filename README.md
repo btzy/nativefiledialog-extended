@@ -11,16 +11,17 @@ Features:
 - Zlib licensed
 - Friendly names for filters (e.g. `C/C++ Source files (*.c;*.cpp)` instead of `(*.c;*.cpp)`) on platforms that support it
 - Automatically append file extension on platforms where users expect it
+- Support for setting a default folder path
+- Support for setting a default file name (e.g. `Untitled.c`)
 - Consistent UTF-8 support on all platforms
 - Native character set (UTF-16 `wchar_t`) support on Windows
 - Initialization and de-initialization of platform library (e.g. COM (Windows) / GTK (Linux)) decoupled from dialog functions, so applications can choose when to initialize/de-initialize
 - Multiple file selection support (for file open dialog)
-- Support setting a default file path
 - Support for Vista's modern `IFileDialog` on Windows
 - No third party dependencies
 - Visual Studio and Xcode project files
 - Works alongside [SDL2](http://www.libsdl.org) on all platforms
-- Optional C++ wrapper with `unique_ptr` auto-freeing semantics, for those using this library from C++
+- Optional C++ wrapper with `unique_ptr` auto-freeing semantics and optional parameters, for those using this library from C++
 
 **Comparison with original Native File Dialog:**
 
@@ -30,9 +31,10 @@ Features added in Native File Dialog Extended:
 
 - Friendly names for filters
 - Automatically appending file extensions
+- Support for setting a default file name
 - Native character set (UTF-16 `wchar_t`) support on Windows
 - Initialization and de-initialization of platform library decoupled from file dialog functions
-- Optional C++ wrapper with `unique_ptr` auto-freeing semantics
+- Optional C++ wrapper with `unique_ptr` auto-freeing semantics and optional parameters
 
 There is also significant code refractoring, especially for the Windows implementation.
 
@@ -52,7 +54,7 @@ int main( void )
 
     nfdchar_t *outPath;
     nfdfilteritem_t filterItem[2] = { { "Source code", "c,cpp,cc" }, { "Headers", "h,hpp" } };
-    nfdresult_t result = NFD_OpenDialog(filterItem, 2, NULL, &outPath);
+    nfdresult_t result = NFD_OpenDialog(&outPath, filterItem, 2, NULL);
     if ( result == NFD_OKAY )
     {
         puts("Success!");
@@ -163,6 +165,8 @@ Macros that might be defined by `nfd.h`:
 # Reporting Bugs #
 
 Please use the Github issue tracker to report bugs or to contribute to this repository.
+
+As this is a new project, it hasn't been battle-tested yet.  Feel free to submit bug reports of any kind.
 
 # Credit #
 
