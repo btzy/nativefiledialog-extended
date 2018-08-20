@@ -111,7 +111,7 @@ On Linux, you have the option of compiling and linking against GTK+.  If you use
 On Mac OS, add `AppKit` to the list of frameworks.
 
 ### Windows ####
-On Windows, ensure you are building against `comctl32.lib`.
+On Windows, ensure you are building against `comctl32.lib` and `uuid.lib`.
 
 # Usage
 
