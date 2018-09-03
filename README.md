@@ -38,8 +38,6 @@ Features added in Native File Dialog Extended:
 
 There is also significant code refractoring, especially for the Windows implementation.
 
-This library was originally designed for [Circuit Sandbox](https://github.com/btzy/circuit-sandbox) (an SDL2 game) due to the shortcomings of Native File Dialog.
-
 # Basic Usage
 
 ```C
