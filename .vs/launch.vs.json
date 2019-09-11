@@ -1,0 +1,12 @@
+{
+  "version": "0.2.1",
+  "defaults": {},
+  "configurations": [
+    {
+      "type": "default",
+      "project": "CMakeLists.txt",
+      "projectTarget": "test_opendialog_c.exe (test\\test_opendialog_c.exe)",
+      "name": "test_opendialog_c.exe (test\\test_opendialog_c.exe)"
+    }
+  ]
+}
