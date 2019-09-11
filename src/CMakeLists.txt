@@ -16,6 +16,7 @@ if(nfd_PLATFORM STREQUAL PLATFORM_LINUX)
 endif()
 
 if(nfd_PLATFORM STREQUAL PLATFORM_MACOS)
+  find_library(APPKIT_LIBRARY AppKit)
   list(APPEND SOURCE_FILES nfd_cocoa.m)
 endif()
 
@@ -32,4 +33,10 @@ if(nfd_PLATFORM STREQUAL PLATFORM_LINUX)
     PRIVATE ${GTK3_INCLUDE_DIRS})
   target_link_libraries(${TARGET_NAME}
     PRIVATE ${GTK3_LIBRARIES})
+endif()
+
+
+if(nfd_PLATFORM STREQUAL PLATFORM_MACOS)
+  target_link_libraries(${TARGET_NAME}
+    PRIVATE ${APPKIT_LIBRARY})
 endif()
