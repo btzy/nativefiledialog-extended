@@ -1,8 +1,7 @@
 # VS CMake default output
-/.vs/ProjectSettings.json
-/.vs/*.sqlite
-/.vs/nativefiledialog-extended/
+/.vs/
 /out/
+/CMakeSettings.json
 
 # Mac OS X rubbish
 .DS_Store
