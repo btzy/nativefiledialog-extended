@@ -5,6 +5,7 @@ set(TEST_LIST
   test_opendialogmultiple.c
   test_opendialogmultiple_cpp.cpp
   test_pickfolder.c
+  test_pickfolder_cpp.cpp
   test_savedialog.c)
   
 foreach (TEST ${TEST_LIST})
