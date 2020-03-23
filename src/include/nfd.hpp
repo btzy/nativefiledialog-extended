@@ -193,7 +193,7 @@ namespace NFD {
         return res;
     }
 
-    inline nfdresult_t PickFolder(UniquePathN outPath, const nfdnchar_t* defaultPath = nullptr) noexcept {
+    inline nfdresult_t PickFolder(UniquePathN& outPath, const nfdnchar_t* defaultPath = nullptr) noexcept {
         nfdnchar_t* out;
         nfdresult_t res = PickFolder(out, defaultPath);
         if (res == NFD_OKAY) {
@@ -230,7 +230,7 @@ namespace NFD {
         return res;
     }
 
-    inline nfdresult_t PickFolder(UniquePathU8 outPath, const nfdu8char_t* defaultPath = nullptr) noexcept {
+    inline nfdresult_t PickFolder(UniquePathU8& outPath, const nfdu8char_t* defaultPath = nullptr) noexcept {
         nfdu8char_t* out;
         nfdresult_t res = PickFolder(out, defaultPath);
         if (res == NFD_OKAY) {
