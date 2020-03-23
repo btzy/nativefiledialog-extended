@@ -35,8 +35,16 @@ if(nfd_PLATFORM STREQUAL PLATFORM_LINUX)
     PRIVATE ${GTK3_LIBRARIES})
 endif()
 
-
 if(nfd_PLATFORM STREQUAL PLATFORM_MACOS)
   target_link_libraries(${TARGET_NAME}
     PRIVATE ${APPKIT_LIBRARY})
+endif()
+
+if(nfd_COMPILER STREQUAL COMPILER_MSVC)
+  target_compile_options(${TARGET_NAME} PRIVATE /EHs-c- /GR-)
+  set_property(TARGET ${TARGET_NAME} APPEND_STRING PROPERTY STATIC_LIBRARY_OPTIONS /NODEFAULTLIB)
+endif()
+
+if(nfd_COMPILER STREQUAL COMPILER_GNU)
+  target_compile_options(${TARGET_NAME} PRIVATE -fno-exceptions -fno-rtti)
 endif()
