@@ -1,3 +1,4 @@
+
 # Native File Dialog Extended
 
 A small C library with that portably invokes native file open, folder select and save dialogs.  Write dialog code once and have it pop up native dialogs on all supported platforms.  Avoid linking large dependencies like wxWidgets and Qt.
@@ -19,7 +20,7 @@ Features:
 - Multiple file selection support (for file open dialog)
 - Support for Vista's modern `IFileDialog` on Windows
 - No third party dependencies
-- Visual Studio and Xcode project files
+- Modern CMake build system
 - Works alongside [SDL2](http://www.libsdl.org) on all platforms
 - Optional C++ wrapper with `unique_ptr` auto-freeing semantics and optional parameters, for those using this library from C++
 
@@ -34,6 +35,7 @@ Features added in Native File Dialog Extended:
 - Support for setting a default file name
 - Native character set (UTF-16 `wchar_t`) support on Windows
 - Initialization and de-initialization of platform library decoupled from file dialog functions
+- Modern CMake build system
 - Optional C++ wrapper with `unique_ptr` auto-freeing semantics and optional parameters
 
 There is also significant code refractoring, especially for the Windows implementation.
@@ -81,23 +83,30 @@ See [NFD.h](src/include/nfd.h) for more options.
 
 # Building ##
 
-Project files are available for Visual Studio (Windows) and Xcode (Mac) in the `build/` directory.  Makefiles are available for Linux.
+## Building the Library
 
-`nfd.a` will be built for release builds, and `nfd_d.a` will be built for debug builds.
+Native File Dialog Extended uses [CMake]([https://cmake.org/](https://cmake.org/)).  Before compiling your programs, you need to build the static library.
 
-## Makefiles ###
+To build the static library, execute the following commands in a terminal (starting from the project root directory):
+```
+mkdir build
+cd build
+cmake -DCMAKE_BUILD_TYPE=Release ..
+cmake --build .
+```
 
-The makefile offers five options, with `release_x64` as the default.
+The above commands will make a `build` directory, and build the project (in release mode) there.  If you are developing NFD, you may want to do `-DCMAKE_BUILD_TYPE=Debug` to build a debug version of the library instead.
 
-    make config=release_x86
-    make config=release_x64
-    make config=debug_x86
-    make config=debug_x64
+### Visual Studio on Windows
+
+Recent versions of Visual Studio have CMake support built into the IDE.  You should be able to "Open Folder" in the project root directory, and Visual Studio will recognize and configure the project appropriately.  From there, you will be able to set configurations for Debug vs Release, and for x86 vs x64.  For more information, see [the Microsoft Docs page]([https://docs.microsoft.com/en-us/cpp/build/cmake-projects-in-visual-studio?view=vs-2019](https://docs.microsoft.com/en-us/cpp/build/cmake-projects-in-visual-studio?view=vs-2019)).
+
+This has been tested to work on Visual Studio 2019, and it probably works on Visual Studio 2017 too.
 
 ## Compiling Your Programs ###
 
  1. Add `src/include` to your include search path.
- 2. Add `nfd.lib` or `nfd_d.lib` to the list of list of static libraries to link against (for release or debug, respectively).
+ 2. Add `nfd.lib` or `nfd_d.lib` to the list of static libraries to link against (for release or debug, respectively).
  3. Add `build/<debug|release>/<arch>` to the library search path.
 
 ### Linux ####
@@ -113,7 +122,7 @@ On Windows, ensure you are building against `comctl32.lib` and `uuid.lib`.
 
 # Usage
 
-See `NFD.h` for API calls.  See `tests/*.c` for example code.
+See `NFD.h` for API calls.  See  the `test` directory for example code (both C and C++).
 
 After compiling, `build/bin` contains compiled test programs.
 
@@ -137,7 +146,7 @@ A wildcard filter is always added to every dialog.
 
 *Note 3: On Linux, the file extension is appended (if missing) when the user presses down the "Save" button.  The appended file extension will remain visible to the user, even if an overwrite prompt is shown and the user then presses "Cancel".*
 
-*Note 4: On Windows, the default folder parameter is only used if there is no recently used folder available.  Otherwise, the default folder will be the folder that was last used.  Internally, the Windows implementation calls [IFileDialog::SetDefaultFolder(IShellItem)](https://docs.microsoft.com/en-us/windows/desktop/api/shobjidl_core/nf-shobjidl_core-ifiledialog-setdefaultfolder).*
+*Note 4: On Windows, the default folder parameter is only used if there is no recently used folder available.  Otherwise, the default folder will be the folder that was last used.  Internally, the Windows implementation calls [IFileDialog::SetDefaultFolder(IShellItem)](https://docs.microsoft.com/en-us/windows/desktop/api/shobjidl_core/nf-shobjidl_core-ifiledialog-setdefaultfolder).  This is usual Windows behaviour and users expect it.*
 
 ## Iterating Over PathSets
 
@@ -148,7 +157,7 @@ See [test_opendialogmultiple.c](test/test_opendialogmultiple.c).
 You can define the following macros *before* including `nfd.h`/`nfd.hpp`:
 
 - `NFD_NATIVE`: Define this before including `nfd.h` to make non-suffixed function names and typedefs (e.g. `NFD_OpenDialog`) aliases for the native functions (e.g. `NFD_OpenDialogN`) instead of aliases for the UTF-8 functions (e.g. `NFD_OpenDialogU8`).  This macro does not affect the C++ wrapper `nfd.hpp`.
-- `NFD_THROWS_EXCEPTIONS`: Define this before including `nfd.hpp` to make `NFD::Guard` construction throw `std::runtime_error` if `NFD_Init` fails.  Otherwise, there is no way to detect failure in `NFD::Guard` construction.
+- `NFD_THROWS_EXCEPTIONS`: (C++ only)  Define this before including `nfd.hpp` to make `NFD::Guard` construction throw `std::runtime_error` if `NFD_Init` fails.  Otherwise, there is no way to detect failure in `NFD::Guard` construction.
 
 Macros that might be defined by `nfd.h`:
 
@@ -157,7 +166,7 @@ Macros that might be defined by `nfd.h`:
 # Known Limitations #
 
  - No support for Windows XP's legacy dialogs such as `GetOpenFileName`.  (There are no plans to support this; you shouldn't be still using Windows XP anyway.)
- - Iterating the path set on Linux when opening multiple files is an O(N<sup>2</sup>) operation because Linux uses linked lists.
+ - Iterating the path set on Linux when opening multiple files is an O(N<sup>2</sup>) operation because Linux uses linked lists.  (This is not expected to cause significant slowdown unless the user wants to open thousands of files -- I would be surprised if there is a good use case where O(N) iteration is desired.  If you need this, please open an issue and tell me about what you're doing with this library.)
  - No Emscripten (WebAssembly) bindings.  (This might get implemented if I decide to port Circuit Sandbox for the web, but I don't think there is any way to implement a web-based folder picker.)
  - GTK dialogs don't set the existing window as parent, so if users click the existing window while the dialog is open then the dialog will go behind it.  GTK writes a warning to stdout or stderr about this.
  - This library is not compatible with the original Native File Dialog library.  Things might break if you use both in the same project.  (There are no plans to support this; you have to use one or the other.)
