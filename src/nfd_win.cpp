@@ -785,6 +785,13 @@ namespace {
         }
         return NFD_OKAY;
     }
+    void NormalizePathSeparator(nfdnchar_t* path) {
+        if (path) {
+            for (; *path; ++path) {
+                if (*path == L'/') *path = L'\\';
+            }
+        }
+    }
 }
 
 void NFD_FreePathU8(nfdu8char_t *outPath) {
@@ -802,9 +809,10 @@ nfdresult_t NFD_OpenDialogU8( nfdu8char_t **outPath,
         return NFD_ERROR;
     }
 
-    // convert the default path, but only if it is not nullptr
+    // convert and normalize the default path, but only if it is not nullptr
     FreeCheck_Guard<nfdnchar_t> defaultPathNGuard;
     ConvertU8ToNative(defaultPath, defaultPathNGuard);
+    NormalizePathSeparator(defaultPathNGuard.data);
 
     // call the native function
     nfdnchar_t *outPathN;
@@ -836,9 +844,10 @@ nfdresult_t NFD_OpenDialogMultipleU8( const nfdpathset_t **outPaths,
         return NFD_ERROR;
     }
 
-    // convert the default path, but only if it is not nullptr
+    // convert and normalize the default path, but only if it is not nullptr
     FreeCheck_Guard<nfdnchar_t> defaultPathNGuard;
     ConvertU8ToNative(defaultPath, defaultPathNGuard);
+    NormalizePathSeparator(defaultPathNGuard.data);
 
     // call the native function
     return NFD_OpenDialogMultipleN(outPaths, filterItemsNGuard.data, count, defaultPathNGuard.data);
@@ -858,9 +867,10 @@ nfdresult_t NFD_SaveDialogU8( nfdu8char_t **outPath,
         return NFD_ERROR;
     }
 
-    // convert the default path, but only if it is not nullptr
+    // convert and normalize the default path, but only if it is not nullptr
     FreeCheck_Guard<nfdnchar_t> defaultPathNGuard;
     ConvertU8ToNative(defaultPath, defaultPathNGuard);
+    NormalizePathSeparator(defaultPathNGuard.data);
 
     // convert the default name, but only if it is not nullptr
     FreeCheck_Guard<nfdnchar_t> defaultNameNGuard;
@@ -888,9 +898,10 @@ nfdresult_t NFD_SaveDialogU8( nfdu8char_t **outPath,
 nfdresult_t NFD_PickFolderU8( nfdu8char_t **outPath,
                               const nfdu8char_t *defaultPath )
 {
-    // convert the default path, but only if it is not nullptr
+    // convert and normalize the default path, but only if it is not nullptr
     FreeCheck_Guard<nfdnchar_t> defaultPathNGuard;
     ConvertU8ToNative(defaultPath, defaultPathNGuard);
+    NormalizePathSeparator(defaultPathNGuard.data);
 
     // call the native function
     nfdnchar_t *outPathN;
