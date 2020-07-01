@@ -11,6 +11,7 @@
 #include <assert.h>
 #include <string.h>
 #include <gtk/gtk.h>
+#include <stdlib.h>
 #include "nfd.h"
 
 
