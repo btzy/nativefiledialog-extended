@@ -1,6 +1,8 @@
 
 # Native File Dialog Extended
 
+![GitHub Actions](https://github.com/btzy/nativefiledialog-extended/workflows/build/badge.svg)
+
 A small C library with that portably invokes native file open, folder select and save dialogs.  Write dialog code once and have it pop up native dialogs on all supported platforms.  Avoid linking large dependencies like wxWidgets and Qt.
 
 This library is based on Michael Labbe's Native File Dialog ([mlabbe/nativefiledialog](https://github.com/mlabbe/nativefiledialog)).
