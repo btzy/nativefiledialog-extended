@@ -16,7 +16,7 @@ jobs:
     - name: Installing Dependencies
       run: sudo apt-get update && sudo apt-get install libgtk-3-dev
     - name: Configure
-      run: mkdir build && cd build && cmake -DCMAKE_CXX_FLAGS="-Wall -Wextra -pedantic" ..
+      run: mkdir build && cd build && cmake -DCMAKE_CXX_FLAGS="-Wall -Wextra -Werror -pedantic" ..
     - name: Build
       run: cmake --build build
   
@@ -29,7 +29,7 @@ jobs:
     - name: Installing Dependencies
       run: sudo apt-get update && sudo apt-get install libgtk-3-dev
     - name: Configure
-      run: mkdir build && cd build && cmake -DCMAKE_CXX_FLAGS="-Wall -Wextra -pedantic" ..
+      run: mkdir build && cd build && cmake -DCMAKE_CXX_FLAGS="-Wall -Wextra -Werror -pedantic" ..
     - name: Build
       run: cmake --build build
   
@@ -42,7 +42,7 @@ jobs:
     - name: Installing Dependencies
       run: sudo apt-get update && sudo apt-get install libgtk-3-dev
     - name: Configure
-      run: mkdir build && cd build && cmake -DCMAKE_CXX_FLAGS="-Wall -Wextra -pedantic" ..
+      run: mkdir build && cd build && cmake -DCMAKE_CXX_FLAGS="-Wall -Wextra -Werror -pedantic" ..
     - name: Build
       run: cmake --build build
   
@@ -53,7 +53,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Configure
-      run: mkdir build && cd build && cmake -DCMAKE_CXX_FLAGS="-Wall -Wextra -pedantic" ..
+      run: mkdir build && cd build && cmake -DCMAKE_CXX_FLAGS="-Wall -Wextra -Werror -pedantic" ..
     - name: Build
       run: cmake --build build
   
