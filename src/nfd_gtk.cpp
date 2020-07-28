@@ -70,17 +70,17 @@ namespace {
     
     // Does not own the filter and extension.
     struct Pair_GtkFileFilter_FileExtension {
-		GtkFileFilter* filter;
-		const nfdnchar_t* extensionBegin;
-		const nfdnchar_t* extensionEnd;
-	};
-	
-	struct ButtonClickedArgs {
-		Pair_GtkFileFilter_FileExtension* map;
-		GtkFileChooser* chooser;
-	};
-	
-	
+        GtkFileFilter* filter;
+        const nfdnchar_t* extensionBegin;
+        const nfdnchar_t* extensionEnd;
+    };
+    
+    struct ButtonClickedArgs {
+        Pair_GtkFileFilter_FileExtension* map;
+        GtkFileChooser* chooser;
+    };
+    
+    
     void AddFiltersToDialog(GtkFileChooser* chooser, const nfdnfilteritem_t* filterList, nfdfiltersize_t filterCount) {
         
         if (filterCount) {
@@ -231,8 +231,8 @@ namespace {
                         
                         // store current pointer in map (if it's the first one)
                         if (map[index].extensionEnd == nullptr) {
-							map[index].extensionEnd = p_spec;
-						}
+                            map[index].extensionEnd = p_spec;
+                        }
 
                         if (*p_spec) {
                             // update the extension start point
@@ -314,47 +314,47 @@ namespace {
         (void)saveButton; // silence the unused arg warning
 
         ButtonClickedArgs* args = static_cast<ButtonClickedArgs*>(userdata);
-		GtkFileChooser* chooser = args->chooser;
-		char* currentFileName = gtk_file_chooser_get_current_name(chooser);
-		if (*currentFileName) { // string is not empty
-			
-			// find a '.' in the file name
-			const char* p_period = currentFileName;
-			for (;*p_period; ++p_period) {
-				if (*p_period == '.') {
-					break;
-				}
-			}
-			
-			if (!*p_period) { // there is no '.', so append the default extension
-				Pair_GtkFileFilter_FileExtension* filterMap = static_cast<Pair_GtkFileFilter_FileExtension*>(args->map);
-				GtkFileFilter* currentFilter = gtk_file_chooser_get_filter(chooser);
-				if (currentFilter) {
-					for (;filterMap->filter; ++filterMap) {
-						if (filterMap->filter == currentFilter) break;
-					}
-				}
-				if (filterMap->filter) {
-					// memory for appended string (including '.' and trailing '\0')
-					char* appendedFileName = NFDi_Malloc<char>(sizeof(char) * ((p_period - currentFileName) + (filterMap->extensionEnd - filterMap->extensionBegin) + 2));
-					char* p_fileName = copy(currentFileName, p_period, appendedFileName);
-					*p_fileName++ = '.';
-					p_fileName = copy(filterMap->extensionBegin, filterMap->extensionEnd, p_fileName);
-					*p_fileName++ = '\0';
-					
-					assert(p_fileName - appendedFileName == (p_period - currentFileName) + (filterMap->extensionEnd - filterMap->extensionBegin) + 2);
-					
-					// set the appended file name
-					gtk_file_chooser_set_current_name(chooser, appendedFileName);
-					
-					// free the memory
-					NFDi_Free(appendedFileName);
-				}
-			}
-		}
-		
-		// free the memory
-		g_free(currentFileName);
+        GtkFileChooser* chooser = args->chooser;
+        char* currentFileName = gtk_file_chooser_get_current_name(chooser);
+        if (*currentFileName) { // string is not empty
+            
+            // find a '.' in the file name
+            const char* p_period = currentFileName;
+            for (;*p_period; ++p_period) {
+                if (*p_period == '.') {
+                    break;
+                }
+            }
+            
+            if (!*p_period) { // there is no '.', so append the default extension
+                Pair_GtkFileFilter_FileExtension* filterMap = static_cast<Pair_GtkFileFilter_FileExtension*>(args->map);
+                GtkFileFilter* currentFilter = gtk_file_chooser_get_filter(chooser);
+                if (currentFilter) {
+                    for (;filterMap->filter; ++filterMap) {
+                        if (filterMap->filter == currentFilter) break;
+                    }
+                }
+                if (filterMap->filter) {
+                    // memory for appended string (including '.' and trailing '\0')
+                    char* appendedFileName = NFDi_Malloc<char>(sizeof(char) * ((p_period - currentFileName) + (filterMap->extensionEnd - filterMap->extensionBegin) + 2));
+                    char* p_fileName = copy(currentFileName, p_period, appendedFileName);
+                    *p_fileName++ = '.';
+                    p_fileName = copy(filterMap->extensionBegin, filterMap->extensionEnd, p_fileName);
+                    *p_fileName++ = '\0';
+                    
+                    assert(p_fileName - appendedFileName == (p_period - currentFileName) + (filterMap->extensionEnd - filterMap->extensionBegin) + 2);
+                    
+                    // set the appended file name
+                    gtk_file_chooser_set_current_name(chooser, appendedFileName);
+                    
+                    // free the memory
+                    NFDi_Free(appendedFileName);
+                }
+            }
+        }
+        
+        // free the memory
+        g_free(currentFileName);
     }
 }
 
@@ -497,15 +497,15 @@ nfdresult_t NFD_SaveDialogN( nfdnchar_t **outPath,
     
     /* set the handler to add file extension */
     gulong handlerID = g_signal_connect(G_OBJECT(saveButton), "pressed", G_CALLBACK(FileActivatedSignalHandler), static_cast<void*>(&buttonClickedArgs));
-	
-	/* invoke the dialog (blocks until dialog is closed) */
-	gint result = gtk_dialog_run(GTK_DIALOG(widget));
-	
-	/* unset the handler */
-	g_signal_handler_disconnect(G_OBJECT(saveButton), handlerID);
-	
-	/* free the filter map */
-	NFDi_Free(buttonClickedArgs.map);
+    
+    /* invoke the dialog (blocks until dialog is closed) */
+    gint result = gtk_dialog_run(GTK_DIALOG(widget));
+    
+    /* unset the handler */
+    g_signal_handler_disconnect(G_OBJECT(saveButton), handlerID);
+    
+    /* free the filter map */
+    NFDi_Free(buttonClickedArgs.map);
     
     if (result == GTK_RESPONSE_ACCEPT) {
         // write out the file name
