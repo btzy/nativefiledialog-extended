@@ -46,5 +46,5 @@ if(nfd_COMPILER STREQUAL COMPILER_MSVC)
 endif()
 
 if(nfd_COMPILER STREQUAL COMPILER_GNU)
-  target_compile_options(${TARGET_NAME} PRIVATE -fno-exceptions -fno-rtti)
+  target_compile_options(${TARGET_NAME} PRIVATE -nostdlib -fno-exceptions -fno-rtti)
 endif()
