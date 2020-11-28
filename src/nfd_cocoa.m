@@ -111,12 +111,21 @@ void NFD_FreePathN(nfdnchar_t *filePath)
     NFDi_Free((void*)filePath);
 }
 
+static NSApplicationActivationPolicy old_app_policy;
+
 nfdresult_t NFD_Init(void) {
+    NSApplication *app = [NSApplication sharedApplication];
+    old_app_policy = [app activationPolicy];
+    if (old_app_policy == NSApplicationActivationPolicyProhibited) {
+        if (![app setActivationPolicy:NSApplicationActivationPolicyAccessory]) return NFD_ERROR;
+    }
     return NFD_OKAY;
 }
 
 /* call this to de-initialize NFD, if NFD_Init returned NFD_OKAY */
-void NFD_Quit(void) {}
+void NFD_Quit(void) {
+    [[NSApplication sharedApplication] setActivationPolicy:old_app_policy];
+}
 
 
 
