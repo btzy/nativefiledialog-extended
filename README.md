@@ -181,7 +181,7 @@ As this is a new project, it hasn't been battle-tested yet.  Feel free to submit
 
 # Credit #
 
-Bernard Teo (me) for everything that wasn't from Michael Labbe's [Native File Dialog](https://github.com/mlabbe/nativefiledialog)).
+Bernard Teo (me) and other contributors for everything that wasn't from Michael Labbe's [Native File Dialog](https://github.com/mlabbe/nativefiledialog)).
 
 [Michael Labbe](https://github.com/mlabbe) for his awesome Native File Dialog library, and other contributors to that library.
 
