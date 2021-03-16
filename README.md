@@ -99,6 +99,8 @@ cmake --build .
 
 The above commands will make a `build` directory, and build the project (in release mode) there.  If you are developing NFD, you may want to do `-DCMAKE_BUILD_TYPE=Debug` to build a debug version of the library instead.
 
+If you want to build the sample programs, add `-DNFD_BUILD_TESTS=ON` (samples programs are not built by default).
+
 ### Visual Studio on Windows
 
 Recent versions of Visual Studio have CMake support built into the IDE.  You should be able to "Open Folder" in the project root directory, and Visual Studio will recognize and configure the project appropriately.  From there, you will be able to set configurations for Debug vs Release, and for x86 vs x64.  For more information, see [the Microsoft Docs page]([https://docs.microsoft.com/en-us/cpp/build/cmake-projects-in-visual-studio?view=vs-2019](https://docs.microsoft.com/en-us/cpp/build/cmake-projects-in-visual-studio?view=vs-2019)).
@@ -124,9 +126,9 @@ On Windows, ensure you are building against `comctl32.lib` and `uuid.lib`.
 
 # Usage
 
-See `NFD.h` for API calls.  See  the `test` directory for example code (both C and C++).
+See `NFD.h` for API calls.  See the `test` directory for example code (both C and C++).
 
-After compiling, `build/bin` contains compiled test programs.
+If you turned on the option to build the `test` directory (`-DNFD_BUILD_TESTS=ON`), then `build/bin` will contain the compiled test programs.
 
 ## File Filter Syntax
 
