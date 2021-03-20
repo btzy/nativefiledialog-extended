@@ -83,7 +83,7 @@ See [NFD.h](src/include/nfd.h) for more options.
 
 (TODO)
 
-# Building ##
+# Building
 
 ## CMake Projects
 If your project uses CMake,
@@ -119,17 +119,18 @@ and Visual Studio will recognize and configure the project appropriately.
 From there, you will be able to set configurations for Debug vs Release,
 and for x86 vs x64. 
 For more information, see [the Microsoft Docs page]([https://docs.microsoft.com/en-us/cpp/build/cmake-projects-in-visual-studio?view=vs-2019](https://docs.microsoft.com/en-us/cpp/build/cmake-projects-in-visual-studio?view=vs-2019)).
-This has been tested to work on Visual Studio 2019, and it probably works on Visual Studio 2017 too.
+This has been tested to work on Visual Studio 2019,
+and it probably works on Visual Studio 2017 too.
 
-### Compiling Your Programs ###
+### Compiling Your Programs
 
  1. Add `src/include` to your include search path.
  2. Add `nfd.lib` or `nfd_d.lib` to the list of static libraries to link against (for release or debug, respectively).
  3. Add `build/<debug|release>/<arch>` to the library search path.
 
-# Dependencies
+## Dependencies
 
-## Linux
+### Linux
 `apt-get libgtk-3-dev` installs the GTK+3 dependency on debian based systems.
 
 You have the option of compiling and linking against GTK+.
@@ -137,10 +138,10 @@ If you use it, the recommended way to compile is to include the arguments of `pk
 
 ~~Alternatively, you can use the Zenity backend by running the Makefile in `build/gmake_linux_zenity`.  Zenity runs the dialog in its own address space, but requires the user to have Zenity correctly installed and configured on their system.~~  Zenity has not been ported to Native File Dialog Extended yet.
 
-## MacOS
+### MacOS
 On Mac OS, add `AppKit` to the list of frameworks.
 
-## Windows
+### Windows
 On Windows, ensure you are building against `comctl32.lib` and `uuid.lib`.
 
 # Usage
