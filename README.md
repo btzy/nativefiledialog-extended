@@ -136,8 +136,6 @@ and it probably works on Visual Studio 2017 too.
 You have the option of compiling and linking against GTK+.
 If you use it, the recommended way to compile is to include the arguments of `pkg-config --cflags --libs gtk+-3.0`.
 
-~~Alternatively, you can use the Zenity backend by running the Makefile in `build/gmake_linux_zenity`.  Zenity runs the dialog in its own address space, but requires the user to have Zenity correctly installed and configured on their system.~~  Zenity has not been ported to Native File Dialog Extended yet.
-
 ### MacOS
 On Mac OS, add `AppKit` to the list of frameworks.
 
