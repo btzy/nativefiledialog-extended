@@ -85,11 +85,17 @@ See [NFD.h](src/include/nfd.h) for more options.
 
 # Building ##
 
-## Building the Library
+## CMake Projects
+If your project uses CMake,
+simply add the following lines to your CMakeLists.txt:
+```
+add_subdirectory(path/to/nativefiledialog-extended)
+target_link_libraries(MyProgram PRIVATE nfd)
+```
 
-Native File Dialog Extended uses [CMake]([https://cmake.org/](https://cmake.org/)).  Before compiling your programs, you need to build the static library.
-
-To build the static library, execute the following commands in a terminal (starting from the project root directory):
+## Standalone Library
+To build the static library, execute the following commands in a terminal
+(starting from the project root directory):
 ```
 mkdir build
 cd build
@@ -97,13 +103,21 @@ cmake -DCMAKE_BUILD_TYPE=Release ..
 cmake --build .
 ```
 
-The above commands will make a `build` directory, and build the project (in release mode) there.  If you are developing NFD, you may want to do `-DCMAKE_BUILD_TYPE=Debug` to build a debug version of the library instead.
+The above commands will make a `build` directory,
+and build the project (in release mode) there.
+If you are developing NFD, you may want to do `-DCMAKE_BUILD_TYPE=Debug`
+to build a debug version of the library instead.
 
-If you want to build the sample programs, add `-DNFD_BUILD_TESTS=ON` (samples programs are not built by default).
+If you want to build the sample programs,
+add `-DNFD_BUILD_TESTS=ON` (samples programs are not built by default).
 
 ### Visual Studio on Windows
-
-Recent versions of Visual Studio have CMake support built into the IDE.  You should be able to "Open Folder" in the project root directory, and Visual Studio will recognize and configure the project appropriately.  From there, you will be able to set configurations for Debug vs Release, and for x86 vs x64.  For more information, see [the Microsoft Docs page]([https://docs.microsoft.com/en-us/cpp/build/cmake-projects-in-visual-studio?view=vs-2019](https://docs.microsoft.com/en-us/cpp/build/cmake-projects-in-visual-studio?view=vs-2019)).
+Recent versions of Visual Studio have CMake support built into the IDE. 
+You should be able to "Open Folder" in the project root directory,
+and Visual Studio will recognize and configure the project appropriately.
+From there, you will be able to set configurations for Debug vs Release,
+and for x86 vs x64. 
+For more information, see [the Microsoft Docs page]([https://docs.microsoft.com/en-us/cpp/build/cmake-projects-in-visual-studio?view=vs-2019](https://docs.microsoft.com/en-us/cpp/build/cmake-projects-in-visual-studio?view=vs-2019)).
 
 This has been tested to work on Visual Studio 2019, and it probably works on Visual Studio 2017 too.
 
