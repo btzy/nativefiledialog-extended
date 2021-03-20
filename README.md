@@ -92,9 +92,10 @@ simply add the following lines to your CMakeLists.txt:
 add_subdirectory(path/to/nativefiledialog-extended)
 target_link_libraries(MyProgram PRIVATE nfd)
 ```
+Make sure that you also have the needed [dependencies](#dependencies).
 
 ## Standalone Library
-To build the static library, execute the following commands in a terminal
+To build the static library, execute the following commands
 (starting from the project root directory):
 ```
 mkdir build
@@ -118,24 +119,28 @@ and Visual Studio will recognize and configure the project appropriately.
 From there, you will be able to set configurations for Debug vs Release,
 and for x86 vs x64. 
 For more information, see [the Microsoft Docs page]([https://docs.microsoft.com/en-us/cpp/build/cmake-projects-in-visual-studio?view=vs-2019](https://docs.microsoft.com/en-us/cpp/build/cmake-projects-in-visual-studio?view=vs-2019)).
-
 This has been tested to work on Visual Studio 2019, and it probably works on Visual Studio 2017 too.
 
-## Compiling Your Programs ###
+### Compiling Your Programs ###
 
  1. Add `src/include` to your include search path.
  2. Add `nfd.lib` or `nfd_d.lib` to the list of static libraries to link against (for release or debug, respectively).
  3. Add `build/<debug|release>/<arch>` to the library search path.
 
-### Linux ####
-On Linux, you have the option of compiling and linking against GTK+.  If you use it, the recommended way to compile is to include the arguments of `pkg-config --cflags --libs gtk+-3.0`.
+# Dependencies
+
+## Linux
+`apt-get libgtk-3-dev` installs the GTK+3 dependency on debian based systems.
+
+You have the option of compiling and linking against GTK+.
+If you use it, the recommended way to compile is to include the arguments of `pkg-config --cflags --libs gtk+-3.0`.
 
 ~~Alternatively, you can use the Zenity backend by running the Makefile in `build/gmake_linux_zenity`.  Zenity runs the dialog in its own address space, but requires the user to have Zenity correctly installed and configured on their system.~~  Zenity has not been ported to Native File Dialog Extended yet.
 
-### MacOS ####
+## MacOS
 On Mac OS, add `AppKit` to the list of frameworks.
 
-### Windows ####
+## Windows
 On Windows, ensure you are building against `comctl32.lib` and `uuid.lib`.
 
 # Usage
