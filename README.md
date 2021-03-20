@@ -95,8 +95,8 @@ target_link_libraries(MyProgram PRIVATE nfd)
 Make sure that you also have the needed [dependencies](#dependencies).
 
 ## Standalone Library
-To build the static library, execute the following commands
-(starting from the project root directory):
+If you want to build the standalone static library,
+execute the following commands (starting from the project root directory):
 ```
 mkdir build
 cd build
