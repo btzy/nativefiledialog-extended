@@ -133,9 +133,6 @@ and it probably works on Visual Studio 2017 too.
 ### Linux
 `apt-get libgtk-3-dev` installs the GTK+3 dependency on debian based systems.
 
-You have the option of compiling and linking against GTK+.
-If you use it, the recommended way to compile is to include the arguments of `pkg-config --cflags --libs gtk+-3.0`.
-
 ### MacOS
 On Mac OS, add `AppKit` to the list of frameworks.
 
