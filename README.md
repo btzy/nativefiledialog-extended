@@ -79,6 +79,8 @@ int main( void )
 
 See [NFD.h](src/include/nfd.h) for more options.
 
+If you are using a platform abstraction framework such as SDL or GLFW, also see the "Usage" section below.
+
 # Screenshots #
 
 (TODO)
@@ -106,7 +108,7 @@ cmake --build .
 
 The above commands will make a `build` directory,
 and build the project (in release mode) there.
-If you are developing NFD, you may want to do `-DCMAKE_BUILD_TYPE=Debug`
+If you are developing NFDe, you may want to do `-DCMAKE_BUILD_TYPE=Debug`
 to build a debug version of the library instead.
 
 If you want to build the sample programs,
@@ -181,6 +183,32 @@ You can define the following macros *before* including `nfd.h`/`nfd.hpp`:
 Macros that might be defined by `nfd.h`:
 
 - `NFD_DIFFERENT_NATIVE_FUNCTIONS`: Defined if the native and UTF-8 versions of functions are different (i.e. compiling for Windows); not defined otherwise.  If `NFD_DIFFERENT_NATIVE_FUNCTIONS` is not defined, then the UTF-8 versions of functions are aliases for the native versions.  This might be useful if you are writing a function that wants to provide overloads depending on whether the native functions and UTF-8 functions are the same.  (Native is UTF-16 (`wchar_t`) for Windows and UTF-8 (`char`) for Mac/Linux.)
+
+## Usage with a Platform Abstraction Framework
+
+NFDe is known to work with SDL2 and GLFW, and should also work with other platform abstraction framworks.  However, you should initialize NFDe _after_ initializing the framework, and probably should deinitialize NFDe _before_ deinitializing the framework.  This is because some frameworks expect to be initialized on a "clean slate", and they may configure the system in a different way from NFDe.  `NFD_Init` is generally very careful not to disrupt the existing configuration unless necessary, and `NFD_Quit` restores the configuration back exactly to what it was before initialization.
+
+An example with SDL2:
+
+```
+// Initialize SDL2 first
+if (SDL_Init(SDL_INIT_VIDEO|SDL_INIT_AUDIO) != 0) {
+    // display some error here
+}
+
+// Then initialize NFDe
+if (NFD_Init() != NFD_OKAY) {
+    // display some error here
+}
+
+/*
+Your main program goes here
+*/
+
+NFD_Quit(); // deinitialize NFDe first
+
+SDL_Quit(); // Then deinitialize SDL2
+```
 
 # Known Limitations #
 
