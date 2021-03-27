@@ -7,7 +7,7 @@ on:
     branches: [ master ]
 
 jobs:
-  build-ubuntu-16:
+  build-ubuntu16-gcc:
 
     runs-on: ubuntu-16.04
     
@@ -20,7 +20,7 @@ jobs:
     - name: Build
       run: cmake --build build
   
-  build-ubuntu-18:
+  build-ubuntu18-gcc:
 
     runs-on: ubuntu-18.04
     
@@ -33,7 +33,7 @@ jobs:
     - name: Build
       run: cmake --build build
   
-  build-ubuntu-20:
+  build-ubuntu20-gcc:
 
     runs-on: ubuntu-20.04
     
@@ -59,7 +59,7 @@ jobs:
     - name: Build
       run: cmake --build build
   
-  build-macos:
+  build-macos-clang:
 
     runs-on: macos-latest
     
@@ -70,7 +70,7 @@ jobs:
     - name: Build
       run: cmake --build build
   
-  build-windows:
+  build-windows-msvc:
 
     runs-on: windows-latest
     
