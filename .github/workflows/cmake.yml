@@ -80,8 +80,33 @@ jobs:
     runs-on: windows-latest
     
     steps:
-    - uses: actions/checkout@v2
+    - name: Checkout
+      uses: actions/checkout@v2
     - name: Configure
       run: mkdir build && cd build && cmake -DNFD_BUILD_TESTS=ON ..
+    - name: Build
+      run: cmake --build build
+  
+  build-windows-mingw:
+
+    runs-on: windows-latest
+
+    defaults:
+      run:
+        shell: msys2 {0}
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Set up MinGW-w64
+      uses: msys2/setup-msys2@v2
+      with:
+        path-type: minimal
+        install: >-
+          base-devel
+          mingw-w64-x86_64-gcc
+          mingw-w64-x86_64-cmake
+    - name: Configure
+      run: mkdir build && cd build && cmake -DCMAKE_C_COMPILER=x86_64-w64-mingw32-gcc -DCMAKE_CXX_COMPILER=x86_64-w64-mingw32-g++ -G 'MSYS Makefiles' -DNFD_BUILD_TESTS=ON ..
     - name: Build
       run: cmake --build build
