@@ -112,7 +112,7 @@ If you are developing NFDe, you may want to do `-DCMAKE_BUILD_TYPE=Debug`
 to build a debug version of the library instead.
 
 If you want to build the sample programs,
-add `-DNFD_BUILD_TESTS=ON` (samples programs are not built by default).
+add `-DNFD_BUILD_TESTS=ON` (sample programs are not built by default).
 
 ### Visual Studio on Windows
 Recent versions of Visual Studio have CMake support built into the IDE. 
