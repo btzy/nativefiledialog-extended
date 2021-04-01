@@ -83,7 +83,9 @@ If you are using a platform abstraction framework such as SDL or GLFW, also see 
 
 # Screenshots #
 
-(TODO)
+![Windows 10](screens/open_win10.png?raw=true)
+![MacOS 10.13](screens/open_macos_10.13_list.png?raw=true)
+![GTK3 on Ubuntu 20.04](screens/open_gtk3.png?raw=true)
 
 # Building
 
