@@ -8,6 +8,9 @@
 
 #include <assert.h>
 #include <gtk/gtk.h>
+#if defined(GDK_WINDOWING_X11)
+#include <gdk/gdkx.h>
+#endif
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -357,6 +360,26 @@ static void FileActivatedSignalHandler(GtkButton* saveButton, void* userdata) {
     // free the memory
     g_free(currentFileName);
 }
+
+// wrapper for gtk_dialog_run() that brings the dialog to the front
+// see issues at:
+// https://github.com/btzy/nativefiledialog-extended/issues/31
+// https://github.com/mlabbe/nativefiledialog/pull/92
+// https://github.com/guillaumechereau/noc/pull/11
+gint RunDialogWithFocus(GtkDialog* dialog) {
+#if defined(GDK_WINDOWING_X11)
+    gtk_widget_show_all(GTK_WIDGET(dialog));  // show the dialog so that it gets a display
+    if (GDK_IS_X11_DISPLAY(gtk_widget_get_display(GTK_WIDGET(dialog)))) {
+        GdkWindow* window = gtk_widget_get_window(GTK_WIDGET(dialog));
+        gdk_window_set_events(
+            window,
+            static_cast<GdkEventMask>(gdk_window_get_events(window) | GDK_PROPERTY_CHANGE_MASK));
+        gtk_window_present_with_time(GTK_WINDOW(dialog), gdk_x11_get_server_time(window));
+    }
+#endif
+    return gtk_dialog_run(dialog);
+}
+
 }  // namespace
 
 const char* NFD_GetError(void) {
@@ -408,7 +431,7 @@ nfdresult_t NFD_OpenDialogN(nfdnchar_t** outPath,
     /* Set the default path */
     SetDefaultPath(GTK_FILE_CHOOSER(widget), defaultPath);
 
-    if (gtk_dialog_run(GTK_DIALOG(widget)) == GTK_RESPONSE_ACCEPT) {
+    if (RunDialogWithFocus(GTK_DIALOG(widget)) == GTK_RESPONSE_ACCEPT) {
         // write out the file name
         *outPath = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(widget));
 
@@ -443,7 +466,7 @@ nfdresult_t NFD_OpenDialogMultipleN(const nfdpathset_t** outPaths,
     /* Set the default path */
     SetDefaultPath(GTK_FILE_CHOOSER(widget), defaultPath);
 
-    if (gtk_dialog_run(GTK_DIALOG(widget)) == GTK_RESPONSE_ACCEPT) {
+    if (RunDialogWithFocus(GTK_DIALOG(widget)) == GTK_RESPONSE_ACCEPT) {
         // write out the file name
         GSList* fileList = gtk_file_chooser_get_filenames(GTK_FILE_CHOOSER(widget));
 
@@ -493,8 +516,7 @@ nfdresult_t NFD_SaveDialogN(nfdnchar_t** outPath,
                                         static_cast<void*>(&buttonClickedArgs));
 
     /* invoke the dialog (blocks until dialog is closed) */
-    gint result = gtk_dialog_run(GTK_DIALOG(widget));
-
+    gint result = RunDialogWithFocus(GTK_DIALOG(widget));
     /* unset the handler */
     g_signal_handler_disconnect(G_OBJECT(saveButton), handlerID);
 
@@ -527,7 +549,7 @@ nfdresult_t NFD_PickFolderN(nfdnchar_t** outPath, const nfdnchar_t* defaultPath)
     /* Set the default path */
     SetDefaultPath(GTK_FILE_CHOOSER(widget), defaultPath);
 
-    if (gtk_dialog_run(GTK_DIALOG(widget)) == GTK_RESPONSE_ACCEPT) {
+    if (RunDialogWithFocus(GTK_DIALOG(widget)) == GTK_RESPONSE_ACCEPT) {
         // write out the file name
         *outPath = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(widget));
 
