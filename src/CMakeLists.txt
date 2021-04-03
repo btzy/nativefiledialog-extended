@@ -1,8 +1,10 @@
 set(TARGET_NAME nfd)
 
-set(SOURCE_FILES
+set(PUBLIC_HEADER_FILES
   include/nfd.h
   include/nfd.hpp)
+
+set(SOURCE_FILES ${PUBLIC_HEADER_FILES})
 
 if(nfd_PLATFORM STREQUAL PLATFORM_WIN32)
   list(APPEND SOURCE_FILES nfd_win.cpp)
@@ -48,3 +50,7 @@ endif()
 if(nfd_COMPILER STREQUAL COMPILER_GNU)
   target_compile_options(${TARGET_NAME} PRIVATE -nostdlib -fno-exceptions -fno-rtti)
 endif()
+
+set_target_properties(${TARGET_NAME} PROPERTIES PUBLIC_HEADER "${PUBLIC_HEADER_FILES}")
+
+install(TARGETS ${TARGET_NAME} LIBRARY DESTINATION lib PUBLIC_HEADER DESTINATION include)
