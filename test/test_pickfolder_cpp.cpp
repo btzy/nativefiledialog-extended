@@ -5,8 +5,7 @@
 /* this test should compile on all supported platforms */
 /* this demonstrates the thin C++ wrapper */
 
-int main()
-{
+int main() {
     // initialize NFD
     NFD::Guard nfdGuard;
 
@@ -15,16 +14,11 @@ int main()
 
     // show the dialog
     nfdresult_t result = NFD::PickFolder(outPath);
-    if (result == NFD_OKAY)
-    {
+    if (result == NFD_OKAY) {
         std::cout << "Success!" << std::endl << outPath.get() << std::endl;
-    }
-    else if (result == NFD_CANCEL)
-    {
+    } else if (result == NFD_CANCEL) {
         std::cout << "User pressed cancel." << std::endl;
-    }
-    else
-    {
+    } else {
         std::cout << "Error: " << NFD::GetError() << std::endl;
     }
 
