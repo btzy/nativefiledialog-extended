@@ -161,7 +161,7 @@ namespace {
                 *p_specBuf++ = L'\0';
 
                 // assert that we had allocated exactly the correct amount of memory that we used
-                assert(p_specBuf - specBuf == specSize);
+                assert(static_cast<size_t>(p_specBuf - specBuf) == specSize);
 
                 // save the buffer to the guard object
                 specList[index].pszSpec = specBuf;
