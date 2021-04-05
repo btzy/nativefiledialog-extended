@@ -10,7 +10,7 @@ This library is based on Michael Labbe's Native File Dialog ([mlabbe/nativefiled
 Features:
 
 - Lean C API, static library -- no C++/ObjC runtime needed
-- Supports Windows (VC++, MinGW), Mac OS (Clang), and Linux (GCC, Clang)
+- Supports Windows (MSVC, MinGW), MacOS (Clang), and Linux (GCC, Clang)
 - Zlib licensed
 - Friendly names for filters (e.g. `C/C++ Source files (*.c;*.cpp)` instead of `(*.c;*.cpp)`) on platforms that support it
 - Automatically append file extension on platforms where users expect it
@@ -138,7 +138,7 @@ and it probably works on Visual Studio 2017 too.
 `apt-get libgtk-3-dev` installs the GTK+3 dependency on debian based systems.
 
 ### MacOS
-On Mac OS, add `AppKit` to the list of frameworks.
+On MacOS, add `AppKit` to the list of frameworks.
 
 ### Windows
 On Windows, ensure you are building against `comctl32.lib` and `uuid.lib`.
@@ -163,7 +163,7 @@ A list of file filters can be passed as an argument when invoking the library.
 
 A wildcard filter is always added to every dialog.
 
-*Note: On Mac OS, the file dialogs do not have friendly names and there is no way to switch between filters, so the filter specifications are combined (e.g. "c,cpp,cc,h,hpp").  The filter specification is also never explicitly shown to the user.  This is usual Mac OS behaviour and users expect it.*
+*Note: On MacOS, the file dialogs do not have friendly names and there is no way to switch between filters, so the filter specifications are combined (e.g. "c,cpp,cc,h,hpp").  The filter specification is also never explicitly shown to the user.  This is usual MacOS behaviour and users expect it.*
 
 *Note 2: You must ensure that the specification string is non-empty and that every file extension has at least one character.  Otherwise, bad things might ensue (i.e. undefined behaviour).*
 
