@@ -7,8 +7,22 @@ on:
     branches: [ master ]
 
 jobs:
+  clang-format:
+
+    name: ClangFormat check
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Format code
+      run: find src/ test/ -iname '*.c' -or -iname '*.cpp' -or -iname '*.m' -or -iname '*.mm' -or -iname '*.h' -or -iname '*.hpp' | xargs clang-format -i -style=file
+    - name: Check diff
+      run: git diff --exit-code
+  
   build-ubuntu16-gcc:
 
+    name: Ubuntu 16.04 - GCC
     runs-on: ubuntu-16.04
     
     steps:
@@ -23,6 +37,7 @@ jobs:
   
   build-ubuntu18-gcc:
 
+    name: Ubuntu 18.04 - GCC
     runs-on: ubuntu-18.04
     
     steps:
@@ -37,6 +52,7 @@ jobs:
   
   build-ubuntu20-gcc:
 
+    name: Ubuntu 20.04 - GCC
     runs-on: ubuntu-20.04
     
     steps:
@@ -51,6 +67,7 @@ jobs:
   
   build-ubuntu-clang:
 
+    name: Ubuntu latest - Clang
     runs-on: ubuntu-latest
     
     steps:
@@ -65,6 +82,7 @@ jobs:
   
   build-macos-clang:
 
+    name: MacOS latest - Clang
     runs-on: macos-latest
     
     steps:
@@ -77,6 +95,7 @@ jobs:
   
   build-windows-msvc:
 
+    name: Windows latest - MSVC
     runs-on: windows-latest
     
     steps:
@@ -89,6 +108,7 @@ jobs:
   
   build-windows-mingw:
 
+    name: Windows latest - MinGW
     runs-on: windows-latest
 
     defaults:
