@@ -13,7 +13,7 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif
+#endif  // __cplusplus
 
 #include <stddef.h>
 
@@ -23,7 +23,7 @@ typedef wchar_t nfdnchar_t;
 #else
 /* denotes UTF-8 char */
 typedef char nfdnchar_t;
-#endif
+#endif  // _WIN32
 
 /* opaque data structure -- see NFD_PathSet_* */
 typedef void nfdpathset_t;
@@ -107,7 +107,7 @@ typedef unsigned long nfdpathsetsize_t;
 typedef unsigned long nfdpathsetsize_t;
 #else
 typedef unsigned int nfdpathsetsize_t;
-#endif
+#endif  // _WIN32, __APPLE__
 
 /* get the number of entries stored in pathSet */
 /* note that some paths might be invalid (NFD_ERROR will be returned by NFD_PathSet_GetPath), so we
@@ -126,7 +126,7 @@ nfdresult_t NFD_PathSet_GetPathN(const nfdpathset_t* pathSet,
 #define NFD_PathSet_FreePathN NFD_FreePathN
 #else
 void NFD_PathSet_FreePathN(const nfdnchar_t* filePath);
-#endif
+#endif  // _WIN32, __APPLE__
 /* Free the pathSet */
 void NFD_PathSet_Free(const nfdpathset_t* pathSet);
 
@@ -206,9 +206,9 @@ typedef nfdu8filteritem_t nfdfilteritem_t;
 #define NFD_PickFolder NFD_PickFolderU8
 #define NFD_PathSet_GetPath NFD_PathSet_GetPathU8
 #define NFD_PathSet_FreePath NFD_PathSet_FreePathU8
-#endif
+#endif  // NFD_NATIVE
 
-#else
+#else  // _WIN32
 
 /* the native charset is already UTF-8 */
 typedef nfdnchar_t nfdchar_t;
@@ -230,10 +230,10 @@ typedef nfdnfilteritem_t nfdu8filteritem_t;
 #define NFD_PathSet_GetPathU8 NFD_PathSet_GetPathN
 #define NFD_PathSet_FreePathU8 NFD_PathSet_FreePathN
 
-#endif  // _WIN32s
+#endif  // _WIN32
 
 #ifdef __cplusplus
 }
-#endif
+#endif  // __cplusplus
 
-#endif
+#endif  // _NFD_H
