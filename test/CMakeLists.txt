@@ -4,6 +4,7 @@ set(TEST_LIST
   test_opendialog_cpp.cpp
   test_opendialogmultiple.c
   test_opendialogmultiple_cpp.cpp
+  test_opendialogmultiple_enum.c
   test_pickfolder.c
   test_pickfolder_cpp.cpp
   test_savedialog.c)
