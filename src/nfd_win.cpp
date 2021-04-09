@@ -609,6 +609,8 @@ nfdresult_t NFD_PathSet_GetPathN(const nfdpathset_t* pathSet,
         return NFD_ERROR;
     }
 
+    Release_Guard<::IShellItem> psiPathGuard(psiPath);
+
     nfdnchar_t* name;
     if (!SUCCEEDED(psiPath->GetDisplayName(::SIGDN_FILESYSPATH, &name))) {
         NFDi_SetError("Could not get file path for selected.");
