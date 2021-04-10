@@ -581,3 +581,27 @@ void NFD_PathSet_Free(const nfdpathset_t* pathSet) {
     // free the path set memory
     g_slist_free(fileList);
 }
+
+nfdresult_t NFD_PathSet_GetEnum(const nfdpathset_t* pathSet, nfdpathsetenum_t* outEnumerator) {
+    // The pathset (GSList) is already a linked list, so the enumeration is itself
+    outEnumerator->ptr = const_cast<void*>(pathSet);
+
+    return NFD_OKAY;
+}
+
+void NFD_PathSet_FreeEnum(nfdpathsetenum_t*) {
+    // Do nothing, because the enumeration is the pathset itself
+}
+
+nfdresult_t NFD_PathSet_EnumNextN(nfdpathsetenum_t* enumerator, nfdnchar_t** outPath) {
+    const GSList* fileList = static_cast<const GSList*>(enumerator->ptr);
+
+    if (fileList) {
+        *outPath = static_cast<nfdnchar_t*>(fileList->data);
+        enumerator->ptr = static_cast<void*>(fileList->next);
+    } else {
+        *outPath = nullptr;
+    }
+
+    return NFD_OKAY;
+}
