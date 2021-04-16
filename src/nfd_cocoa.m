@@ -92,6 +92,21 @@ static void SetDefaultName(NSSavePanel* dialog, const nfdnchar_t* defaultName) {
     [dialog setNameFieldStringValue:defaultNameString];
 }
 
+static nfdresult_t CopyUtf8String(const char* utf8Str, nfdnchar_t** out) {
+    // byte count, not char count
+    size_t len = strlen(utf8Str);
+
+    // Too bad we have to use additional memory for all the result paths,
+    // because we cannot reconstitute an NSString from a char* to release it properly.
+    *out = (nfdnchar_t*)NFDi_Malloc(len + 1);
+    if (*out) {
+        strcpy(*out, utf8Str);
+        return NFD_OKAY;
+    }
+
+    return NFD_ERROR;
+}
+
 /* public */
 
 const char* NFD_GetError(void) {
@@ -138,16 +153,7 @@ nfdresult_t NFD_OpenDialogN(nfdnchar_t** outPath,
         if ([dialog runModal] == NSModalResponseOK) {
             const NSURL* url = [dialog URL];
             const char* utf8Path = [[url path] UTF8String];
-
-            // byte count, not char count
-            size_t len = strlen(utf8Path);
-
-            // too bad we have to use additional memory for this
-            *outPath = (nfdchar_t*)NFDi_Malloc(len + 1);
-            if (*outPath) {
-                strcpy(*outPath, utf8Path);
-                result = NFD_OKAY;
-            }
+            result = CopyUtf8String(utf8Path, outPath);
         }
 
         // return focus to the key window (i.e. main window)
@@ -180,8 +186,8 @@ nfdresult_t NFD_OpenDialogMultipleN(const nfdpathset_t** outPaths,
                 // have at least one URL, we return this NSArray
                 [urls retain];
                 *outPaths = (const nfdpathset_t*)urls;
+                result = NFD_OKAY;
             }
-            result = NFD_OKAY;
         }
 
         // return focus to the key window (i.e. main window)
@@ -217,16 +223,7 @@ nfdresult_t NFD_SaveDialogN(nfdnchar_t** outPath,
         if ([dialog runModal] == NSModalResponseOK) {
             const NSURL* url = [dialog URL];
             const char* utf8Path = [[url path] UTF8String];
-
-            // byte count, not char count
-            size_t len = strlen(utf8Path);
-
-            // too bad we have to use additional memory for this
-            *outPath = (nfdchar_t*)NFDi_Malloc(len + 1);
-            if (*outPath) {
-                strcpy(*outPath, utf8Path);
-                result = NFD_OKAY;
-            }
+            result = CopyUtf8String(utf8Path, outPath);
         }
 
         // return focus to the key window (i.e. main window)
@@ -252,16 +249,7 @@ nfdresult_t NFD_PickFolderN(nfdnchar_t** outPath, const nfdnchar_t* defaultPath)
         if ([dialog runModal] == NSModalResponseOK) {
             const NSURL* url = [dialog URL];
             const char* utf8Path = [[url path] UTF8String];
-
-            // byte count, not char count
-            size_t len = strlen(utf8Path);
-
-            // too bad we have to use additional memory for this
-            *outPath = (nfdchar_t*)NFDi_Malloc(len + 1);
-            if (*outPath) {
-                strcpy(*outPath, utf8Path);
-                result = NFD_OKAY;
-            }
+            result = CopyUtf8String(utf8Path, outPath);
         }
 
         // return focus to the key window (i.e. main window)
@@ -280,27 +268,50 @@ nfdresult_t NFD_PathSet_GetPathN(const nfdpathset_t* pathSet,
                                  nfdpathsetsize_t index,
                                  nfdnchar_t** outPath) {
     const NSArray* urls = (const NSArray*)pathSet;
-    const NSURL* url = [urls objectAtIndex:index];
 
     @autoreleasepool {
         // autoreleasepool needed because UTF8String method might use the pool
+        const NSURL* url = [urls objectAtIndex:index];
         const char* utf8Path = [[url path] UTF8String];
-
-        // byte count, not char count
-        size_t len = strlen(utf8Path);
-
-        // too bad we have to use additional memory for this
-        *outPath = (nfdchar_t*)NFDi_Malloc(len + 1);
-        if (*outPath) {
-            strcpy(*outPath, utf8Path);
-            return NFD_OKAY;
-        }
+        return CopyUtf8String(utf8Path, outPath);
     }
-
-    return NFD_ERROR;
 }
 
 void NFD_PathSet_Free(const nfdpathset_t* pathSet) {
     const NSArray* urls = (const NSArray*)pathSet;
     [urls release];
+}
+
+nfdresult_t NFD_PathSet_GetEnum(const nfdpathset_t* pathSet, nfdpathsetenum_t* outEnumerator) {
+    const NSArray* urls = (const NSArray*)pathSet;
+
+    @autoreleasepool {
+        // autoreleasepool needed because NSEnumerator uses it
+        NSEnumerator* enumerator = [urls objectEnumerator];
+        [enumerator retain];
+        outEnumerator->ptr = (void*)enumerator;
+    }
+
+    return NFD_OKAY;
+}
+
+void NFD_PathSet_FreeEnum(nfdpathsetenum_t* enumerator) {
+    NSEnumerator* real_enum = (NSEnumerator*)enumerator->ptr;
+    [real_enum release];
+}
+
+nfdresult_t NFD_PathSet_EnumNextN(nfdpathsetenum_t* enumerator, nfdnchar_t** outPath) {
+    NSEnumerator* real_enum = (NSEnumerator*)enumerator->ptr;
+
+    @autoreleasepool {
+        // autoreleasepool needed because NSURL uses it
+        const NSURL* url = [real_enum nextObject];
+        if (url) {
+            const char* utf8Path = [[url path] UTF8String];
+            return CopyUtf8String(utf8Path, outPath);
+        } else {
+            *outPath = NULL;
+            return NFD_OKAY;
+        }
+    }
 }
