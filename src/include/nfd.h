@@ -1,9 +1,8 @@
 /*
   Native File Dialog Extended
-  Author: Bernard Teo
-  License : Zlib
   Repository: https://github.com/btzy/nativefiledialog-extended
-  Based on https://github.com/mlabbe/nativefiledialog
+  License: Zlib
+  Authors: Bernard Teo, Michael Labbe
 
   This header contains the functions that can be called by user code.
  */
