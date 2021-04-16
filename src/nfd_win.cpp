@@ -621,6 +621,60 @@ nfdresult_t NFD_PathSet_GetPathN(const nfdpathset_t* pathSet,
     return NFD_OKAY;
 }
 
+nfdresult_t NFD_PathSet_GetEnum(const nfdpathset_t* pathSet, nfdpathsetenum_t* outEnumerator) {
+    assert(pathSet);
+    // const_cast because methods on IShellItemArray aren't const, but it should act like const to
+    // the caller
+    ::IShellItemArray* psiaPathSet =
+        const_cast<::IShellItemArray*>(static_cast<const ::IShellItemArray*>(pathSet));
+
+    ::IEnumShellItems* pesiPaths;
+    if (!SUCCEEDED(psiaPathSet->EnumItems(&pesiPaths))) {
+        NFDi_SetError("Could not get enumerator");
+        return NFD_ERROR;
+    }
+
+    outEnumerator->ptr = static_cast<void*>(pesiPaths);
+    return NFD_OKAY;
+}
+
+void NFD_PathSet_FreeEnum(nfdpathsetenum_t* enumerator) {
+    assert(enumerator->ptr);
+
+    ::IEnumShellItems* pesiPaths = static_cast<::IEnumShellItems*>(enumerator->ptr);
+
+    // free the enumerator memory
+    pesiPaths->Release();
+}
+
+nfdresult_t NFD_PathSet_EnumNextN(nfdpathsetenum_t* enumerator, nfdnchar_t** outPath) {
+    assert(enumerator->ptr);
+
+    ::IEnumShellItems* pesiPaths = static_cast<::IEnumShellItems*>(enumerator->ptr);
+
+    ::IShellItem* psiPath;
+    HRESULT res = pesiPaths->Next(1, &psiPath, NULL);
+    if (!SUCCEEDED(res)) {
+        NFDi_SetError("Could not get next item of enumerator.");
+        return NFD_ERROR;
+    }
+    if (res != S_OK) {
+        *outPath = nullptr;
+        return NFD_OKAY;
+    }
+
+    Release_Guard<::IShellItem> psiPathGuard(psiPath);
+
+    nfdnchar_t* name;
+    if (!SUCCEEDED(psiPath->GetDisplayName(::SIGDN_FILESYSPATH, &name))) {
+        NFDi_SetError("Could not get file path for selected.");
+        return NFD_ERROR;
+    }
+
+    *outPath = name;
+    return NFD_OKAY;
+}
+
 void NFD_PathSet_Free(const nfdpathset_t* pathSet) {
     assert(pathSet);
     // const_cast because methods on IShellItemArray aren't const, but it should act like const to
@@ -869,5 +923,28 @@ nfdresult_t NFD_PathSet_GetPathU8(const nfdpathset_t* pathSet,
 
     // free the native out path, and return the result
     NFD_FreePathN(outPathN);
+    return res;
+}
+
+nfdresult_t NFD_PathSet_EnumNextU8(nfdpathsetenum_t* enumerator, nfdu8char_t** outPath) {
+    // call the native function
+    nfdnchar_t* outPathN;
+    nfdresult_t res = NFD_PathSet_EnumNextN(enumerator, &outPathN);
+
+    if (res != NFD_OKAY) {
+        return res;
+    }
+
+    if (outPathN) {
+        // convert the outPath to UTF-8
+        res = CopyWCharToNFDChar(outPathN, *outPath);
+
+        // free the native out path, and return the result
+        NFD_FreePathN(outPathN);
+    } else {
+        *outPath = nullptr;
+        res = NFD_OKAY;
+    }
+
     return res;
 }
