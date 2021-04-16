@@ -1,9 +1,10 @@
 /*
-  Native File Dialog
+  Native File Dialog Extended
+  Repository: https://github.com/btzy/nativefiledialog-extended
+  License: Zlib
+  Authors: Bernard Teo, Michael Labbe
 
-  http://www.frogtoss.com/labs
-
-  We do not check for malloc failure on Linux - Linux overcommits memory!
+  Note: We do not check for malloc failure on Linux - Linux overcommits memory!
 */
 
 #include <assert.h>

@@ -1,9 +1,8 @@
 /*
   Native File Dialog Extended
-  Author: Bernard Teo
-  License : Zlib
   Repository: https://github.com/btzy/nativefiledialog-extended
-  Based on https://github.com/mlabbe/nativefiledialog
+  License: Zlib
+  Author: Bernard Teo
  */
 
 /* only locally define UNICODE in this compilation unit */

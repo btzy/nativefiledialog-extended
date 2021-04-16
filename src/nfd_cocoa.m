@@ -1,7 +1,8 @@
 /*
-  Native File Dialog
-
-  http://www.frogtoss.com/labs
+  Native File Dialog Extended
+  Repository: https://github.com/btzy/nativefiledialog-extended
+  License: Zlib
+  Authors: Bernard Teo, Michael Labbe
  */
 
 #include <AppKit/AppKit.h>

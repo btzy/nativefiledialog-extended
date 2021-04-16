@@ -1,14 +1,13 @@
 /*
-Native File Dialog Extended
-Author: Bernard Teo
-License : Zlib
-Repository: https://github.com/btzy/nativefiledialog-extended
-Based on https://github.com/mlabbe/nativefiledialog
+  Native File Dialog Extended
+  Repository: https://github.com/btzy/nativefiledialog-extended
+  License: Zlib
+  Author: Bernard Teo
 
-This header is a thin C++ wrapper for nfd.h.
-C++ projects can choose to use this header instead of nfd.h directly.
+  This header is a thin C++ wrapper for nfd.h.
+  C++ projects can choose to use this header instead of nfd.h directly.
 
-Refer to documentation on nfd.h for instructions on how to use these functions.
+  Refer to documentation on nfd.h for instructions on how to use these functions.
 */
 
 #ifndef _NFD_HPP
