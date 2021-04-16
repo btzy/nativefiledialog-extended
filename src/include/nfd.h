@@ -27,6 +27,9 @@ typedef char nfdnchar_t;
 
 /* opaque data structure -- see NFD_PathSet_* */
 typedef void nfdpathset_t;
+typedef struct {
+    void* ptr;
+} nfdpathsetenum_t;
 
 typedef unsigned int nfdfiltersize_t;
 
@@ -109,11 +112,11 @@ typedef unsigned long nfdpathsetsize_t;
 typedef unsigned int nfdpathsetsize_t;
 #endif  // _WIN32, __APPLE__
 
-/* get the number of entries stored in pathSet */
+/* Gets the number of entries stored in pathSet */
 /* note that some paths might be invalid (NFD_ERROR will be returned by NFD_PathSet_GetPath), so we
  * might not actually have this number of usable paths */
 nfdresult_t NFD_PathSet_GetCount(const nfdpathset_t* pathSet, nfdpathsetsize_t* count);
-/* Get the UTF-8 path at offset index */
+/* Gets the UTF-8 path at offset index */
 /* It is the caller's responsibility to free `outPath` via NFD_PathSet_FreePathN() if this function
  * returns NFD_OKAY */
 nfdresult_t NFD_PathSet_GetPathN(const nfdpathset_t* pathSet,
@@ -127,6 +130,19 @@ nfdresult_t NFD_PathSet_GetPathN(const nfdpathset_t* pathSet,
 #else
 void NFD_PathSet_FreePathN(const nfdnchar_t* filePath);
 #endif  // _WIN32, __APPLE__
+
+/* Gets an enumerator of the path set. */
+/* It is the caller's responsibility to free `enumerator` via NFD_PathSet_FreeEnum() if this
+ * function returns NFD_OKAY, and it should be freed before freeing the pathset. */
+nfdresult_t NFD_PathSet_GetEnum(const nfdpathset_t* pathSet, nfdpathsetenum_t* outEnumerator);
+/* Frees an enumerator of the path set. */
+void NFD_PathSet_FreeEnum(nfdpathsetenum_t* enumerator);
+/* Gets the next item from the path set enumerator.
+ * If there are no more items, then *outPaths will be set to NULL. */
+/* It is the caller's responsibility to free `*outPath` via NFD_PathSet_FreePath() if this
+ * function returns NFD_OKAY and `*outPath` is not null */
+nfdresult_t NFD_PathSet_EnumNextN(nfdpathsetenum_t* enumerator, nfdnchar_t** outPath);
+
 /* Free the pathSet */
 void NFD_PathSet_Free(const nfdpathset_t* pathSet);
 
@@ -184,6 +200,12 @@ nfdresult_t NFD_PathSet_GetPathU8(const nfdpathset_t* pathSet,
                                   nfdpathsetsize_t index,
                                   nfdu8char_t** outPath);
 
+/* Gets the next item from the path set enumerator.
+ * If there are no more items, then *outPaths will be set to NULL. */
+/* It is the caller's responsibility to free `*outPath` via NFD_PathSet_FreePathU8() if this
+ * function returns NFD_OKAY and `*outPath` is not null */
+nfdresult_t NFD_PathSet_EnumNextU8(nfdpathsetenum_t* enumerator, nfdu8char_t** outPath);
+
 #define NFD_PathSet_FreePathU8 NFD_FreePathU8
 
 #ifdef NFD_NATIVE
@@ -196,6 +218,7 @@ typedef nfdnfilteritem_t nfdfilteritem_t;
 #define NFD_PickFolder NFD_PickFolderN
 #define NFD_PathSet_GetPath NFD_PathSet_GetPathN
 #define NFD_PathSet_FreePath NFD_PathSet_FreePathN
+#define NFD_PathSet_EnumNext NFD_PathSet_EnumNextN
 #else
 typedef nfdu8char_t nfdchar_t;
 typedef nfdu8filteritem_t nfdfilteritem_t;
@@ -206,6 +229,7 @@ typedef nfdu8filteritem_t nfdfilteritem_t;
 #define NFD_PickFolder NFD_PickFolderU8
 #define NFD_PathSet_GetPath NFD_PathSet_GetPathU8
 #define NFD_PathSet_FreePath NFD_PathSet_FreePathU8
+#define NFD_PathSet_EnumNext NFD_PathSet_EnumNextU8
 #endif  // NFD_NATIVE
 
 #else  // _WIN32
@@ -220,6 +244,7 @@ typedef nfdnfilteritem_t nfdfilteritem_t;
 #define NFD_PickFolder NFD_PickFolderN
 #define NFD_PathSet_GetPath NFD_PathSet_GetPathN
 #define NFD_PathSet_FreePath NFD_PathSet_FreePathN
+#define NFD_PathSet_EnumNext NFD_PathSet_EnumNextN
 typedef nfdnchar_t nfdu8char_t;
 typedef nfdnfilteritem_t nfdu8filteritem_t;
 #define NFD_FreePathU8 NFD_FreePathN
@@ -229,6 +254,7 @@ typedef nfdnfilteritem_t nfdu8filteritem_t;
 #define NFD_PickFolderU8 NFD_PickFolderN
 #define NFD_PathSet_GetPathU8 NFD_PathSet_GetPathN
 #define NFD_PathSet_FreePathU8 NFD_PathSet_FreePathN
+#define NFD_PathSet_EnumNextU8 NFD_PathSet_EnumNextN
 
 #endif  // _WIN32
 
