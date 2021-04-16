@@ -308,7 +308,7 @@ struct Widget_Guard {
     }
 };
 
-static void FileActivatedSignalHandler(GtkButton* saveButton, void* userdata) {
+void FileActivatedSignalHandler(GtkButton* saveButton, void* userdata) {
     (void)saveButton;  // silence the unused arg warning
 
     ButtonClickedArgs* args = static_cast<ButtonClickedArgs*>(userdata);
