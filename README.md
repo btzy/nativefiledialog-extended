@@ -173,7 +173,23 @@ A wildcard filter is always added to every dialog.
 
 ## Iterating Over PathSets
 
+A file open dialog that supports multiple selection produces a PathSet, which is a thin abstraction over the platform-specific collection.  There are two ways to iterate over a PathSet:
+
+### Accessing by index
+
+This method does array-like access on the PathSet, and is the easiest to use.
+However, on certain platforms (Linux, and possibly Windows),
+it takes O(N<sup>2</sup>) time in total to iterate the entire PathSet,
+because the underlying platform-specific implementation uses a linked list.
+
 See [test_opendialogmultiple.c](test/test_opendialogmultiple.c).
+
+### Using an enumerator
+
+This method uses an enumerator object to iterate the paths in the PathSet.
+It is guaranteed to take O(N) time in total to iterate the entire PathSet.
+
+See [test_opendialogmultiple_enum.c](test/test_opendialogmultiple_enum.c).
 
 ## Customization Macros
 
@@ -215,7 +231,6 @@ SDL_Quit(); // Then deinitialize SDL2
 # Known Limitations #
 
  - No support for Windows XP's legacy dialogs such as `GetOpenFileName`.  (There are no plans to support this; you shouldn't be still using Windows XP anyway.)
- - Iterating the path set on Linux when opening multiple files is an O(N<sup>2</sup>) operation because Linux uses linked lists.  (This is not expected to cause significant slowdown unless the user wants to open thousands of files -- I would be surprised if there is a good use case where O(N) iteration is desired.  If you need this, please open an issue and tell me about what you're doing with this library.)
  - No Emscripten (WebAssembly) bindings.  (This might get implemented if I decide to port Circuit Sandbox for the web, but I don't think there is any way to implement a web-based folder picker.)
  - GTK dialogs don't set the existing window as parent, so if users click the existing window while the dialog is open then the dialog will go behind it.  GTK writes a warning to stdout or stderr about this.
  - This library is not compatible with the original Native File Dialog library.  Things might break if you use both in the same project.  (There are no plans to support this; you have to use one or the other.)
