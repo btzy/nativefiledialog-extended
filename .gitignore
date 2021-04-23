@@ -5,3 +5,6 @@
 
 # Mac OS X rubbish
 .DS_Store
+
+# CMake build directory
+/build/

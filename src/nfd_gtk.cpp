@@ -5,12 +5,21 @@
   Authors: Bernard Teo, Michael Labbe
 
   Note: We do not check for malloc failure on Linux - Linux overcommits memory!
+  Note: The GTK4 implementation does not distinguish between local and network files,
+  so it is possible for the file picker to return a network URI instead of a local filename.
 */
 
 #include <assert.h>
+#if NFD_GTK_VERSION == 4
+#include <errno.h>
+#endif
 #include <gtk/gtk.h>
 #if defined(GDK_WINDOWING_X11)
+#if NFD_GTK_VERSION == 3
 #include <gdk/gdkx.h>
+#elif NFD_GTK_VERSION == 4
+#include <gdk/x11/gdkx.h>
+#endif
 #endif
 #include <stddef.h>
 #include <stdio.h>
@@ -18,6 +27,8 @@
 #include <string.h>
 
 #include "nfd.h"
+
+#define UNSUPPORTED_ERROR() static_assert(false, "Unsupported GTK version, this is an NFD bug.")
 
 namespace {
 
@@ -35,6 +46,14 @@ struct FreeCheck_Guard {
     ~FreeCheck_Guard() {
         if (data) NFDi_Free(data);
     }
+};
+
+template <typename T>
+struct GUnref_Guard {
+    T* data;
+    GUnref_Guard(T* object) noexcept : data(object) {}
+    ~GUnref_Guard() { g_object_unref(data); }
+    T* get() const noexcept { return data; }
 };
 
 /* current error */
@@ -278,16 +297,33 @@ Pair_GtkFileFilter_FileExtension* AddFiltersToDialogWithMap(GtkFileChooser* choo
     return map;
 }
 
-void SetDefaultPath(GtkFileChooser* chooser, const char* defaultPath) {
-    if (!defaultPath || !*defaultPath) return;
+/*
+Note: GTK+ manual recommends not specifically setting the default path.
+We do it anyway in order to be consistent across platforms.
 
-    /* GTK+ manual recommends not specifically setting the default path.
-    We do it anyway in order to be consistent across platforms.
+If consistency with the native OS is preferred,
+then this function should be made a no-op.
+*/
+#if NFD_GTK_VERSION == 3
+nfdresult_t SetDefaultPath(GtkFileChooser* chooser, const char* defaultPath) {
+    if (!defaultPath || !*defaultPath) return NFD_OKAY;
 
-    If consistency with the native OS is preferred, this is the line
-    to comment out. -ml */
     gtk_file_chooser_set_current_folder(chooser, defaultPath);
+    return NFD_OKAY;
 }
+#elif NFD_GTK_VERSION == 4
+nfdresult_t SetDefaultPath(GtkFileChooser* chooser, const char* defaultPath) {
+    if (!defaultPath || !*defaultPath) return NFD_OKAY;
+
+    GUnref_Guard<GFile> file(g_file_new_for_path(defaultPath));
+
+    if (!gtk_file_chooser_set_current_folder(chooser, file.get(), NULL)) {
+        NFDi_SetError("Failed to set default path.");
+        return NFD_ERROR;
+    }
+    return NFD_OKAY;
+}
+#endif
 
 void SetDefaultName(GtkFileChooser* chooser, const char* defaultName) {
     if (!defaultName || !*defaultName) return;
@@ -295,8 +331,83 @@ void SetDefaultName(GtkFileChooser* chooser, const char* defaultName) {
     gtk_file_chooser_set_current_name(chooser, defaultName);
 }
 
+#if NFD_GTK_VERSION == 3
+nfdresult_t GetSingleFileNameForOpen(GtkWidget* widget, char** outPath) {
+    char* tmp_outPath = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(widget));
+    if (tmp_outPath) {
+        *outPath = tmp_outPath;
+        return NFD_OKAY;
+    }
+    return NFD_ERROR;
+}
+nfdresult_t GetSingleFileNameForSave(GtkWidget* widget, char** outPath) {
+    return GetSingleFileNameForOpen(widget, outPath);
+}
+nfdresult_t GetMultipleFileNamesForOpen(GtkWidget* widget, const nfdpathset_t** outPaths) {
+    GSList* fileList = gtk_file_chooser_get_filenames(GTK_FILE_CHOOSER(widget));
+    if (fileList) {
+        *outPaths = static_cast<void*>(fileList);
+        return NFD_OKAY;
+    }
+    return NFD_ERROR;
+}
+#elif NFD_GTK_VERSION == 4
+// Helper method to get a local file path from a GFile,
+// potentially downloading the file if it is a non-local file.
+// This function takes ownership of the given gfile, and will call g_object_unref() to release it.
+// Note: downloads may take long, but there is no way for the user to cancel it
+nfdresult_t GetFileNameFromGFile(GFile* gfile, char** outPath) {
+    GUnref_Guard<GFile> file(gfile);
+    char* tmp_outPath = g_file_get_path(file.get());
+    if (tmp_outPath) {
+        *outPath = tmp_outPath;
+        return NFD_OKAY;
+    }
+    // it's not a local file... we should copy it
+    GFileIOStream* localFileIOStream;
+    GFile* localFile = g_file_new_tmp(NULL, &localFileIOStream, NULL);
+    if (!localFile) return NFD_ERROR;
+    GUnref_Guard<GFile> localFileGuard(localFile);
+    GUnref_Guard<GFileIOStream> localFileIOStreamGuard(localFileIOStream);
+    g_io_stream_close(G_IO_STREAM(localFileIOStream), NULL, NULL);
+    if (!g_file_copy(file.get(), localFile, G_FILE_COPY_OVERWRITE, NULL, NULL, NULL, NULL))
+        return NFD_ERROR;
+    *outPath = g_file_get_path(localFile);
+    return NFD_OKAY;
+}
+
+nfdresult_t GetSingleFileNameForOpen(GtkWidget* widget, char** outPath) {
+    return GetFileNameFromGFile(gtk_file_chooser_get_file(GTK_FILE_CHOOSER(widget)), outPath);
+}
+nfdresult_t GetSingleFileNameForSave(GtkWidget* widget, char** outPath) {
+    GUnref_Guard<GFile> file(gtk_file_chooser_get_file(GTK_FILE_CHOOSER(widget)));
+    char* tmp_outPath = g_file_get_path(file.get());
+    if (tmp_outPath) {
+        *outPath = tmp_outPath;
+        return NFD_OKAY;
+    }
+    // it's not a local file... we balk and say the user cancelled the dialog
+    return NFD_CANCEL;
+}
+nfdresult_t GetMultipleFileNamesForOpen(GtkWidget* widget, const nfdpathset_t** outPaths) {
+    GListModel* fileList = gtk_file_chooser_get_files(GTK_FILE_CHOOSER(widget));
+    if (fileList) {
+        *outPaths = static_cast<void*>(fileList);
+        return NFD_OKAY;
+    }
+    return NFD_ERROR;
+}
+#endif
+
 void WaitForCleanup() {
+#if NFD_GTK_VERSION == 3
     while (gtk_events_pending()) gtk_main_iteration();
+#elif NFD_GTK_VERSION == 4
+    while (g_main_context_iteration(NULL, FALSE))
+        ;
+#else
+    UNSUPPORTED_ERROR();
+#endif
 }
 
 struct Widget_Guard {
@@ -304,12 +415,24 @@ struct Widget_Guard {
     Widget_Guard(GtkWidget* widget) : data(widget) {}
     ~Widget_Guard() {
         WaitForCleanup();
+#if NFD_GTK_VERSION == 3
         gtk_widget_destroy(data);
+#elif NFD_GTK_VERSION == 4
+        gtk_window_destroy(GTK_WINDOW(data));
+#else
+        UNSUPPORTED_ERROR();
+#endif
         WaitForCleanup();
     }
 };
 
-void FileActivatedSignalHandler(GtkWidget*, GdkEvent*, void* userdata) {
+void ButtonPressedSignalHandler(
+#if NFD_GTK_VERSION == 3
+    GtkWidget*, GdkEvent*,
+#elif NFD_GTK_VERSION == 4
+    GtkGestureClick*, int, double, double,
+#endif
+    void* userdata) {
     ButtonClickedArgs* args = static_cast<ButtonClickedArgs*>(userdata);
     GtkFileChooser* chooser = args->chooser;
     char* currentFileName = gtk_file_chooser_get_current_name(chooser);
@@ -360,12 +483,20 @@ void FileActivatedSignalHandler(GtkWidget*, GdkEvent*, void* userdata) {
     g_free(currentFileName);
 }
 
+#if NFD_GTK_VERSION == 4
+void DialogResponseHandler(GtkDialog*, gint resp, gpointer out_resp_gp) {
+    gint* out_resp = static_cast<gint*>(out_resp_gp);
+    *out_resp = resp;
+}
+#endif
+
 // wrapper for gtk_dialog_run() that brings the dialog to the front
 // see issues at:
 // https://github.com/btzy/nativefiledialog-extended/issues/31
 // https://github.com/mlabbe/nativefiledialog/pull/92
 // https://github.com/guillaumechereau/noc/pull/11
 gint RunDialogWithFocus(GtkDialog* dialog) {
+#if NFD_GTK_VERSION == 3
 #if defined(GDK_WINDOWING_X11)
     gtk_widget_show_all(GTK_WIDGET(dialog));  // show the dialog so that it gets a display
     if (GDK_IS_X11_DISPLAY(gtk_widget_get_display(GTK_WIDGET(dialog)))) {
@@ -377,6 +508,24 @@ gint RunDialogWithFocus(GtkDialog* dialog) {
     }
 #endif
     return gtk_dialog_run(dialog);
+#elif NFD_GTK_VERSION == 4
+    // TODO: the X11 popup issues
+
+    // technically we should do this, but it's no use because we don't have a GTK window to set as
+    // the transient parent:
+    // gtk_window_set_modal(GTK_WINDOW(dialog), TRUE);
+
+    gint resp = 0;
+    g_signal_connect(G_OBJECT(dialog),
+                     "response",
+                     G_CALLBACK(DialogResponseHandler),
+                     static_cast<gpointer>(&resp));
+    gtk_widget_show(GTK_WIDGET(dialog));
+    while (resp == 0) g_main_context_iteration(NULL, TRUE);
+    return resp;
+#else
+    UNSUPPORTED_ERROR();
+#endif
 }
 
 }  // namespace
@@ -393,10 +542,24 @@ void NFD_ClearError(void) {
 
 nfdresult_t NFD_Init(void) {
     // Init GTK
-    if (!gtk_init_check(NULL, NULL)) {
+#if NFD_GTK_VERSION == 3
+    if (!gtk_init_check(NULL, NULL))
+#elif NFD_GTK_VERSION == 4
+    if (!gtk_init_check())
+#else
+    UNSUPPORTED_ERROR();
+#endif
+    {
         NFDi_SetError("Failed to initialize GTK+ with gtk_init_check.");
         return NFD_ERROR;
     }
+#if NFD_GTK_VERSION == 4
+    // we need to give the program a name, so that GTK won't keep giving us warnings about recently
+    // used resources
+    if (!g_get_prgname()) {
+        g_set_prgname(program_invocation_short_name);
+    }
+#endif
     return NFD_OKAY;
 }
 void NFD_Quit(void) {
@@ -428,13 +591,12 @@ nfdresult_t NFD_OpenDialogN(nfdnchar_t** outPath,
     AddFiltersToDialog(GTK_FILE_CHOOSER(widget), filterList, filterCount);
 
     /* Set the default path */
-    SetDefaultPath(GTK_FILE_CHOOSER(widget), defaultPath);
+    nfdresult_t res = SetDefaultPath(GTK_FILE_CHOOSER(widget), defaultPath);
+    if (res != NFD_OKAY) return res;
 
     if (RunDialogWithFocus(GTK_DIALOG(widget)) == GTK_RESPONSE_ACCEPT) {
         // write out the file name
-        *outPath = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(widget));
-
-        return NFD_OKAY;
+        return GetSingleFileNameForOpen(widget, outPath);
     } else {
         return NFD_CANCEL;
     }
@@ -463,14 +625,12 @@ nfdresult_t NFD_OpenDialogMultipleN(const nfdpathset_t** outPaths,
     AddFiltersToDialog(GTK_FILE_CHOOSER(widget), filterList, filterCount);
 
     /* Set the default path */
-    SetDefaultPath(GTK_FILE_CHOOSER(widget), defaultPath);
+    nfdresult_t res = SetDefaultPath(GTK_FILE_CHOOSER(widget), defaultPath);
+    if (res != NFD_OKAY) return res;
 
     if (RunDialogWithFocus(GTK_DIALOG(widget)) == GTK_RESPONSE_ACCEPT) {
         // write out the file name
-        GSList* fileList = gtk_file_chooser_get_filenames(GTK_FILE_CHOOSER(widget));
-
-        *outPaths = static_cast<void*>(fileList);
-        return NFD_OKAY;
+        return GetMultipleFileNamesForOpen(widget, outPaths);
     } else {
         return NFD_CANCEL;
     }
@@ -493,8 +653,10 @@ nfdresult_t NFD_SaveDialogN(nfdnchar_t** outPath,
 
     GtkWidget* saveButton = gtk_dialog_add_button(GTK_DIALOG(widget), "_Save", GTK_RESPONSE_ACCEPT);
 
-    // Prompt on overwrite
+    // Prompt on overwrite (GTK3 only, because GTK4 automatically prompts)
+#if NFD_GTK_VERSION == 3
     gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(widget), TRUE);
+#endif
 
     /* Build the filter list */
     ButtonClickedArgs buttonClickedArgs;
@@ -503,30 +665,43 @@ nfdresult_t NFD_SaveDialogN(nfdnchar_t** outPath,
         AddFiltersToDialogWithMap(GTK_FILE_CHOOSER(widget), filterList, filterCount);
 
     /* Set the default path */
-    SetDefaultPath(GTK_FILE_CHOOSER(widget), defaultPath);
+    nfdresult_t res = SetDefaultPath(GTK_FILE_CHOOSER(widget), defaultPath);
+    if (res != NFD_OKAY) return res;
 
     /* Set the default file name */
     SetDefaultName(GTK_FILE_CHOOSER(widget), defaultName);
 
+#if NFD_GTK_VERSION == 3
     /* set the handler to add file extension */
     gulong handlerID = g_signal_connect(G_OBJECT(saveButton),
                                         "button-press-event",
-                                        G_CALLBACK(FileActivatedSignalHandler),
+                                        G_CALLBACK(ButtonPressedSignalHandler),
                                         static_cast<void*>(&buttonClickedArgs));
+#elif NFD_GTK_VERSION == 4
+    GtkGesture* gesture = gtk_gesture_click_new();
+    gulong handlerID = g_signal_connect(G_OBJECT(gesture),
+                                        "pressed",
+                                        G_CALLBACK(ButtonPressedSignalHandler),
+                                        static_cast<void*>(&buttonClickedArgs));
+    gtk_widget_add_controller(saveButton,GTK_EVENT_CONTROLLER(gesture));
+#endif
 
     /* invoke the dialog (blocks until dialog is closed) */
     gint result = RunDialogWithFocus(GTK_DIALOG(widget));
+
+#if NFD_GTK_VERSION == 3
     /* unset the handler */
     g_signal_handler_disconnect(G_OBJECT(saveButton), handlerID);
+#elif NFD_GTK_VERSION == 4
+    g_signal_handler_disconnect(G_OBJECT(gesture), handlerID);
+#endif
 
     /* free the filter map */
     NFDi_Free(buttonClickedArgs.map);
 
     if (result == GTK_RESPONSE_ACCEPT) {
         // write out the file name
-        *outPath = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(widget));
-
-        return NFD_OKAY;
+        return GetSingleFileNameForSave(widget, outPath);
     } else {
         return NFD_CANCEL;
     }
@@ -546,17 +721,19 @@ nfdresult_t NFD_PickFolderN(nfdnchar_t** outPath, const nfdnchar_t* defaultPath)
     Widget_Guard widgetGuard(widget);
 
     /* Set the default path */
-    SetDefaultPath(GTK_FILE_CHOOSER(widget), defaultPath);
+    nfdresult_t res = SetDefaultPath(GTK_FILE_CHOOSER(widget), defaultPath);
+    if (res != NFD_OKAY) return res;
 
     if (RunDialogWithFocus(GTK_DIALOG(widget)) == GTK_RESPONSE_ACCEPT) {
         // write out the file name
-        *outPath = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(widget));
-
-        return NFD_OKAY;
+        // we don't support non-local files, so the behaviour is the same as the save dialog
+        return GetSingleFileNameForSave(widget, outPath);
     } else {
         return NFD_CANCEL;
     }
 }
+
+#if NFD_GTK_VERSION == 3
 
 nfdresult_t NFD_PathSet_GetCount(const nfdpathset_t* pathSet, nfdpathsetsize_t* count) {
     assert(pathSet);
@@ -626,3 +803,69 @@ nfdresult_t NFD_PathSet_EnumNextN(nfdpathsetenum_t* enumerator, nfdnchar_t** out
 
     return NFD_OKAY;
 }
+
+#elif NFD_GTK_VERSION == 4
+
+nfdresult_t NFD_PathSet_GetCount(const nfdpathset_t* pathSet, nfdpathsetsize_t* count) {
+    assert(pathSet);
+    // const_cast because methods on GSList aren't const, but it should act
+    // like const to the caller
+    GListModel* fileList = const_cast<GListModel*>(static_cast<const GListModel*>(pathSet));
+
+    *count = g_list_model_get_n_items(fileList);
+    return NFD_OKAY;
+}
+
+nfdresult_t NFD_PathSet_GetPathN(const nfdpathset_t* pathSet,
+                                 nfdpathsetsize_t index,
+                                 nfdnchar_t** outPath) {
+    assert(pathSet);
+    // const_cast because methods on GSList aren't const, but it should act
+    // like const to the caller
+    GListModel* fileList = const_cast<GListModel*>(static_cast<const GListModel*>(pathSet));
+
+    return GetFileNameFromGFile(static_cast<GFile*>(g_list_model_get_item(fileList, index)),
+                                outPath);
+}
+
+void NFD_PathSet_FreePathN(const nfdnchar_t* filePath) {
+    assert(filePath);
+    // no-op, because GetFileNameFromGFile already frees it
+}
+
+void NFD_PathSet_Free(const nfdpathset_t* pathSet) {
+    assert(pathSet);
+    // const_cast because methods on GSList aren't const, but it should act
+    // like const to the caller
+    GListModel* fileList = const_cast<GListModel*>(static_cast<const GListModel*>(pathSet));
+
+    // free the path set memory
+    g_object_unref(fileList);
+}
+
+nfdresult_t NFD_PathSet_GetEnum(const nfdpathset_t* pathSet, nfdpathsetenum_t* outEnumerator) {
+    // The enumeration is the GListModel with the current index
+    outEnumerator->ptr = const_cast<void*>(pathSet);
+    outEnumerator->next_index = 0;
+
+    return NFD_OKAY;
+}
+
+void NFD_PathSet_FreeEnum(nfdpathsetenum_t*) {
+    // Do nothing, because we didn't allocate any memory in the enum
+}
+
+nfdresult_t NFD_PathSet_EnumNextN(nfdpathsetenum_t* enumerator, nfdnchar_t** outPath) {
+    GListModel* fileList = static_cast<GListModel*>(enumerator->ptr);
+
+    GFile* file = static_cast<GFile*>(g_list_model_get_item(fileList, enumerator->next_index));
+    if (file) {
+        ++enumerator->next_index;
+        return GetFileNameFromGFile(file, outPath);
+    } else {
+        *outPath = nullptr;
+        return NFD_OKAY;
+    }
+}
+
+#endif

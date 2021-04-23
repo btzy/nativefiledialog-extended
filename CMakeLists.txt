@@ -26,6 +26,6 @@ set (CMAKE_CXX_STANDARD 17)
 add_subdirectory(src)
 
 option(NFD_BUILD_TESTS "Build tests for nfd" OFF)
-if(${NFD_BUILD_TESTS})
+if(NFD_BUILD_TESTS)
     add_subdirectory(test)
 endif()
