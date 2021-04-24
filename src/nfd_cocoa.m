@@ -124,7 +124,10 @@ nfdresult_t NFD_Init(void) {
     NSApplication* app = [NSApplication sharedApplication];
     old_app_policy = [app activationPolicy];
     if (old_app_policy == NSApplicationActivationPolicyProhibited) {
-        if (![app setActivationPolicy:NSApplicationActivationPolicyAccessory]) return NFD_ERROR;
+        if (![app setActivationPolicy:NSApplicationActivationPolicyAccessory]) {
+            NFDi_SetError("Failed to set activation policy.");
+            return NFD_ERROR;
+        }
     }
     return NFD_OKAY;
 }
