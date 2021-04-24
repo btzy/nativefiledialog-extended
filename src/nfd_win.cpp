@@ -166,7 +166,10 @@ nfdresult_t AddFiltersToDialog(::IFileDialog* fileOpenDialog,
     specList[filterCount].pszSpec = L"*.*";
 
     // add the filter to the dialog
-    fileOpenDialog->SetFileTypes(filterCount + 1, specList);
+    if (!SUCCEEDED(fileOpenDialog->SetFileTypes(filterCount + 1, specList))) {
+        NFDi_SetError("Failed to set the allowable file types for the drop-down menu.");
+        return NFD_ERROR;
+    }
 
     // automatic freeing of memory via COMDLG_FILTERSPEC_Guard
     return NFD_OKAY;
@@ -185,6 +188,7 @@ nfdresult_t SetDefaultExtension(::IFileDialog* fileOpenDialog,
 
     // set the first item as the default index, and set the default extension
     if (!SUCCEEDED(fileOpenDialog->SetFileTypeIndex(1))) {
+        NFDi_SetError("Failed to set the selected file type index.");
         return NFD_ERROR;
     }
 
@@ -213,11 +217,13 @@ nfdresult_t SetDefaultExtension(::IFileDialog* fileOpenDialog,
         extnBuf[numChars] = L'\0';
 
         if (!SUCCEEDED(fileOpenDialog->SetDefaultExtension(extnBuf))) {
+            NFDi_SetError("Failed to set default extension.");
             return NFD_ERROR;
         }
     } else {
         // single file extension for this type (no need to allocate memory)
         if (!SUCCEEDED(fileOpenDialog->SetDefaultExtension(filterList[0].spec))) {
+            NFDi_SetError("Failed to set default extension.");
             return NFD_ERROR;
         }
     }
@@ -238,7 +244,7 @@ nfdresult_t SetDefaultPath(IFileDialog* dialog, const nfdnchar_t* defaultPath) {
     }
 
     if (!SUCCEEDED(result)) {
-        NFDi_SetError("Error creating ShellItem");
+        NFDi_SetError("Failed to create ShellItem for setting the default path.");
         return NFD_ERROR;
     }
 
@@ -248,7 +254,7 @@ nfdresult_t SetDefaultPath(IFileDialog* dialog, const nfdnchar_t* defaultPath) {
     // need to keep navigating back to the default folder (recommended by Windows). change to
     // SetFolder() if you always want to use the default folder
     if (!SUCCEEDED(dialog->SetDefaultFolder(folder))) {
-        NFDi_SetError("Error setting default path");
+        NFDi_SetError("Failed to set default path.");
         return NFD_ERROR;
     }
 
@@ -259,7 +265,7 @@ nfdresult_t SetDefaultName(IFileDialog* dialog, const nfdnchar_t* defaultName) {
     if (!defaultName || !*defaultName) return NFD_OKAY;
 
     if (!SUCCEEDED(dialog->SetFileName(defaultName))) {
-        NFDi_SetError("Error setting default file name");
+        NFDi_SetError("Failed to set default file name.");
         return NFD_ERROR;
     }
 
@@ -269,11 +275,11 @@ nfdresult_t SetDefaultName(IFileDialog* dialog, const nfdnchar_t* defaultName) {
 nfdresult_t AddOptions(IFileDialog* dialog, FILEOPENDIALOGOPTIONS options) {
     FILEOPENDIALOGOPTIONS existingOptions;
     if (!SUCCEEDED(dialog->GetOptions(&existingOptions))) {
-        NFDi_SetError("Could not get options.");
+        NFDi_SetError("Failed to get options.");
         return NFD_ERROR;
     }
     if (!SUCCEEDED(dialog->SetOptions(existingOptions | options))) {
-        NFDi_SetError("Could not set options.");
+        NFDi_SetError("Failed to set options.");
         return NFD_ERROR;
     }
     return NFD_OKAY;
@@ -311,6 +317,7 @@ nfdresult_t NFD_Init(void) {
         needs_uninitialize = false;
         return NFD_OKAY;
     } else {
+        NFDi_SetError("Failed to initialize COM.");
         return NFD_ERROR;
     }
 }
@@ -379,7 +386,7 @@ nfdresult_t NFD_OpenDialogN(nfdnchar_t** outPath,
         nfdnchar_t* filePath;
         result = psiResult->GetDisplayName(::SIGDN_FILESYSPATH, &filePath);
         if (!SUCCEEDED(result)) {
-            NFDi_SetError("Could not get file path for selected.");
+            NFDi_SetError("Could not get file path from shell item returned by dialog.");
             return NFD_ERROR;
         }
 
@@ -519,7 +526,7 @@ nfdresult_t NFD_SaveDialogN(nfdnchar_t** outPath,
         nfdnchar_t* filePath;
         result = psiResult->GetDisplayName(::SIGDN_FILESYSPATH, &filePath);
         if (!SUCCEEDED(result)) {
-            NFDi_SetError("Could not get file path for selected.");
+            NFDi_SetError("Could not get file path from shell item returned by dialog.");
             return NFD_ERROR;
         }
 
@@ -580,7 +587,7 @@ nfdresult_t NFD_PickFolderN(nfdnchar_t** outPath, const nfdnchar_t* defaultPath)
     nfdnchar_t* filePath;
     // Why are we not using SIGDN_FILESYSPATH?
     if (!SUCCEEDED(psiResult->GetDisplayName(::SIGDN_DESKTOPABSOLUTEPARSING, &filePath))) {
-        NFDi_SetError("Could not get file path for selected.");
+        NFDi_SetError("Could not get file path from shell item returned by dialog.");
         return NFD_ERROR;
     }
 
@@ -597,9 +604,8 @@ nfdresult_t NFD_PathSet_GetCount(const nfdpathset_t* pathSet, nfdpathsetsize_t* 
         const_cast<::IShellItemArray*>(static_cast<const ::IShellItemArray*>(pathSet));
 
     DWORD numPaths;
-    HRESULT result = psiaPathSet->GetCount(&numPaths);
-    if (!SUCCEEDED(result)) {
-        NFDi_SetError("Could not get path count");
+    if (!SUCCEEDED(psiaPathSet->GetCount(&numPaths))) {
+        NFDi_SetError("Could not get path count.");
         return NFD_ERROR;
     }
     *count = numPaths;
@@ -617,7 +623,7 @@ nfdresult_t NFD_PathSet_GetPathN(const nfdpathset_t* pathSet,
 
     ::IShellItem* psiPath;
     if (!SUCCEEDED(psiaPathSet->GetItemAt(index, &psiPath))) {
-        NFDi_SetError("Could not get shell item");
+        NFDi_SetError("Could not get shell item.");
         return NFD_ERROR;
     }
 
@@ -625,7 +631,7 @@ nfdresult_t NFD_PathSet_GetPathN(const nfdpathset_t* pathSet,
 
     nfdnchar_t* name;
     if (!SUCCEEDED(psiPath->GetDisplayName(::SIGDN_FILESYSPATH, &name))) {
-        NFDi_SetError("Could not get file path for selected.");
+        NFDi_SetError("Could not get file path from shell item.");
         return NFD_ERROR;
     }
 
@@ -642,7 +648,7 @@ nfdresult_t NFD_PathSet_GetEnum(const nfdpathset_t* pathSet, nfdpathsetenum_t* o
 
     ::IEnumShellItems* pesiPaths;
     if (!SUCCEEDED(psiaPathSet->EnumItems(&pesiPaths))) {
-        NFDi_SetError("Could not get enumerator");
+        NFDi_SetError("Could not get enumerator.");
         return NFD_ERROR;
     }
 
@@ -679,7 +685,7 @@ nfdresult_t NFD_PathSet_EnumNextN(nfdpathsetenum_t* enumerator, nfdnchar_t** out
 
     nfdnchar_t* name;
     if (!SUCCEEDED(psiPath->GetDisplayName(::SIGDN_FILESYSPATH, &name))) {
-        NFDi_SetError("Could not get file path for selected.");
+        NFDi_SetError("Could not get file path from shell item.");
         return NFD_ERROR;
     }
 

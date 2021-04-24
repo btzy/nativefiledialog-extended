@@ -396,7 +396,7 @@ void NFD_ClearError(void) {
 nfdresult_t NFD_Init(void) {
     // Init GTK
     if (!gtk_init_check(NULL, NULL)) {
-        NFDi_SetError("gtk_init_check failed to initilaize GTK+");
+        NFDi_SetError("Failed to initialize GTK+ with gtk_init_check.");
         return NFD_ERROR;
     }
     return NFD_OKAY;
