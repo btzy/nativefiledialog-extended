@@ -290,19 +290,32 @@ void NFD_ClearError(void) {
 
 /* public */
 
+namespace {
+// The user might have initialized with COINIT_MULTITHREADED before,
+// in which case we will fail to do CoInitializeEx(), but file dialogs will still work.
+// See https://github.com/mlabbe/nativefiledialog/issues/72 for more information.
+bool needs_uninitialize;
+}  // namespace
+
 nfdresult_t NFD_Init(void) {
     // Init COM library.
     HRESULT result =
         ::CoInitializeEx(nullptr, ::COINIT_APARTMENTTHREADED | ::COINIT_DISABLE_OLE1DDE);
 
-    if (!SUCCEEDED(result)) {
-        return NFD_ERROR;
-    } else {
+    if (SUCCEEDED(result)) {
+        needs_uninitialize = true;
         return NFD_OKAY;
+    } else if (result == RPC_E_CHANGED_MODE) {
+        // If this happens, the user already initialized COM using COINIT_MULTITHREADED,
+        // so COM will still work, but we shouldn't uninitialize it later.
+        needs_uninitialize = false;
+        return NFD_OKAY;
+    } else {
+        return NFD_ERROR;
     }
 }
 void NFD_Quit(void) {
-    ::CoUninitialize();
+    if (needs_uninitialize) ::CoUninitialize();
 }
 
 void NFD_FreePathN(nfdnchar_t* filePath) {
