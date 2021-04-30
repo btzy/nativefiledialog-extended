@@ -184,12 +184,14 @@ because the underlying platform-specific implementation uses a linked list.
 
 See [test_opendialogmultiple.c](test/test_opendialogmultiple.c).
 
-### Using an enumerator
+### Using an enumerator (experimental)
 
 This method uses an enumerator object to iterate the paths in the PathSet.
 It is guaranteed to take O(N) time in total to iterate the entire PathSet.
 
 See [test_opendialogmultiple_enum.c](test/test_opendialogmultiple_enum.c).
+
+This API is experimental, and subject to change.
 
 ## Customization Macros
 
