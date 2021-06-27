@@ -309,9 +309,7 @@ struct Widget_Guard {
     }
 };
 
-void FileActivatedSignalHandler(GtkButton* saveButton, void* userdata) {
-    (void)saveButton;  // silence the unused arg warning
-
+void FileActivatedSignalHandler(GtkWidget*, GdkEvent*, void* userdata) {
     ButtonClickedArgs* args = static_cast<ButtonClickedArgs*>(userdata);
     GtkFileChooser* chooser = args->chooser;
     char* currentFileName = gtk_file_chooser_get_current_name(chooser);
@@ -512,7 +510,7 @@ nfdresult_t NFD_SaveDialogN(nfdnchar_t** outPath,
 
     /* set the handler to add file extension */
     gulong handlerID = g_signal_connect(G_OBJECT(saveButton),
-                                        "pressed",
+                                        "button-press-event",
                                         G_CALLBACK(FileActivatedSignalHandler),
                                         static_cast<void*>(&buttonClickedArgs));
 
