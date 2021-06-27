@@ -28,6 +28,9 @@ typedef char nfdnchar_t;
 typedef void nfdpathset_t;
 typedef struct {
     void* ptr;
+#if defined(NFD_GTK_VERSION) && NFD_GTK_VERSION == 4
+    unsigned int next_index;
+#endif
 } nfdpathsetenum_t;
 
 typedef unsigned int nfdfiltersize_t;
@@ -42,6 +45,10 @@ typedef struct {
     const nfdnchar_t* name;
     const nfdnchar_t* spec;
 } nfdnfilteritem_t;
+
+/* Conventions:
+ * Output parameter (typically outPath/outPaths), if any, will not be modified if the function
+ * returns something other than NFD_OKAY. This applies everywhere, including helper functions. */
 
 /* nfd_<targetplatform>.c */
 
