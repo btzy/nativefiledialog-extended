@@ -195,7 +195,7 @@ nfdresult_t SetDefaultExtension(::IFileDialog* fileOpenDialog,
     // set the first item as the default file extension
     const nfdnchar_t* p_spec = filterList[0].spec;
     for (; *p_spec; ++p_spec) {
-        if (*p_spec == ';') {
+        if (*p_spec == ',') {
             break;
         }
     }
