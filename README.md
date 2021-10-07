@@ -3,7 +3,7 @@
 
 ![GitHub Actions](https://github.com/btzy/nativefiledialog-extended/workflows/build/badge.svg)
 
-A small C library with that portably invokes native file open, folder select and save dialogs.  Write dialog code once and have it pop up native dialogs on all supported platforms.  Avoid linking large dependencies like wxWidgets and Qt.
+A small C library with that portably invokes native file open, folder select and file save dialogs.  Write dialog code once and have it pop up native dialogs on all supported platforms.  Avoid linking large dependencies like wxWidgets and Qt.
 
 This library is based on Michael Labbe's Native File Dialog ([mlabbe/nativefiledialog](https://github.com/mlabbe/nativefiledialog)).
 
@@ -49,7 +49,7 @@ There is also significant code refractoring, especially for the Windows implemen
 #include <stdio.h>
 #include <stdlib.h>
 
-int main( void )
+int main(void)
 {
     
     NFD_Init();
@@ -57,19 +57,19 @@ int main( void )
     nfdchar_t *outPath;
     nfdfilteritem_t filterItem[2] = { { "Source code", "c,cpp,cc" }, { "Headers", "h,hpp" } };
     nfdresult_t result = NFD_OpenDialog(&outPath, filterItem, 2, NULL);
-    if ( result == NFD_OKAY )
+    if (result == NFD_OKAY)
     {
         puts("Success!");
         puts(outPath);
         NFD_FreePath(outPath);
     }
-    else if ( result == NFD_CANCEL )
+    else if (result == NFD_CANCEL)
     {
         puts("User pressed cancel.");
     }
     else 
     {
-        printf("Error: %s\n", NFD_GetError() );
+        printf("Error: %s\n", NFD_GetError());
     }
 
     NFD_Quit();
@@ -154,7 +154,7 @@ If you turned on the option to build the `test` directory (`-DNFD_BUILD_TESTS=ON
 Files can be filtered by file extension groups:
 
 ```C
-nfdfilteritem_t filterItem[2] = { { "Source code", "c,cpp,cc" },{ "Header", "h,hpp" } };
+nfdfilteritem_t filterItem[2] = { { "Source code", "c,cpp,cc" }, { "Headers", "h,hpp" } };
 ```
 
 A file filter is a pair of strings comprising the friendly name and the specification (multiple file extensions are comma-separated).
@@ -239,15 +239,13 @@ SDL_Quit(); // Then deinitialize SDL2
 
 # Reporting Bugs #
 
-Please use the Github issue tracker to report bugs or to contribute to this repository.
-
-As this is a new project, it hasn't been battle-tested yet.  Feel free to submit bug reports of any kind.
+Please use the GitHub issue tracker to report bugs or to contribute to this repository.  Feel free to submit bug reports of any kind.
 
 # Credit #
 
-Bernard Teo (me) and other contributors for everything that wasn't from Michael Labbe's [Native File Dialog](https://github.com/mlabbe/nativefiledialog)).
+Bernard Teo (me) and other contributors for everything that wasn't from Michael Labbe's [Native File Dialog](https://github.com/mlabbe/nativefiledialog).
 
-[Michael Labbe](https://github.com/mlabbe) for his awesome Native File Dialog library, and other contributors to that library.
+[Michael Labbe](https://github.com/mlabbe) for his awesome Native File Dialog library, and the other contributors to that library.
 
 Much of this README has also been copied from the README of original Native File Dialog repository.
 
