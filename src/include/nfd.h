@@ -26,9 +26,28 @@ typedef char nfdnchar_t;
 
 /* opaque data structure -- see NFD_PathSet_* */
 typedef void nfdpathset_t;
+#ifndef NFD_PORTAL
 typedef struct {
     void* ptr;
 } nfdpathsetenum_t;
+#else
+typedef struct {
+    void* d1;
+    void* d2;
+    unsigned int d3;
+    int d4;
+    int d5;
+    int d6;
+    int d7;
+    int d8;
+    int d9;
+    int d10;
+    int d11;
+    int p1;
+    void* p2;
+    void* p3;
+} nfdpathsetenum_t;
+#endif
 
 typedef unsigned int nfdfiltersize_t;
 
