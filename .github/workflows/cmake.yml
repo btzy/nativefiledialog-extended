@@ -64,6 +64,28 @@ jobs:
           build/src/libnfd.a
           build/test/test_*
   
+  build-ubuntu-portal-gcc:
+
+    name: Ubuntu latest, desktop portals - GCC
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Installing Dependencies
+      run: sudo apt-get update && sudo apt-get install libdbus-1-dev
+    - name: Configure
+      run: mkdir build && mkdir install && cd build && cmake -DCMAKE_INSTALL_PREFIX="../install" -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-Wall -Wextra -Werror -pedantic" -DNFD_PORTAL=ON -DNFD_BUILD_TESTS=ON ..
+    - name: Build
+      run: cmake --build build --target install
+    - name: Upload test binaries
+      uses: actions/upload-artifact@v2
+      with:
+        name: Ubuntu latest, desktop portals - GCC
+        path: |
+          build/src/libnfd.a
+          build/test/test_*
+  
   build-ubuntu-clang:
 
     name: Ubuntu latest - Clang
