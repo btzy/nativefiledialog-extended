@@ -143,6 +143,9 @@ On MacOS, add `AppKit` to the list of frameworks.
 ### Windows
 On Windows, ensure you are building against `comctl32.lib` and `uuid.lib`.
 
+### MinGW
+Under MinGW64, ensure you are building against `ole32.lib` and `uuid.lib`.
+
 # Usage
 
 See `NFD.h` for API calls.  See the `test` directory for example code (both C and C++).
