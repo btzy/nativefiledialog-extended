@@ -43,8 +43,6 @@ typedef struct {
     const nfdnchar_t* spec;
 } nfdnfilteritem_t;
 
-/* nfd_<targetplatform>.c */
-
 /* free a file path that was returned by the dialogs */
 /* Note: use NFD_PathSet_FreePath to free path from pathset instead of this function */
 void NFD_FreePathN(nfdnchar_t* filePath);
