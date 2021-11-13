@@ -716,8 +716,8 @@ nfdresult_t CopyCharToWChar(const nfdu8char_t* inStr, nfdnchar_t*& outStr) {
     }
 
     int ret = MultiByteToWideChar(CP_UTF8, 0, inStr, -1, tmp_outStr, charsNeeded);
-
     assert(ret && ret == charsNeeded);
+    (void)ret;  // prevent warning in release build
     outStr = tmp_outStr;
     return NFD_OKAY;
 }
@@ -734,6 +734,7 @@ nfdresult_t CopyWCharToNFDChar(const nfdnchar_t* inStr, nfdu8char_t*& outStr) {
 
     int ret = WideCharToMultiByte(CP_UTF8, 0, inStr, -1, tmp_outStr, bytesNeeded, nullptr, nullptr);
     assert(ret && ret == bytesNeeded);
+    (void)ret;  // prevent warning in release build
     outStr = tmp_outStr;
     return NFD_OKAY;
 }
