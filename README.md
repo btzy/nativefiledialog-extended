@@ -141,7 +141,7 @@ and it probably works on Visual Studio 2017 too.
 On MacOS, add `AppKit` to the list of frameworks.
 
 ### Windows
-On Windows, ensure you are building against `comctl32.lib` and `uuid.lib`.
+On Windows (both MSVC and MinGW), ensure you are building against `ole32.lib` and `uuid.lib`.
 
 # Usage
 
