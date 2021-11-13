@@ -140,8 +140,8 @@ and it probably works on Visual Studio 2017 too.
 ### MacOS
 On MacOS, add `AppKit` to the list of frameworks.
 
-### Windows or MinGW64
-On Windows or with the MinGW64 toolchain, ensure you are building against `ole32.lib` and `uuid.lib`.
+### Windows
+On Windows (both MSVC and MinGW), ensure you are building against `ole32.lib` and `uuid.lib`.
 
 # Usage
 
