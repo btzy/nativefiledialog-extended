@@ -236,6 +236,7 @@ SDL_Quit(); // Then deinitialize SDL2
  - No Emscripten (WebAssembly) bindings.  (This might get implemented if I decide to port Circuit Sandbox for the web, but I don't think there is any way to implement a web-based folder picker.)
  - GTK dialogs don't set the existing window as parent, so if users click the existing window while the dialog is open then the dialog will go behind it.  GTK writes a warning to stdout or stderr about this.
  - This library is not compatible with the original Native File Dialog library.  Things might break if you use both in the same project.  (There are no plans to support this; you have to use one or the other.)
+ - This library does not redirect calls to the Main thread to manage the UI. This may lead to crashes if you invoke methods from a non-main thread.
 
 # Reporting Bugs #
 
