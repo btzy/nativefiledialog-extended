@@ -19,6 +19,15 @@
 
 #include "nfd.h"
 
+/*
+Define NFD_PORTAL_AUTO_APPEND_FILE_EXTENSION to 0 if you don't want the file extension to be
+appended when missing. Linux programs usually doesn't append the file extension, but for consistency
+with other OSes we append it by default.
+*/
+#ifndef NFD_PORTAL_AUTO_APPEND_FILE_EXTENSION
+#define NFD_PORTAL_AUTO_APPEND_FILE_EXTENSION 1
+#endif
+
 namespace {
 
 template <typename T = void>
@@ -616,10 +625,13 @@ nfdresult_t ReadDict(DBusMessageIter iter, Args... args) {
     return NFD_OKAY;
 }
 
-// Read the message.  If response was okay, then returns NFD_OKAY and set `uriIter` to the URI array
-// iterator. Otherwise, returns NFD_CANCEL or NFD_ERROR as appropriate, and does not modify
-// `uriIter`. `uriIter` can be copied by value.
-nfdresult_t ReadResponseUris(DBusMessage* msg, DBusMessageIter& uriIter) {
+// Read the message, returning an iterator to the `results` dictionary of the response.  If response
+// was okay, then returns NFD_OKAY and set `resultsIter` to the results dictionary iterator (this is
+// the iterator to the entire dictionary (which has type DBUS_TYPE_ARRAY), not an iterator to the
+// first item in the dictionary).  It does not check that this iterator is DBUS_TYPE_ARRAY; you
+// should use ReadDict() which will check it.  Otherwise, returns NFD_CANCEL or NFD_ERROR as
+// appropriate, and does not modify `resultsIter`. `resultsIter` can be copied by value.
+nfdresult_t ReadResponseResults(DBusMessage* msg, DBusMessageIter& resultsIter) {
     DBusMessageIter iter;
     if (!dbus_message_iter_init(msg, &iter)) {
         NFDi_SetError("D-Bus response signal is missing one or more arguments.");
@@ -646,6 +658,17 @@ nfdresult_t ReadResponseUris(DBusMessage* msg, DBusMessageIter& uriIter) {
         NFDi_SetError("D-Bus response signal is missing one or more arguments.");
         return NFD_ERROR;
     }
+    resultsIter = iter;
+    return NFD_OKAY;
+}
+
+// Read the message.  If response was okay, then returns NFD_OKAY and set `uriIter` to the URI array
+// iterator. Otherwise, returns NFD_CANCEL or NFD_ERROR as appropriate, and does not modify
+// `uriIter`. `uriIter` can be copied by value.
+nfdresult_t ReadResponseUris(DBusMessage* msg, DBusMessageIter& uriIter) {
+    DBusMessageIter iter;
+    const nfdresult_t res = ReadResponseResults(msg, iter);
+    if (res != NFD_OKAY) return res;
     bool has_uris = false;
     if (ReadDict(iter, "uris", [&uriIter, &has_uris](DBusMessageIter& uris_iter) {
             if (dbus_message_iter_get_arg_type(&uris_iter) != DBUS_TYPE_ARRAY) {
@@ -689,9 +712,9 @@ nfdpathsetsize_t ReadResponseUrisUncheckedGetArraySize(DBusMessage* msg) {
     return sz;
 }
 
-// Read the message.  If response was okay, then returns NFD_OKAY and set file to it (the pointer is
-// set to some string owned by msg, so you should not manually free it). Otherwise, returns
-// NFD_CANCEL or NFD_ERROR as appropriate, and does not modify `file`.
+// Read the response URI.  If response was okay, then returns NFD_OKAY and set file to it (the
+// pointer is set to some string owned by msg, so you should not manually free it). Otherwise,
+// returns NFD_CANCEL or NFD_ERROR as appropriate, and does not modify `file`.
 nfdresult_t ReadResponseUrisSingle(DBusMessage* msg, const char*& file) {
     DBusMessageIter uri_iter;
     const nfdresult_t res = ReadResponseUris(msg, uri_iter);
@@ -703,6 +726,100 @@ nfdresult_t ReadResponseUrisSingle(DBusMessage* msg, const char*& file) {
     dbus_message_iter_get_basic(&uri_iter, &file);
     return NFD_OKAY;
 }
+
+#if NFD_PORTAL_AUTO_APPEND_FILE_EXTENSION == 1
+// Read the response URI and selected extension (in the form "*.abc" or "*") (if any).  If response
+// was okay, then returns NFD_OKAY and set file and extn to them (the pointer is set to some string
+// owned by msg, so you should not manually free it).  `file` is the user-entered file name, and
+// `extn` is the selected file extension (the first one if there are multiple extensions in the
+// selected option) (this is NULL if "All files" is selected).  Otherwise, returns NFD_CANCEL or
+// NFD_ERROR as appropriate, and does not modify `file` and `extn`.
+nfdresult_t ReadResponseUrisSingleAndCurrentExtension(DBusMessage* msg,
+                                                      const char*& file,
+                                                      const char*& extn) {
+    DBusMessageIter iter;
+    const nfdresult_t res = ReadResponseResults(msg, iter);
+    if (res != NFD_OKAY) return res;
+    const char* tmp_file = nullptr;
+    const char* tmp_extn = nullptr;
+    if (ReadDict(
+            iter,
+            "uris",
+            [&tmp_file](DBusMessageIter& uris_iter) {
+                if (dbus_message_iter_get_arg_type(&uris_iter) != DBUS_TYPE_ARRAY) {
+                    NFDi_SetError("D-Bus response signal URI iter is not an array.");
+                    return NFD_ERROR;
+                }
+                DBusMessageIter uri_iter;
+                dbus_message_iter_recurse(&uris_iter, &uri_iter);
+                if (dbus_message_iter_get_arg_type(&uri_iter) != DBUS_TYPE_STRING) {
+                    NFDi_SetError("D-Bus response signal URI sub iter is not a string.");
+                    return NFD_ERROR;
+                }
+                dbus_message_iter_get_basic(&uri_iter, &tmp_file);
+                return NFD_OKAY;
+            },
+            "current_filter",
+            [&tmp_extn](DBusMessageIter& current_filter_iter) {
+                // current_filter is best_effort, so if we fail, we still return NFD_OKAY.
+                if (dbus_message_iter_get_arg_type(&current_filter_iter) != DBUS_TYPE_STRUCT) {
+                    // NFDi_SetError("D-Bus response signal current_filter iter is not a struct.");
+                    return NFD_OKAY;
+                }
+                DBusMessageIter current_filter_struct_iter;
+                dbus_message_iter_recurse(&current_filter_iter, &current_filter_struct_iter);
+                if (!dbus_message_iter_next(&current_filter_struct_iter)) {
+                    // NFDi_SetError("D-Bus response signal current_filter struct iter ended
+                    // prematurely.");
+                    return NFD_OKAY;
+                }
+                if (dbus_message_iter_get_arg_type(&current_filter_struct_iter) !=
+                    DBUS_TYPE_ARRAY) {
+                    // NFDi_SetError("D-Bus response signal URI sub iter is not an string.");
+                    return NFD_OKAY;
+                }
+                DBusMessageIter current_filter_array_iter;
+                dbus_message_iter_recurse(&current_filter_struct_iter, &current_filter_array_iter);
+                if (dbus_message_iter_get_arg_type(&current_filter_array_iter) !=
+                    DBUS_TYPE_STRUCT) {
+                    // NFDi_SetError("D-Bus response signal current_filter iter is not a struct.");
+                    return NFD_OKAY;
+                }
+                DBusMessageIter current_filter_extn_iter;
+                dbus_message_iter_recurse(&current_filter_array_iter, &current_filter_extn_iter);
+                if (dbus_message_iter_get_arg_type(&current_filter_extn_iter) != DBUS_TYPE_UINT32) {
+                    // NFDi_SetError("D-Bus response signal URI sub iter is not an string.");
+                    return NFD_OKAY;
+                }
+                dbus_uint32_t type;
+                dbus_message_iter_get_basic(&current_filter_extn_iter, &type);
+                if (type != 0) {
+                    // NFDi_SetError("Wrong filter type.");
+                    return NFD_OKAY;
+                }
+                if (!dbus_message_iter_next(&current_filter_extn_iter)) {
+                    // NFDi_SetError("D-Bus response signal current_filter struct iter ended
+                    // prematurely.");
+                    return NFD_OKAY;
+                }
+                if (dbus_message_iter_get_arg_type(&current_filter_extn_iter) != DBUS_TYPE_STRING) {
+                    // NFDi_SetError("D-Bus response signal URI sub iter is not an string.");
+                    return NFD_OKAY;
+                }
+                dbus_message_iter_get_basic(&current_filter_extn_iter, &tmp_extn);
+                return NFD_OKAY;
+            }) == NFD_ERROR)
+        return NFD_ERROR;
+
+    if (!tmp_file) {
+        NFDi_SetError("D-Bus response signal has no URI field.");
+        return NFD_ERROR;
+    }
+    file = tmp_file;
+    extn = tmp_extn;
+    return NFD_OKAY;
+}
+#endif
 
 // Appends up to 64 random chars to the given pointer.  Returns the end of the appended chars.
 char* Generate64RandomChars(char* out) {
@@ -846,6 +963,63 @@ nfdresult_t AllocAndCopyFilePath(const char* fileUri, char*& outPath) {
     outPath = path_without_prefix;
     return NFD_OKAY;
 }
+
+#if NFD_PORTAL_AUTO_APPEND_FILE_EXTENSION == 1
+bool TryGetValidExtension(const char* extn,
+                          const char*& trimmed_extn,
+                          const char*& trimmed_extn_end) {
+    if (!extn) return false;
+    if (*extn != '*') return false;
+    ++extn;
+    if (*extn != '.') return false;
+    trimmed_extn = extn;
+    for (++extn; *extn != '\0'; ++extn)
+        ;
+    ++extn;
+    trimmed_extn_end = extn;
+    return true;
+}
+
+// Like AllocAndCopyFilePath, but if `fileUri` has no extension and `extn` is usable, appends the
+// extension. `extn` could be null, in which case no extension will ever be appended. `extn` is
+// expected to be either in the form "*.abc" or "*", but this function will check for it, and ignore
+// the extension if it is not in the correct form.
+nfdresult_t AllocAndCopyFilePathWithExtn(const char* fileUri, const char* extn, char*& outPath) {
+    const char* prefix_begin = FILE_URI_PREFIX;
+    const char* const prefix_end = FILE_URI_PREFIX + FILE_URI_PREFIX_LEN;
+    for (; prefix_begin != prefix_end; ++prefix_begin, ++fileUri) {
+        if (*prefix_begin != *fileUri) {
+            NFDi_SetError("D-Bus freedesktop portal returned a URI that is not a file URI.");
+            return NFD_ERROR;
+        }
+    }
+
+    const char* file_end = fileUri;
+    for (; *file_end != '\0'; ++file_end)
+        ;
+    const char* file_it = file_end;
+    do {
+        --file_it;
+    } while (*file_it != '/' && *file_it != '.');
+    const char* trimmed_extn;      // includes the '.'
+    const char* trimmed_extn_end;  // includes the '\0'
+    if (*file_it == '.' || !TryGetValidExtension(extn, trimmed_extn, trimmed_extn_end)) {
+        // has file extension already or no valid extension in `extn`
+        ++file_end;  // includes the '\0'
+        char* path_without_prefix = NFDi_Malloc<char>(file_end - fileUri);
+        copy(fileUri, file_end, path_without_prefix);
+        outPath = path_without_prefix;
+    } else {
+        // no file extension and we have a valid extension
+        char* path_without_prefix =
+            NFDi_Malloc<char>((file_end - fileUri) + (trimmed_extn_end - trimmed_extn));
+        char* out = copy(fileUri, file_end, path_without_prefix);
+        copy(trimmed_extn, trimmed_extn_end, out);
+        outPath = path_without_prefix;
+    }
+    return NFD_OKAY;
+}
+#endif
 
 // DBus wrapper function that helps invoke the portal for all OpenFile() variants.
 // This function returns NFD_OKAY iff outMsg gets set (to the returned message).
@@ -1121,6 +1295,18 @@ nfdresult_t NFD_SaveDialogN(nfdnchar_t** outPath,
     }
     DBusMessage_Guard msg_guard(msg);
 
+#if NFD_PORTAL_AUTO_APPEND_FILE_EXTENSION == 1
+    const char* file;
+    const char* extn;
+    {
+        const nfdresult_t res = ReadResponseUrisSingleAndCurrentExtension(msg, file, extn);
+        if (res != NFD_OKAY) {
+            return res;
+        }
+    }
+
+    return AllocAndCopyFilePathWithExtn(file, extn, *outPath);
+#else
     const char* file;
     {
         const nfdresult_t res = ReadResponseUrisSingle(msg, file);
@@ -1129,9 +1315,8 @@ nfdresult_t NFD_SaveDialogN(nfdnchar_t** outPath,
         }
     }
 
-    // todo: append file extension if missing?
-
     return AllocAndCopyFilePath(file, *outPath);
+#endif
 }
 
 nfdresult_t NFD_PickFolderN(nfdnchar_t** outPath, const nfdnchar_t* defaultPath) {
