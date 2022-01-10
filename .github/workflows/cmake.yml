@@ -148,6 +148,26 @@ jobs:
           build/src/Release/nfd.lib
           build/test/Release/test_*
   
+  build-windows-clang:
+
+    name: Windows latest - Clang
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Configure
+      run: mkdir build && mkdir install && cd build && cmake -DCMAKE_INSTALL_PREFIX="../install" -T ClangCL -DNFD_BUILD_TESTS=ON ..
+    - name: Build
+      run: cmake --build build --target install --config Release
+    - name: Upload test binaries
+      uses: actions/upload-artifact@v2
+      with:
+        name: Windows latest - Clang
+        path: |
+          build/src/Release/nfd.lib
+          build/test/Release/test_*
+  
   build-windows-mingw:
 
     name: Windows latest - MinGW
