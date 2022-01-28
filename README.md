@@ -10,7 +10,7 @@ This library is based on Michael Labbe's Native File Dialog ([mlabbe/nativefiled
 Features:
 
 - Lean C API, static library &mdash; no C++/ObjC runtime needed
-- Supports Windows (MSVC, MinGW), MacOS (Clang), and Linux (GTK, portal) (GCC, Clang)
+- Supports Windows (MSVC, MinGW, Clang), MacOS (Clang), and Linux (GTK, portal) (GCC, Clang)
 - Zlib licensed
 - Friendly names for filters (e.g. `C/C++ Source files (*.c;*.cpp)` instead of `(*.c;*.cpp)`) on platforms that support it
 - Automatically append file extension on platforms where users expect it
