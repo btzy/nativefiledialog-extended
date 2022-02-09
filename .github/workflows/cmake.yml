@@ -19,91 +19,32 @@ jobs:
       run: find src/ test/ -iname '*.c' -or -iname '*.cpp' -or -iname '*.m' -or -iname '*.mm' -or -iname '*.h' -or -iname '*.hpp' | xargs clang-format -i -style=file
     - name: Check diff
       run: git diff --exit-code
-  
-  build-ubuntu18-gcc:
 
-    name: Ubuntu 18.04 - GCC
-    runs-on: ubuntu-18.04
+  build-ubuntu:
     
+    name: Ubuntu (${{ matrix.os }}, ${{ matrix.portal.name }}, ${{ matrix.compiler.c }}, C++${{ matrix.cppstd }})
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, ubuntu-18.04]
+        portal: [ {flag: OFF, dep: libgtk-3-dev, name: GTK}, {flag: ON, dep: libdbus-1-dev, name: Portal} ] # The NFD_PORTAL setting defaults to OFF (i.e. uses GTK)
+        compiler: [ {c: gcc, cpp: g++}, {c: clang, cpp: clang++} ] # The default compiler is gcc/g++
+        cppstd: [23, 11]
+
     steps:
     - name: Checkout
       uses: actions/checkout@v2
     - name: Installing Dependencies
-      run: sudo apt-get update && sudo apt-get install libgtk-3-dev
+      run: sudo apt-get update && sudo apt-get install ${{ matrix.portal.dep }}
     - name: Configure
-      run: mkdir build && mkdir install && cd build && cmake -DCMAKE_INSTALL_PREFIX="../install" -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-Wall -Wextra -Werror -pedantic" -DNFD_BUILD_TESTS=ON ..
+      run: mkdir build && mkdir install && cd build && cmake -DCMAKE_INSTALL_PREFIX="../install" -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=${{ matrix.compiler.c }} -DCMAKE_CXX_COMPILER=${{ matrix.compiler.cpp }} -DCMAKE_CXX_STANDARD=${{ matrix.cppstd }} -DCMAKE_CXX_FLAGS="-Wall -Wextra -Werror -pedantic" -DNFD_PORTAL=${{ matrix.portal.flag }} -DNFD_BUILD_TESTS=ON ..
     - name: Build
       run: cmake --build build --target install
     - name: Upload test binaries
       uses: actions/upload-artifact@v2
       with:
-        name: Ubuntu 18.04 - GCC
-        path: |
-          build/src/libnfd.a
-          build/test/test_*
-  
-  build-ubuntu20-gcc:
-
-    name: Ubuntu 20.04 - GCC
-    runs-on: ubuntu-20.04
-    
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-    - name: Installing Dependencies
-      run: sudo apt-get update && sudo apt-get install libgtk-3-dev
-    - name: Configure
-      run: mkdir build && mkdir install && cd build && cmake -DCMAKE_INSTALL_PREFIX="../install" -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-Wall -Wextra -Werror -pedantic" -DNFD_BUILD_TESTS=ON ..
-    - name: Build
-      run: cmake --build build --target install
-    - name: Upload test binaries
-      uses: actions/upload-artifact@v2
-      with:
-        name: Ubuntu 20.04 - GCC
-        path: |
-          build/src/libnfd.a
-          build/test/test_*
-  
-  build-ubuntu-portal-gcc:
-
-    name: Ubuntu latest, desktop portals - GCC
-    runs-on: ubuntu-latest
-    
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-    - name: Installing Dependencies
-      run: sudo apt-get update && sudo apt-get install libdbus-1-dev
-    - name: Configure
-      run: mkdir build && mkdir install && cd build && cmake -DCMAKE_INSTALL_PREFIX="../install" -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-Wall -Wextra -Werror -pedantic" -DNFD_PORTAL=ON -DNFD_BUILD_TESTS=ON ..
-    - name: Build
-      run: cmake --build build --target install
-    - name: Upload test binaries
-      uses: actions/upload-artifact@v2
-      with:
-        name: Ubuntu latest, desktop portals - GCC
-        path: |
-          build/src/libnfd.a
-          build/test/test_*
-  
-  build-ubuntu-clang:
-
-    name: Ubuntu latest - Clang
-    runs-on: ubuntu-latest
-    
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-    - name: Installing Dependencies
-      run: sudo apt-get update && sudo apt-get install libgtk-3-dev
-    - name: Configure
-      run: mkdir build && mkdir install && cd build && cmake -DCMAKE_INSTALL_PREFIX="../install" -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_CXX_FLAGS="-Wall -Wextra -Werror -pedantic" -DNFD_BUILD_TESTS=ON ..
-    - name: Build
-      run: cmake --build build --target install
-    - name: Upload test binaries
-      uses: actions/upload-artifact@v2
-      with:
-        name: Ubuntu latest - Clang
+        name: $${{ matrix.os }} - $${{ matrix.compiler.c }}
         path: |
           build/src/libnfd.a
           build/test/test_*
