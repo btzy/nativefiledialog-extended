@@ -24,11 +24,14 @@ endif()
 
 message("nfd Compiler: ${nfd_COMPILER}")
 
-set (CMAKE_CXX_STANDARD 17)
+# Use latest C++ by default (should be the best one), but let user override it
+if(NOT DEFINED CMAKE_CXX_STANDARD)
+  set (CMAKE_CXX_STANDARD 23)
+endif()
 
 add_subdirectory(src)
 
 option(NFD_BUILD_TESTS "Build tests for nfd" OFF)
 if(${NFD_BUILD_TESTS})
-    add_subdirectory(test)
+  add_subdirectory(test)
 endif()
