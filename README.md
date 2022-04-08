@@ -86,9 +86,12 @@ If you are using a platform abstraction framework such as SDL or GLFW, also see 
 
 # Screenshots #
 
-![Windows 10](screens/open_win10.png?raw=true)
-![MacOS 10.13](screens/open_macos_11.0.png?raw=true)
-![GTK3 on Ubuntu 20.04](screens/open_gtk3.png?raw=true)
+![Windows 10](screens/open_win10.png?raw=true#gh-light-mode-only)
+![Windows 10](screens/open_win10_dark.png?raw=true#gh-dark-mode-only)
+![MacOS 10.13](screens/open_macos_11.0.png?raw=true#gh-light-mode-only)
+![MacOS 10.13](screens/open_macos_11.0_dark.png?raw=true#gh-dark-mode-only)
+![GTK3 on Ubuntu 20.04](screens/open_gtk3.png?raw=true#gh-light-mode-only)
+![GTK3 on Ubuntu 20.04](screens/open_gtk3_dark.png?raw=true#gh-dark-mode-only)
 
 # Building
 
