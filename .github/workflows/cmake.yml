@@ -44,7 +44,7 @@ jobs:
     - name: Upload test binaries
       uses: actions/upload-artifact@v2
       with:
-        name: $${{ matrix.os }} - $${{ matrix.compiler.c }}
+        name: ${{ matrix.os }} - ${{ matrix.compiler.c }}
         path: |
           build/src/libnfd.a
           build/test/test_*
