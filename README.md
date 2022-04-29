@@ -43,6 +43,8 @@ Features added in Native File Dialog Extended:
 
 There is also significant code refractoring, especially for the Windows implementation.
 
+The [wiki](https://github.com/btzy/nativefiledialog-extended/wiki) keeps track of known language bindings and known popular projects that depend on this library.
+
 # Basic Usage
 
 ```C
