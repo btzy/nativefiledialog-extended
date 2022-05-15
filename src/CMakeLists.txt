@@ -27,6 +27,7 @@ endif()
 
 if(nfd_PLATFORM STREQUAL PLATFORM_MACOS)
   find_library(APPKIT_LIBRARY AppKit)
+  find_library(UNIFORMTYPEIDENTIFIERS_LIBRARY UniformTypeIdentifiers)
   list(APPEND SOURCE_FILES nfd_cocoa.m)
 endif()
 
@@ -55,8 +56,13 @@ if(nfd_PLATFORM STREQUAL PLATFORM_LINUX)
 endif()
 
 if(nfd_PLATFORM STREQUAL PLATFORM_MACOS)
-  target_link_libraries(${TARGET_NAME}
-    PRIVATE ${APPKIT_LIBRARY})
+    if(UNIFORMTYPEIDENTIFIERS_LIBRARY)
+      target_link_libraries(${TARGET_NAME}
+        PRIVATE ${APPKIT_LIBRARY} ${UNIFORMTYPEIDENTIFIERS_LIBRARY})
+    else()
+      target_link_libraries(${TARGET_NAME}
+        PRIVATE ${APPKIT_LIBRARY})
+    endif()
 endif()
 
 if(nfd_COMPILER STREQUAL COMPILER_MSVC)
