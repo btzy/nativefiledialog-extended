@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.2)
 project(nativefiledialog-extended)
 
+if(NOT MSVC)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -w")
+endif()
+
 set(nfd_PLATFORM Undefined)
 if(WIN32)
   set(nfd_PLATFORM PLATFORM_WIN32)
