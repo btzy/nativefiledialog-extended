@@ -31,7 +31,7 @@ if(nfd_PLATFORM STREQUAL PLATFORM_MACOS)
 endif()
 
 # Define the library
-add_library(${TARGET_NAME} STATIC
+add_library(${TARGET_NAME} OBJECT
   ${SOURCE_FILES})
 
 # Allow includes from include/
