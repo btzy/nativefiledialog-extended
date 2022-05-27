@@ -539,9 +539,9 @@ void AppendOpenFileQueryParams(DBusMessage* query,
     dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, &STR_EMPTY);
 
 	if (title)
-        AppendOpenFileQueryTitle<Multiple, Directory>(iter, title);
+        AppendOpenFileQueryTitle(iter, title);
 	else
-		AppendOpenFileQueryTitle(iter);
+		AppendOpenFileQueryTitle<Multiple, Directory>(iter);
 
     DBusMessageIter sub_iter;
     dbus_message_iter_open_container(&iter, DBUS_TYPE_ARRAY, "{sv}", &sub_iter);
