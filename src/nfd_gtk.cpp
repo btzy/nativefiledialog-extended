@@ -534,8 +534,21 @@ nfdresult_t NFD_SaveDialogN(nfdnchar_t** outPath,
     }
 }
 
-nfdresult_t NFD_PickFolderN(nfdnchar_t** outPath, const nfdnchar_t* defaultPath) {
-    GtkWidget* widget = gtk_file_chooser_dialog_new("Select folder",
+nfdresult_t NFD_PickFolderN(nfdnchar_t** outPath, const nfdnchar_t* defaultPath, const nfdnchar_t* title) {
+
+	GtkWidget* widget;
+	const char* folderTitle = title;
+	if (title)
+        widget = gtk_file_chooser_dialog_new(folderTitle,
+                                                    nullptr,
+                                                    GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
+                                                    "_Cancel",
+                                                    GTK_RESPONSE_CANCEL,
+                                                    "_Select",
+                                                    GTK_RESPONSE_ACCEPT,
+                                                    nullptr);
+    else
+        widget = gtk_file_chooser_dialog_new("Select folder",
                                                     nullptr,
                                                     GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
                                                     "_Cancel",

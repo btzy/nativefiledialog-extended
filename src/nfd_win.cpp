@@ -541,7 +541,7 @@ nfdresult_t NFD_SaveDialogN(nfdnchar_t** outPath,
     }
 }
 
-nfdresult_t NFD_PickFolderN(nfdnchar_t** outPath, const nfdnchar_t* defaultPath) {
+nfdresult_t NFD_PickFolderN(nfdnchar_t** outPath, const nfdnchar_t* defaultPath, const nfdnchar_t* title) {
     ::IFileOpenDialog* fileOpenDialog;
 
     // Create dialog
@@ -565,6 +565,12 @@ nfdresult_t NFD_PickFolderN(nfdnchar_t** outPath, const nfdnchar_t* defaultPath)
     if (!AddOptions(fileOpenDialog, ::FOS_FORCEFILESYSTEM | ::FOS_PICKFOLDERS)) {
         return NFD_ERROR;
     }
+
+	// Set the dialog title
+	if (title)
+	{
+		fileOpenDialog->SetTitle(title);
+	}
 
     // Show the dialog to the user
     const HRESULT result = fileOpenDialog->Show(nullptr);
@@ -901,15 +907,20 @@ nfdresult_t NFD_SaveDialogU8(nfdu8char_t** outPath,
 /* select folder dialog */
 /* It is the caller's responsibility to free `outPath` via NFD_FreePathU8() if this function returns
  * NFD_OKAY */
-nfdresult_t NFD_PickFolderU8(nfdu8char_t** outPath, const nfdu8char_t* defaultPath) {
+nfdresult_t NFD_PickFolderU8(nfdu8char_t** outPath, const nfdu8char_t* defaultPath, const nfdu8char_t* title) {
     // convert and normalize the default path, but only if it is not nullptr
     FreeCheck_Guard<nfdnchar_t> defaultPathNGuard;
     ConvertU8ToNative(defaultPath, defaultPathNGuard);
     NormalizePathSeparator(defaultPathNGuard.data);
 
+	// convert and normalize the title, but only if it is not nullptr
+    FreeCheck_Guard<nfdnchar_t> titleNGuard;
+    ConvertU8ToNative(title, titleNGuard);
+    NormalizePathSeparator(titleNGuard.data);
+
     // call the native function
     nfdnchar_t* outPathN;
-    nfdresult_t res = NFD_PickFolderN(&outPathN, defaultPathNGuard.data);
+    nfdresult_t res = NFD_PickFolderN(&outPathN, defaultPathNGuard.data, titleNGuard.data);
 
     if (res != NFD_OKAY) {
         return res;

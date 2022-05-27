@@ -128,6 +128,9 @@ void AppendOpenFileQueryTitle<false, true>(DBusMessageIter& iter) {
     dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, &STR_SELECT_FOLDER);
 }
 
+template <bool Multiple, bool Directory>
+void AppendOpenFileQueryTitle(DBusMessageIter&, const char* title);
+
 void AppendSaveFileQueryTitle(DBusMessageIter& iter) {
     dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, &STR_SAVE_FILE);
 }
@@ -1028,7 +1031,8 @@ nfdresult_t AllocAndCopyFilePathWithExtn(const char* fileUri, const char* extn, 
 template <bool Multiple, bool Directory>
 nfdresult_t NFD_DBus_OpenFile(DBusMessage*& outMsg,
                               const nfdnfilteritem_t* filterList,
-                              nfdfiltersize_t filterCount) {
+                              nfdfiltersize_t filterCount,
+							  const char* title = nullptr) {
     const char* handle_token_ptr;
     char* handle_obj_path = MakeUniqueObjectPath(&handle_token_ptr);
     Free_Guard<char> handle_obj_path_guard(handle_obj_path);
@@ -1052,6 +1056,8 @@ nfdresult_t NFD_DBus_OpenFile(DBusMessage*& outMsg,
     DBusMessage_Guard query_guard(query);
     AppendOpenFileQueryParams<Multiple, Directory>(
         query, handle_token_ptr, filterList, filterCount);
+	if (title)
+		AppendOpenFileQueryTitle<Multiple, Directory>(query, title);
 
     DBusMessage* reply =
         dbus_connection_send_with_reply_and_block(dbus_conn, query, DBUS_TIMEOUT_INFINITE, &err);
@@ -1319,12 +1325,12 @@ nfdresult_t NFD_SaveDialogN(nfdnchar_t** outPath,
 #endif
 }
 
-nfdresult_t NFD_PickFolderN(nfdnchar_t** outPath, const nfdnchar_t* defaultPath) {
+nfdresult_t NFD_PickFolderN(nfdnchar_t** outPath, const nfdnchar_t* defaultPath, const nfdnchar_t* title) {
     (void)defaultPath;  // Default path not supported for portal backend
 
     DBusMessage* msg;
     {
-        const nfdresult_t res = NFD_DBus_OpenFile<false, true>(msg, nullptr, 0);
+        const nfdresult_t res = NFD_DBus_OpenFile<false, true>(msg, nullptr, 0, title);
         if (res != NFD_OKAY) {
             return res;
         }
