@@ -129,7 +129,7 @@ void AppendOpenFileQueryTitle<false, true>(DBusMessageIter& iter) {
 }
 
 void AppendOpenFileQueryTitle(DBusMessageIter& iter, const char* title) {
-	dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, &title);
+    dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, &title);
 }
 
 void AppendSaveFileQueryTitle(DBusMessageIter& iter) {
@@ -534,16 +534,16 @@ void AppendOpenFileQueryParams(DBusMessage* query,
                                const char* handle_token,
                                const nfdnfilteritem_t* filterList,
                                nfdfiltersize_t filterCount,
-							   const char* title) {
+                               const char* title) {
     DBusMessageIter iter;
     dbus_message_iter_init_append(query, &iter);
 
     dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, &STR_EMPTY);
 
-	if (title)
+    if (title)
         AppendOpenFileQueryTitle(iter, title);
-	else
-		AppendOpenFileQueryTitle<Multiple, Directory>(iter);
+    else
+        AppendOpenFileQueryTitle<Multiple, Directory>(iter);
 
     DBusMessageIter sub_iter;
     dbus_message_iter_open_container(&iter, DBUS_TYPE_ARRAY, "{sv}", &sub_iter);
@@ -1037,7 +1037,7 @@ template <bool Multiple, bool Directory>
 nfdresult_t NFD_DBus_OpenFile(DBusMessage*& outMsg,
                               const nfdnfilteritem_t* filterList,
                               nfdfiltersize_t filterCount,
-							  const char* title = nullptr) {
+                              const char* title = nullptr) {
     const char* handle_token_ptr;
     char* handle_obj_path = MakeUniqueObjectPath(&handle_token_ptr);
     Free_Guard<char> handle_obj_path_guard(handle_obj_path);
@@ -1328,7 +1328,9 @@ nfdresult_t NFD_SaveDialogN(nfdnchar_t** outPath,
 #endif
 }
 
-nfdresult_t NFD_PickFolderN(nfdnchar_t** outPath, const nfdnchar_t* defaultPath, const nfdnchar_t* title) {
+nfdresult_t NFD_PickFolderN(nfdnchar_t** outPath,
+                            const nfdnchar_t* defaultPath,
+                            const nfdnchar_t* title) {
     (void)defaultPath;  // Default path not supported for portal backend
 
     DBusMessage* msg;

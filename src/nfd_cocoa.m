@@ -236,7 +236,9 @@ nfdresult_t NFD_SaveDialogN(nfdnchar_t** outPath,
     return result;
 }
 
-nfdresult_t NFD_PickFolderN(nfdnchar_t** outPath, const nfdnchar_t* defaultPath, const nfdnchar_t* title) {
+nfdresult_t NFD_PickFolderN(nfdnchar_t** outPath,
+                            const nfdnchar_t* defaultPath,
+                            const nfdnchar_t* title) {
     nfdresult_t result = NFD_CANCEL;
     @autoreleasepool {
         NSWindow* keyWindow = [[NSApplication sharedApplication] keyWindow];
@@ -247,10 +249,10 @@ nfdresult_t NFD_PickFolderN(nfdnchar_t** outPath, const nfdnchar_t* defaultPath,
         [dialog setCanCreateDirectories:YES];
         [dialog setCanChooseFiles:NO];
 
-		if (title)
-		{
-			[dialog setTitle:[NSString stringWithUTF8String:title]];
-		}
+        if (title)
+        {
+            [dialog setTitle:[NSString stringWithUTF8String:title]];
+        }
 
         // Set the starting directory
         SetDefaultPath(dialog, defaultPath);

@@ -108,7 +108,9 @@ nfdresult_t NFD_SaveDialogN(nfdnchar_t** outPath,
 /* It is the caller's responsibility to free `outPath` via NFD_FreePathN() if this function returns
  * NFD_OKAY */
 /* If defaultPath is NULL, the operating system will decide */
-nfdresult_t NFD_PickFolderN(nfdnchar_t** outPath, const nfdnchar_t* defaultPath, const nfdnchar_t* title);
+nfdresult_t NFD_PickFolderN(nfdnchar_t** outPath,
+                            const nfdnchar_t* defaultPath,
+                            const nfdnchar_t* title);
 
 /* Get last error -- set when nfdresult_t returns NFD_ERROR */
 /* Returns the last error that was set, or NULL if there is no error. */
@@ -207,7 +209,9 @@ nfdresult_t NFD_SaveDialogU8(nfdu8char_t** outPath,
 /* select folder dialog */
 /* It is the caller's responsibility to free `outPath` via NFD_FreePathU8() if this function returns
  * NFD_OKAY */
-nfdresult_t NFD_PickFolderU8(nfdu8char_t** outPath, const nfdu8char_t* defaultPath, const nfdu8char_t* title);
+nfdresult_t NFD_PickFolderU8(nfdu8char_t** outPath,
+                             const nfdu8char_t* defaultPath,
+                             const nfdu8char_t* title);
 
 /* Get the UTF-8 path at offset index */
 /* It is the caller's responsibility to free `outPath` via NFD_FreePathU8() if this function returns
