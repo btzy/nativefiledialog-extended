@@ -128,7 +128,6 @@ void AppendOpenFileQueryTitle<false, true>(DBusMessageIter& iter) {
     dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, &STR_SELECT_FOLDER);
 }
 
-template <bool Multiple, bool Directory>
 void AppendOpenFileQueryTitle(DBusMessageIter&, const char* title);
 
 void AppendSaveFileQueryTitle(DBusMessageIter& iter) {
@@ -542,7 +541,7 @@ void AppendOpenFileQueryParams(DBusMessage* query,
 	if (title)
         AppendOpenFileQueryTitle<Multiple, Directory>(iter, title);
 	else
-		AppendOpenFileQueryTitle<Multiple, Directory>(iter);
+		AppendOpenFileQueryTitle(iter);
 
     DBusMessageIter sub_iter;
     dbus_message_iter_open_container(&iter, DBUS_TYPE_ARRAY, "{sv}", &sub_iter);
