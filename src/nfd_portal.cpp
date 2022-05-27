@@ -532,13 +532,17 @@ template <bool Multiple, bool Directory>
 void AppendOpenFileQueryParams(DBusMessage* query,
                                const char* handle_token,
                                const nfdnfilteritem_t* filterList,
-                               nfdfiltersize_t filterCount) {
+                               nfdfiltersize_t filterCount,
+							   const char* title) {
     DBusMessageIter iter;
     dbus_message_iter_init_append(query, &iter);
 
     dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, &STR_EMPTY);
 
-    AppendOpenFileQueryTitle<Multiple, Directory>(iter);
+	if (title)
+        AppendOpenFileQueryTitle<Multiple, Directory>(iter, title);
+	else
+		AppendOpenFileQueryTitle<Multiple, Directory>(iter);
 
     DBusMessageIter sub_iter;
     dbus_message_iter_open_container(&iter, DBUS_TYPE_ARRAY, "{sv}", &sub_iter);
@@ -1056,8 +1060,6 @@ nfdresult_t NFD_DBus_OpenFile(DBusMessage*& outMsg,
     DBusMessage_Guard query_guard(query);
     AppendOpenFileQueryParams<Multiple, Directory>(
         query, handle_token_ptr, filterList, filterCount);
-	if (title)
-		AppendOpenFileQueryTitle<Multiple, Directory>(query, title);
 
     DBusMessage* reply =
         dbus_connection_send_with_reply_and_block(dbus_conn, query, DBUS_TIMEOUT_INFINITE, &err);

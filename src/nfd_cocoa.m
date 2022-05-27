@@ -236,7 +236,7 @@ nfdresult_t NFD_SaveDialogN(nfdnchar_t** outPath,
     return result;
 }
 
-nfdresult_t NFD_PickFolderN(nfdnchar_t** outPath, const nfdnchar_t* defaultPath, const cnfdnchar_t* title) {
+nfdresult_t NFD_PickFolderN(nfdnchar_t** outPath, const nfdnchar_t* defaultPath, const nfdnchar_t* title) {
     nfdresult_t result = NFD_CANCEL;
     @autoreleasepool {
         NSWindow* keyWindow = [[NSApplication sharedApplication] keyWindow];
