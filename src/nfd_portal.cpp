@@ -1059,7 +1059,7 @@ nfdresult_t NFD_DBus_OpenFile(DBusMessage*& outMsg,
                                                       "OpenFile");
     DBusMessage_Guard query_guard(query);
     AppendOpenFileQueryParams<Multiple, Directory>(
-        query, handle_token_ptr, filterList, filterCount);
+        query, handle_token_ptr, filterList, filterCount, title);
 
     DBusMessage* reply =
         dbus_connection_send_with_reply_and_block(dbus_conn, query, DBUS_TIMEOUT_INFINITE, &err);
