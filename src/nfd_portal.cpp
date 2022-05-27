@@ -128,7 +128,7 @@ void AppendOpenFileQueryTitle<false, true>(DBusMessageIter& iter) {
     dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, &STR_SELECT_FOLDER);
 }
 
-void AppendOpenFileQueryTitle(DBusMessageIter&, const char* title) {
+void AppendOpenFileQueryTitle(DBusMessageIter& iter, const char* title) {
 	dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, &title);
 }
 
