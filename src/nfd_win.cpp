@@ -569,8 +569,7 @@ nfdresult_t NFD_PickFolderN(nfdnchar_t** outPath,
     }
 
     // Set the dialog title
-    if (title)
-    {
+    if (title) {
         fileOpenDialog->SetTitle(title);
     }
 

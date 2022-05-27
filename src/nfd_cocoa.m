@@ -249,8 +249,7 @@ nfdresult_t NFD_PickFolderN(nfdnchar_t** outPath,
         [dialog setCanCreateDirectories:YES];
         [dialog setCanChooseFiles:NO];
 
-        if (title)
-        {
+        if (title) {
             [dialog setTitle:[NSString stringWithUTF8String:title]];
         }
 

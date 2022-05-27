@@ -537,7 +537,6 @@ nfdresult_t NFD_SaveDialogN(nfdnchar_t** outPath,
 nfdresult_t NFD_PickFolderN(nfdnchar_t** outPath,
                             const nfdnchar_t* defaultPath,
                             const nfdnchar_t* title) {
-
     GtkWidget* widget;
     if (title)
         widget = gtk_file_chooser_dialog_new(title,
