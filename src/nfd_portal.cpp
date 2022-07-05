@@ -720,7 +720,7 @@ nfdresult_t ReadResponseUrisSingle(DBusMessage* msg, const char*& file) {
     const nfdresult_t res = ReadResponseUris(msg, uri_iter);
     if (res != NFD_OKAY) return res;  // can be NFD_CANCEL or NFD_ERROR
     if (dbus_message_iter_get_arg_type(&uri_iter) != DBUS_TYPE_STRING) {
-        NFDi_SetError("D-Bus response signal URI sub iter is not an string.");
+        NFDi_SetError("D-Bus response signal URI sub iter is not a string.");
         return NFD_ERROR;
     }
     dbus_message_iter_get_basic(&uri_iter, &file);
@@ -775,7 +775,7 @@ nfdresult_t ReadResponseUrisSingleAndCurrentExtension(DBusMessage* msg,
                 }
                 if (dbus_message_iter_get_arg_type(&current_filter_struct_iter) !=
                     DBUS_TYPE_ARRAY) {
-                    // NFDi_SetError("D-Bus response signal URI sub iter is not an string.");
+                    // NFDi_SetError("D-Bus response signal URI sub iter is not a string.");
                     return NFD_OKAY;
                 }
                 DBusMessageIter current_filter_array_iter;
@@ -788,7 +788,7 @@ nfdresult_t ReadResponseUrisSingleAndCurrentExtension(DBusMessage* msg,
                 DBusMessageIter current_filter_extn_iter;
                 dbus_message_iter_recurse(&current_filter_array_iter, &current_filter_extn_iter);
                 if (dbus_message_iter_get_arg_type(&current_filter_extn_iter) != DBUS_TYPE_UINT32) {
-                    // NFDi_SetError("D-Bus response signal URI sub iter is not an string.");
+                    // NFDi_SetError("D-Bus response signal URI sub iter is not a string.");
                     return NFD_OKAY;
                 }
                 dbus_uint32_t type;
@@ -803,7 +803,7 @@ nfdresult_t ReadResponseUrisSingleAndCurrentExtension(DBusMessage* msg,
                     return NFD_OKAY;
                 }
                 if (dbus_message_iter_get_arg_type(&current_filter_extn_iter) != DBUS_TYPE_STRING) {
-                    // NFDi_SetError("D-Bus response signal URI sub iter is not an string.");
+                    // NFDi_SetError("D-Bus response signal URI sub iter is not a string.");
                     return NFD_OKAY;
                 }
                 dbus_message_iter_get_basic(&current_filter_extn_iter, &tmp_extn);
@@ -1364,7 +1364,7 @@ nfdresult_t NFD_PathSet_GetPathN(const nfdpathset_t* pathSet,
         }
     }
     if (dbus_message_iter_get_arg_type(&uri_iter) != DBUS_TYPE_STRING) {
-        NFDi_SetError("D-Bus response signal URI sub iter is not an string.");
+        NFDi_SetError("D-Bus response signal URI sub iter is not a string.");
         return NFD_ERROR;
     }
     const char* file;
@@ -1402,7 +1402,7 @@ nfdresult_t NFD_PathSet_EnumNextN(nfdpathsetenum_t* enumerator, nfdnchar_t** out
         return NFD_OKAY;
     }
     if (arg_type != DBUS_TYPE_STRING) {
-        NFDi_SetError("D-Bus response signal URI sub iter is not an string.");
+        NFDi_SetError("D-Bus response signal URI sub iter is not a string.");
         return NFD_ERROR;
     }
     const char* file;
