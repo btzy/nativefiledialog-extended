@@ -26,7 +26,15 @@ message("nfd Compiler: ${nfd_COMPILER}")
 
 # Use latest C++ by default (should be the best one), but let user override it
 if(NOT DEFINED CMAKE_CXX_STANDARD)
-  set (CMAKE_CXX_STANDARD 23)
+  if(CMAKE_VERSION VERSION_LESS "3.8")
+    set (CMAKE_CXX_STANDARD 14)
+  elseif(CMAKE_VERSION VERSION_LESS "3.12")
+    set (CMAKE_CXX_STANDARD 17)
+  elseif(CMAKE_VERSION VERSION_LESS "3.20")
+    set (CMAKE_CXX_STANDARD 20)
+  else()
+    set (CMAKE_CXX_STANDARD 23)
+  endif()
 endif()
 
 add_subdirectory(src)
