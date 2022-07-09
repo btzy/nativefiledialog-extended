@@ -22,14 +22,14 @@ jobs:
 
   build-ubuntu:
     
-    name: Ubuntu (${{ matrix.os }}, ${{ matrix.portal.name }}, ${{ matrix.compiler.c }}, C++${{ matrix.cppstd }})
-    runs-on: ${{ matrix.os }}
+    name: Ubuntu ${{ matrix.os.name }} - ${{ matrix.compiler.name }}, ${{ matrix.portal.name }}, C++${{ matrix.cppstd }}
+    runs-on: ${{ matrix.os.label }}
 
     strategy:
       matrix:
-        os: [ubuntu-latest, ubuntu-18.04]
+        os: [ {label: ubuntu-latest, name: latest}, {label: ubuntu-18.04, name: 18.04} ]
         portal: [ {flag: OFF, dep: libgtk-3-dev, name: GTK}, {flag: ON, dep: libdbus-1-dev, name: Portal} ] # The NFD_PORTAL setting defaults to OFF (i.e. uses GTK)
-        compiler: [ {c: gcc, cpp: g++}, {c: clang, cpp: clang++} ] # The default compiler is gcc/g++
+        compiler: [ {c: gcc, cpp: g++, name: GCC}, {c: clang, cpp: clang++, name: Clang} ] # The default compiler is gcc/g++
         cppstd: [23, 11]
 
     steps:
@@ -44,15 +44,19 @@ jobs:
     - name: Upload test binaries
       uses: actions/upload-artifact@v2
       with:
-        name: ${{ matrix.os }} - ${{ matrix.compiler.c }}
+        name: ${{ matrix.os.name }} - ${{ matrix.compiler.name }}, ${{ matrix.portal.name }}, C++${{ matrix.cppstd }}
         path: |
           build/src/libnfd.a
           build/test/test_*
   
   build-macos-clang:
 
-    name: MacOS latest - Clang
-    runs-on: macos-latest
+    name: MacOS ${{ matrix.os.name }} - Clang
+    runs-on: ${{ matrix.os.label }}
+
+    strategy:
+      matrix:
+        os: [ {label: macos-latest, name: latest}, {label: macos-10.15, name: 10.15} ]
     
     steps:
     - name: Checkout
@@ -64,7 +68,7 @@ jobs:
     - name: Upload test binaries
       uses: actions/upload-artifact@v2
       with:
-        name: MacOS latest - Clang
+        name: MacOS ${{ matrix.os.name }} - Clang
         path: |
           build/src/libnfd.a
           build/test/test_*
