@@ -29,6 +29,8 @@ if(NOT DEFINED CMAKE_CXX_STANDARD)
   set (CMAKE_CXX_STANDARD 23)
 endif()
 
+message("Target: ${CMAKE_OSX_DEPLOYMENT_TARGET}")
+
 add_subdirectory(src)
 
 option(NFD_BUILD_TESTS "Build tests for nfd" OFF)
