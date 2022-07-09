@@ -265,7 +265,7 @@ Flatpak was introduced in 2015, and with it came a standardized interface to ope
 
 ### MacOS
 
-- On MacOS ≥ 12.0, if you are filtering by a file extension specific to your application, you will need to define the data type in your `Info.plist` file as per the [Apple documentation](https://developer.apple.com/documentation/uniformtypeidentifiers/defining_file_and_data_types_for_your_app).
+- If the MacOS deployment target is ≥ 11.0, the [allowedContentTypes](https://developer.apple.com/documentation/appkit/nssavepanel/3566857-allowedcontenttypes?language=objc) property of NSSavePanel is used instead of the deprecated [allowedFileTypes](https://developer.apple.com/documentation/appkit/nssavepanel/1534419-allowedfiletypes?language=objc) property for file filters.  Thus, if you are filtering by a custom file extension specific to your application, you will need to define the data type in your `Info.plist` file as per the [Apple documentation](https://developer.apple.com/documentation/uniformtypeidentifiers/defining_file_and_data_types_for_your_app).
 
 # Known Limitations #
 
