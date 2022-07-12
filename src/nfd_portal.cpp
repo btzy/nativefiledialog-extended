@@ -20,13 +20,12 @@
 #include "nfd.h"
 
 /*
-Define NFD_PORTAL_AUTO_APPEND_FILE_EXTENSION to 0 if you don't want the file extension to be
-appended when missing. Linux programs usually doesn't append the file extension, but for consistency
-with other OSes we append it by default.
+Define NFD_APPEND_EXTENSION if you want the file extension to be appended when missing. Linux
+programs usually don't append the file extension, but for consistency with other OSes you might want
+to append it.  However, when using portals, the file overwrite prompt and the Flatpak sandbox won't
+know that we appended an extension, so they will not check or whitelist the correct file.  Enabling
+NFD_APPEND_EXTENSION is not recommended for portals.
 */
-#ifndef NFD_PORTAL_AUTO_APPEND_FILE_EXTENSION
-#define NFD_PORTAL_AUTO_APPEND_FILE_EXTENSION 1
-#endif
 
 namespace {
 
@@ -727,7 +726,7 @@ nfdresult_t ReadResponseUrisSingle(DBusMessage* msg, const char*& file) {
     return NFD_OKAY;
 }
 
-#if NFD_PORTAL_AUTO_APPEND_FILE_EXTENSION == 1
+#ifdef NFD_APPEND_EXTENSION
 // Read the response URI and selected extension (in the form "*.abc" or "*") (if any).  If response
 // was okay, then returns NFD_OKAY and set file and extn to them (the pointer is set to some string
 // owned by msg, so you should not manually free it).  `file` is the user-entered file name, and
@@ -1027,7 +1026,7 @@ nfdresult_t AllocAndCopyFilePath(const char* fileUri, char*& outPath) {
     return NFD_OKAY;
 }
 
-#if NFD_PORTAL_AUTO_APPEND_FILE_EXTENSION == 1
+#ifdef NFD_APPEND_EXTENSION
 bool TryGetValidExtension(const char* extn,
                           const char*& trimmed_extn,
                           const char*& trimmed_extn_end) {
@@ -1367,7 +1366,7 @@ nfdresult_t NFD_SaveDialogN(nfdnchar_t** outPath,
     }
     DBusMessage_Guard msg_guard(msg);
 
-#if NFD_PORTAL_AUTO_APPEND_FILE_EXTENSION == 1
+#ifdef NFD_APPEND_EXTENSION
     const char* uri;
     const char* extn;
     {

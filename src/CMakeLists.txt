@@ -53,6 +53,11 @@ if(nfd_PLATFORM STREQUAL PLATFORM_LINUX)
     target_compile_definitions(${TARGET_NAME}
       PUBLIC NFD_PORTAL)
   endif()
+
+  option(NFD_APPEND_EXTENSION "Automatically append file extension to an extensionless selection in SaveDialog()" OFF)
+  if(NFD_APPEND_EXTENSION)
+    target_compile_definitions(${TARGET_NAME} PRIVATE NFD_APPEND_EXTENSION)
+  endif()
 endif()
 
 if(nfd_PLATFORM STREQUAL PLATFORM_MACOS)
