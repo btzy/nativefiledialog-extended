@@ -37,6 +37,8 @@ if(NOT DEFINED CMAKE_CXX_STANDARD)
   endif()
 endif()
 
+option(NFD_USE_ALLOWEDCONTENTTYPES "Allow use of allowedContentTypes on macOS" ON)
+
 add_subdirectory(src)
 
 option(NFD_BUILD_TESTS "Build tests for nfd" OFF)
