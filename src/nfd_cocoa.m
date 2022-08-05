@@ -9,20 +9,6 @@
 #include <Availability.h>
 #include "nfd.h"
 
-// MacOS is deprecating the allowedFileTypes property in favour of allowedContentTypes, so we have
-// to introduce this breaking change.  Define NFD_MACOS_ALLOWEDCONTENTTYPES to 1 to have it set the
-// allowedContentTypes property of the SavePanel or OpenPanel. Define
-// NFD_MACOS_ALLOWEDCONTENTTYPES to 0 to have it set the allowedFileTypes property of the SavePanel
-// or OpenPanel.  If NFD_MACOS_ALLOWEDCONTENTTYPES is undefined, then it will set it to 1 if
-// __MAC_OS_X_VERSION_MIN_REQUIRED >= 11.0, and 0 otherwise.
-#if !defined(NFD_MACOS_ALLOWEDCONTENTTYPES)
-#if !defined(__MAC_OS_X_VERSION_MIN_REQUIRED) || !defined(__MAC_11_0) || \
-    __MAC_OS_X_VERSION_MIN_REQUIRED < __MAC_11_0
-#define NFD_MACOS_ALLOWEDCONTENTTYPES 0
-#else
-#define NFD_MACOS_ALLOWEDCONTENTTYPES 1
-#endif
-#endif
 
 #if NFD_MACOS_ALLOWEDCONTENTTYPES == 1
 #include <UniformTypeIdentifiers/UniformTypeIdentifiers.h>

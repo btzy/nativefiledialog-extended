@@ -60,13 +60,19 @@ if(nfd_PLATFORM STREQUAL PLATFORM_LINUX)
   endif()
 endif()
 
+# MacOS is deprecating the allowedFileTypes property in favour of allowedContentTypes, so we have
+# to introduce this breaking change. Set NFD_USE_ALLOWEDCONTENTTYPES to ON, to have it set the  
+# allowedContentTypes property of the SavePanel or OpenPanel if the executable is being built for
+# macOS 11.0 or higher.
 if(nfd_PLATFORM STREQUAL PLATFORM_MACOS)
-    if(UNIFORMTYPEIDENTIFIERS_LIBRARY AND NFD_USE_ALLOWEDCONTENTTYPES)
+    if(UNIFORMTYPEIDENTIFIERS_LIBRARY AND NFD_USE_ALLOWEDCONTENTTYPES AND CMAKE_OSX_DEPLOYMENT_TARGET VERSION_GREATER_EQUAL "11.0")
       target_link_libraries(${TARGET_NAME}
         PRIVATE ${APPKIT_LIBRARY} ${UNIFORMTYPEIDENTIFIERS_LIBRARY})
+      target_compile_definitions(${TARGET_NAME} PRIVATE NFD_MACOS_ALLOWEDCONTENTTYPES=0)
     else()
       target_link_libraries(${TARGET_NAME}
         PRIVATE ${APPKIT_LIBRARY})
+        target_compile_definitions(${TARGET_NAME} PRIVATE NFD_MACOS_ALLOWEDCONTENTTYPES=1)
     endif()
 endif()
 
