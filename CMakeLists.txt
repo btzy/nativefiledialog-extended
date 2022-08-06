@@ -37,13 +37,6 @@ if(NOT DEFINED CMAKE_CXX_STANDARD)
   endif()
 endif()
 
-# For setting the filter list, macOS introduced allowedContentTypes in version 11.0 and deprecated allowedFileTypes in 12.0.
-# By default (set to ON), NFDe will use allowedContentTypes when targeting macOS >= 11.0.
-# Set this option to OFF to always use allowedFileTypes regardless of the target macOS version.
-# This is mainly needed for applications that are built on macOS >= 11.0 but should be able to run on lower versions
-# and should not be used otherwise.
-option(NFD_USE_ALLOWEDCONTENTTYPES "Use allowedContentTypes for filter lists on macOS >= 11.0" ON)
-
 add_subdirectory(src)
 
 option(NFD_BUILD_TESTS "Build tests for nfd" OFF)

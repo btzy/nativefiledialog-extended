@@ -26,6 +26,13 @@ if(nfd_PLATFORM STREQUAL PLATFORM_LINUX)
 endif()
 
 if(nfd_PLATFORM STREQUAL PLATFORM_MACOS)
+  # For setting the filter list, macOS introduced allowedContentTypes in version 11.0 and deprecated allowedFileTypes in 12.0.
+  # By default (set to ON), NFDe will use allowedContentTypes when targeting macOS >= 11.0.
+  # Set this option to OFF to always use allowedFileTypes regardless of the target macOS version.
+  # This is mainly needed for applications that are built on macOS >= 11.0 but should be able to run on lower versions
+  # and should not be used otherwise.
+  option(NFD_USE_ALLOWEDCONTENTTYPES "Use allowedContentTypes for filter lists on macOS >= 11.0" ON)
+
   find_library(APPKIT_LIBRARY AppKit)
   find_library(UNIFORMTYPEIDENTIFIERS_LIBRARY UniformTypeIdentifiers)
   list(APPEND SOURCE_FILES nfd_cocoa.m)
@@ -65,6 +72,7 @@ if(nfd_PLATFORM STREQUAL PLATFORM_MACOS)
       target_link_libraries(${TARGET_NAME} PRIVATE ${APPKIT_LIBRARY} ${UNIFORMTYPEIDENTIFIERS_LIBRARY})
     else()
       target_link_libraries(${TARGET_NAME} PRIVATE ${APPKIT_LIBRARY})
+      target_compile_definitions(${TARGET_NAME} PRIVATE NFD_MACOS_ALLOWEDCONTENTTYPES=0)
     endif()
 endif()
 
