@@ -34,7 +34,25 @@ if(nfd_PLATFORM STREQUAL PLATFORM_MACOS)
   option(NFD_USE_ALLOWEDCONTENTTYPES_IF_AVAILABLE "Use allowedContentTypes for filter lists on macOS >= 11.0" ON)
 
   find_library(APPKIT_LIBRARY AppKit)
-  find_library(UNIFORMTYPEIDENTIFIERS_LIBRARY UniformTypeIdentifiers)
+  if(NFD_USE_ALLOWEDCONTENTTYPES_IF_AVAILABLE)
+    include(CheckCXXSourceCompiles)
+    check_cxx_source_compiles(
+      "
+      #include <Availability.h>
+      #if !defined(__MAC_OS_X_VERSION_MIN_REQUIRED) || !defined(__MAC_11_0) || __MAC_OS_X_VERSION_MIN_REQUIRED < __MAC_11_0
+      static_assert(false);
+      #endif
+      int main() { return 0; }
+      "
+      NFD_USE_ALLOWEDCONTENTTYPES
+    )
+    if(NFD_USE_ALLOWEDCONTENTTYPES)
+      find_library(UNIFORMTYPEIDENTIFIERS_LIBRARY UniformTypeIdentifiers)
+      if(NOT UNIFORMTYPEIDENTIFIERS_LIBRARY)
+        message(FATAL_ERROR "UniformTypeIdentifiers framework is not available even though we are targeting macOS >= 11.0")
+      endif()
+    endif()
+  endif()
   list(APPEND SOURCE_FILES nfd_cocoa.m)
 endif()
 
@@ -68,12 +86,13 @@ if(nfd_PLATFORM STREQUAL PLATFORM_LINUX)
 endif()
 
 if(nfd_PLATFORM STREQUAL PLATFORM_MACOS)
-    if(NFD_USE_ALLOWEDCONTENTTYPES_IF_AVAILABLE AND UNIFORMTYPEIDENTIFIERS_LIBRARY)
-      target_link_libraries(${TARGET_NAME} PRIVATE ${APPKIT_LIBRARY} ${UNIFORMTYPEIDENTIFIERS_LIBRARY})
-    else()
-      target_link_libraries(${TARGET_NAME} PRIVATE ${APPKIT_LIBRARY})
-      target_compile_definitions(${TARGET_NAME} PRIVATE NFD_MACOS_ALLOWEDCONTENTTYPES=0)
-    endif()
+  if(NFD_USE_ALLOWEDCONTENTTYPES)
+    target_link_libraries(${TARGET_NAME} PRIVATE ${APPKIT_LIBRARY} ${UNIFORMTYPEIDENTIFIERS_LIBRARY})
+    target_compile_definitions(${TARGET_NAME} PRIVATE NFD_MACOS_ALLOWEDCONTENTTYPES=1)
+  else()
+    target_link_libraries(${TARGET_NAME} PRIVATE ${APPKIT_LIBRARY})
+    target_compile_definitions(${TARGET_NAME} PRIVATE NFD_MACOS_ALLOWEDCONTENTTYPES=0)
+  endif()
 endif()
 
 if(nfd_COMPILER STREQUAL COMPILER_MSVC)
