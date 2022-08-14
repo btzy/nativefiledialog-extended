@@ -10,6 +10,7 @@ elseif(APPLE)
   set(nfd_PLATFORM PLATFORM_MACOS)
 elseif(UNIX AND NOT APPLE)
   set(nfd_PLATFORM PLATFORM_LINUX)
+  include(GNUInstallDirs)
 endif()
 
 message("nfd Platform: ${nfd_PLATFORM}")
