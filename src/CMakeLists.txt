@@ -57,8 +57,12 @@ if(nfd_PLATFORM STREQUAL PLATFORM_MACOS)
 endif()
 
 # Define the library
-add_library(${TARGET_NAME} STATIC
-  ${SOURCE_FILES})
+if(BUILD_SHARED_LIBRARY)
+  add_library(${TARGET_NAME} ${SOURCE_FILES})
+else()
+  add_library(${TARGET_NAME} STATIC
+    ${SOURCE_FILES})
+endif()
 
 # Allow includes from include/
 target_include_directories(${TARGET_NAME}
@@ -110,6 +114,9 @@ if(nfd_COMPILER STREQUAL COMPILER_GNU)
   target_compile_options(${TARGET_NAME} PRIVATE -nostdlib -fno-exceptions -fno-rtti)
 endif()
 
-set_target_properties(${TARGET_NAME} PROPERTIES PUBLIC_HEADER "${PUBLIC_HEADER_FILES}")
+set_target_properties(${TARGET_NAME} PROPERTIES
+                                       PUBLIC_HEADER "${PUBLIC_HEADER_FILES}"
+                                       VERSION ${PROJECT_VERSION}
+                                       SOVERSION ${PROJECT_VERSION_MAJOR})
 
 install(TARGETS ${TARGET_NAME} LIBRARY DESTINATION lib ARCHIVE DESTINATION lib PUBLIC_HEADER DESTINATION include)

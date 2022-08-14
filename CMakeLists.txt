@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.2)
-project(nativefiledialog-extended)
+project(nativefiledialog-extended VERSION 1.0.0)
+
+option(BUILD_SHARED_LIBRARY "Build a shared library instead of static" OFF)
 
 set(nfd_PLATFORM Undefined)
 if(WIN32)
