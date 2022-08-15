@@ -22,7 +22,7 @@ jobs:
 
   build-ubuntu:
     
-    name: Ubuntu ${{ matrix.os.name }} - ${{ matrix.compiler.name }}, ${{ matrix.portal.name }}, ${{ matrix.autoappend.name }}, C++${{ matrix.cppstd }}
+    name: Ubuntu ${{ matrix.os.name }} - ${{ matrix.compiler.name }}, ${{ matrix.portal.name }}, ${{ matrix.autoappend.name }}, ${{ matrix.shared_lib.name }}, C++${{ matrix.cppstd }}
     runs-on: ${{ matrix.os.label }}
 
     strategy:
@@ -32,17 +32,26 @@ jobs:
         autoappend: [ {flag: OFF, name: NoAppendExtn} ] # By default the NFD_PORTAL mode does not append extensions, because it breaks some features of the portal
         compiler: [ {c: gcc, cpp: g++, name: GCC}, {c: clang, cpp: clang++, name: Clang} ] # The default compiler is gcc/g++
         cppstd: [23, 11]
+        shared_lib: [ {flag: OFF, name: Static} ]
         include:
         - os: {label: ubuntu-latest, name: latest}
           portal: {flag: ON, dep: libdbus-1-dev, name: Portal}
           autoappend: {flag: ON, name: AutoAppendExtn}
           compiler: {c: gcc, cpp: g++, name: GCC}
           cppstd: 11
+          shared_lib: {flag: OFF, name: Static}
         - os: {label: ubuntu-latest, name: latest}
           portal: {flag: ON, dep: libdbus-1-dev, name: Portal}
           autoappend: {flag: ON, name: AutoAppendExtn}
           compiler: {c: clang, cpp: clang++, name: Clang}
           cppstd: 11
+          shared_lib: {flag: OFF, name: Static}
+        - os: {label: ubuntu-latest, name: latest}
+          portal: {flag: ON, dep: libdbus-1-dev, name: Portal}
+          autoappend: {flag: ON, name: NoAppendExtn}
+          compiler: {c: gcc, cpp: g++, name: GCC}
+          cppstd: 11
+          shared_lib: {flag: ON, name: Shared}
 
     steps:
     - name: Checkout
@@ -50,64 +59,72 @@ jobs:
     - name: Installing Dependencies
       run: sudo apt-get update && sudo apt-get install ${{ matrix.portal.dep }}
     - name: Configure
-      run: mkdir build && mkdir install && cd build && cmake -DCMAKE_INSTALL_PREFIX="../install" -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=${{ matrix.compiler.c }} -DCMAKE_CXX_COMPILER=${{ matrix.compiler.cpp }} -DCMAKE_CXX_STANDARD=${{ matrix.cppstd }} -DCMAKE_C_FLAGS="-Wall -Wextra -Werror -pedantic" -DCMAKE_CXX_FLAGS="-Wall -Wextra -Werror -pedantic" -DNFD_PORTAL=${{ matrix.portal.flag }} -DNFD_APPEND_EXTENSION=${{ matrix.autoappend.flag }} -DNFD_BUILD_TESTS=ON ..
+      run: mkdir build && mkdir install && cd build && cmake -DCMAKE_INSTALL_PREFIX="../install" -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=${{ matrix.compiler.c }} -DCMAKE_CXX_COMPILER=${{ matrix.compiler.cpp }} -DCMAKE_CXX_STANDARD=${{ matrix.cppstd }} -DCMAKE_C_FLAGS="-Wall -Wextra -Werror -pedantic" -DCMAKE_CXX_FLAGS="-Wall -Wextra -Werror -pedantic" -DNFD_PORTAL=${{ matrix.portal.flag }} -DNFD_APPEND_EXTENSION=${{ matrix.autoappend.flag }} -DBUILD_SHARED_LIBS=${{ matrix.shared_lib.flag }} -DNFD_BUILD_TESTS=ON ..
     - name: Build
       run: cmake --build build --target install
     - name: Upload test binaries
       uses: actions/upload-artifact@v2
       with:
-        name: Ubuntu ${{ matrix.os.name }} - ${{ matrix.compiler.name }}, ${{ matrix.portal.name }}, ${{ matrix.autoappend.name }}, C++${{ matrix.cppstd }}
+        name: Ubuntu ${{ matrix.os.name }} - ${{ matrix.compiler.name }}, ${{ matrix.portal.name }}, ${{ matrix.autoappend.name }}, ${{ matrix.shared_lib.name }}, C++${{ matrix.cppstd }}
         path: |
-          build/src/libnfd.a
-          build/test/test_*
+          build/src/*
+          build/test/*
   
   build-macos-clang:
 
-    name: MacOS ${{ matrix.os.name }} - Clang
+    name: MacOS ${{ matrix.os.name }} - Clang, ${{ matrix.shared_lib.name }}
     runs-on: ${{ matrix.os.label }}
 
     strategy:
       matrix:
         os: [ {label: macos-latest, name: latest}, {label: macos-10.15, name: 10.15} ]
+        shared_lib: [ {flag: OFF, name: Static} ]
+        include:
+        - os: {label: macos-latest, name: latest}
+          shared_lib: {flag: ON, name: Shared}
     
     steps:
     - name: Checkout
       uses: actions/checkout@v2
     - name: Configure
-      run: mkdir build && mkdir install && cd build && cmake -DCMAKE_INSTALL_PREFIX="../install" -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS="-Wall -Wextra -Werror -pedantic" -DCMAKE_CXX_FLAGS="-Wall -Wextra -Werror -pedantic" -DNFD_BUILD_TESTS=ON ..
+      run: mkdir build && mkdir install && cd build && cmake -DCMAKE_INSTALL_PREFIX="../install" -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS="-Wall -Wextra -Werror -pedantic" -DCMAKE_CXX_FLAGS="-Wall -Wextra -Werror -pedantic" -DBUILD_SHARED_LIBS=${{ matrix.shared_lib.flag }} -DNFD_BUILD_TESTS=ON ..
     - name: Build
       run: cmake --build build --target install
     - name: Upload test binaries
       uses: actions/upload-artifact@v2
       with:
-        name: MacOS ${{ matrix.os.name }} - Clang
+        name: MacOS ${{ matrix.os.name }} - Clang, ${{ matrix.shared_lib.name }}
         path: |
-          build/src/libnfd.a
-          build/test/test_*
+          build/src/*
+          build/test/*
   
   build-windows-msvc:
 
-    name: Windows latest - MSVC
+    name: Windows latest - MSVC, ${{ matrix.shared_lib.name }}
     runs-on: windows-latest
+    
+    strategy:
+      matrix:
+        shared_lib: [ {flag: OFF, name: Static}, {flag: ON, name: Shared} ]
     
     steps:
     - name: Checkout
       uses: actions/checkout@v2
     - name: Configure
-      run: mkdir build && mkdir install && cd build && cmake -DCMAKE_INSTALL_PREFIX="../install" -DNFD_BUILD_TESTS=ON ..
+      run: mkdir build && mkdir install && cd build && cmake -DCMAKE_INSTALL_PREFIX="../install" -DBUILD_SHARED_LIBS=${{ matrix.shared_lib.flag }} -DCMAKE_WINDOWS_EXPORT_ALL_SYMBOLS=${{ matrix.shared_lib.flag }} -DNFD_BUILD_TESTS=ON ..
     - name: Build
       run: cmake --build build --target install --config Release
     - name: Upload test binaries
       uses: actions/upload-artifact@v2
       with:
-        name: Windows latest - MSVC
+        name: Windows latest - MSVC, ${{ matrix.shared_lib.name }}
         path: |
-          build/src/Release/nfd.lib
-          build/test/Release/test_*
+          build/src/Release/*
+          build/test/Release/*
   
   build-windows-clang:
 
-    name: Windows latest - Clang
+    name: Windows latest - Clang, Static
     runs-on: windows-latest
     
     steps:
@@ -120,14 +137,14 @@ jobs:
     - name: Upload test binaries
       uses: actions/upload-artifact@v2
       with:
-        name: Windows latest - Clang
+        name: Windows latest - Clang, Static
         path: |
-          build/src/Release/nfd.lib
-          build/test/Release/test_*
+          build/src/Release/*
+          build/test/Release/*
   
   build-windows-mingw:
 
-    name: Windows latest - MinGW
+    name: Windows latest - MinGW, Static
     runs-on: windows-latest
 
     defaults:
@@ -152,7 +169,7 @@ jobs:
     - name: Upload test binaries
       uses: actions/upload-artifact@v2
       with:
-        name: Windows latest - MinGW
+        name: Windows latest - MinGW, Static
         path: |
-          build/src/libnfd.a
-          build/test/test_*
+          build/src/*
+          build/test/*
