@@ -104,6 +104,9 @@ target_link_libraries(MyProgram PRIVATE nfd)
 ```
 Make sure that you also have the needed [dependencies](#dependencies).
 
+When included as a subproject, sample programs are not built and the install target is disabled by default.
+Add `-DNFD_BUILD_TESTS=ON` to build sample programs and `-DNFD_INSTALL=ON` to enable the install target.
+
 ## Standalone Library
 If you want to build the standalone static library,
 execute the following commands (starting from the project root directory):
@@ -119,8 +122,8 @@ and build the project (in release mode) there.
 If you are developing NFDe, you may want to do `-DCMAKE_BUILD_TYPE=Debug`
 to build a debug version of the library instead.
 
-If you want to build the sample programs,
-add `-DNFD_BUILD_TESTS=ON` (sample programs are not built by default).
+When building as a standalone library, sample programs are built and the install target is enabled by default.
+Add `-DNFD_BUILD_TESTS=OFF` to disable building sample programs and `-DNFD_INSTALL=OFF` to disable the install target.
 
 On Linux, if you want to use the Flatpak desktop portal instead of GTK, add `-DNFD_PORTAL=ON`.  (Otherwise, GTK will be used.)  See the "Usage" section below for more information.
 
