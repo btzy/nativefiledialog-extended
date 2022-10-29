@@ -159,7 +159,7 @@ Make sure `libdbus-1-dev` is installed on your system.
 On MacOS, add `AppKit` and `UniformTypeIdentifiers` to the list of frameworks.
 
 ### Windows
-On Windows (both MSVC and MinGW), ensure you are building against `ole32.lib` and `uuid.lib`.
+On Windows (both MSVC and MinGW), ensure you are building against `ole32.lib`, `uuid.lib`, and `shell32.lib`.
 
 # Usage
 
