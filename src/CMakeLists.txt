@@ -61,7 +61,7 @@ add_library(${TARGET_NAME} ${SOURCE_FILES})
 
 # Allow includes from include/
 target_include_directories(${TARGET_NAME}
-  PUBLIC include/)
+  PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include/)
 
 if(nfd_PLATFORM STREQUAL PLATFORM_LINUX)
   if(NOT NFD_PORTAL)
