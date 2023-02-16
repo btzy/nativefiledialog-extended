@@ -68,12 +68,12 @@ if(nfd_PLATFORM STREQUAL PLATFORM_LINUX)
     target_include_directories(${TARGET_NAME}
       PRIVATE ${GTK3_INCLUDE_DIRS})
     target_link_libraries(${TARGET_NAME}
-      PRIVATE ${GTK3_LIBRARIES})
+      PRIVATE ${GTK3_LINK_LIBRARIES})
   else()
     target_include_directories(${TARGET_NAME}
       PRIVATE ${DBUS_INCLUDE_DIRS})
     target_link_libraries(${TARGET_NAME}
-      PRIVATE ${DBUS_LIBRARIES})
+      PRIVATE ${DBUS_LINK_LIBRARIES})
     target_compile_definitions(${TARGET_NAME}
       PUBLIC NFD_PORTAL)
   endif()
