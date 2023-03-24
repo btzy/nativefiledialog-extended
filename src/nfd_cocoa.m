@@ -34,10 +34,6 @@ static void NFDi_SetError(const char* msg) {
     g_errorstr = msg;
 }
 
-void NFD_ClearError() {
-    NFDi_SetError(NULL);
-}
-
 static void* NFDi_Malloc(size_t bytes) {
     void* ptr = malloc(bytes);
     if (!ptr) NFDi_SetError("NFDi_Malloc failed.");
@@ -182,6 +178,10 @@ static nfdresult_t CopyUtf8String(const char* utf8Str, nfdnchar_t** out) {
 
 const char* NFD_GetError(void) {
     return g_errorstr;
+}
+
+void NFD_ClearError(void) {
+    NFDi_SetError(NULL);
 }
 
 void NFD_FreePathN(nfdnchar_t* filePath) {
