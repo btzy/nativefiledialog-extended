@@ -34,6 +34,10 @@ static void NFDi_SetError(const char* msg) {
     g_errorstr = msg;
 }
 
+void NFD_ClearError() {
+    NFDi_SetError(NULL);
+}
+
 static void* NFDi_Malloc(size_t bytes) {
     void* ptr = malloc(bytes);
     if (!ptr) NFDi_SetError("NFDi_Malloc failed.");
