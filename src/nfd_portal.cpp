@@ -1276,6 +1276,57 @@ nfdresult_t NFD_DBus_SaveFile(DBusMessage*& outMsg,
     return NFD_ERROR;
 }
 
+nfdresult_t NFD_DBus_GetVersion(dbus_uint32_t& outVersion) {
+    DBusError err;  // need a separate error object because we don't want to mess with the old one
+                    // if it's stil set
+    dbus_error_init(&err);
+
+    DBusMessage* query = dbus_message_new_method_call("org.freedesktop.portal.Desktop",
+                                                      "/org/freedesktop/portal/desktop",
+                                                      "org.freedesktop.DBus.Properties",
+                                                      "Get");
+    DBusMessage_Guard query_guard(query);
+    {
+        DBusMessageIter iter;
+        dbus_message_iter_init_append(query, &iter);
+
+        constexpr const char* STR_INTERFACE = "org.freedesktop.portal.FileChooser";
+        dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, &STR_INTERFACE);
+        constexpr const char* STR_VERSION = "version";
+        dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, &STR_VERSION);
+    }
+
+    DBusMessage* reply =
+        dbus_connection_send_with_reply_and_block(dbus_conn, query, DBUS_TIMEOUT_INFINITE, &err);
+    if (!reply) {
+        dbus_error_free(&dbus_err);
+        dbus_move_error(&err, &dbus_err);
+        NFDi_SetError(dbus_err.message);
+        return NFD_ERROR;
+    }
+    DBusMessage_Guard reply_guard(reply);
+    {
+        DBusMessageIter iter;
+        if (!dbus_message_iter_init(reply, &iter)) {
+            NFDi_SetError("D-Bus reply for version query is missing an argument.");
+            return NFD_ERROR;
+        }
+        if (dbus_message_iter_get_arg_type(&iter) != DBUS_TYPE_VARIANT) {
+            NFDi_SetError("D-Bus reply for version query is not a variant.");
+            return NFD_ERROR;
+        }
+        DBusMessageIter variant_iter;
+        dbus_message_iter_recurse(&iter, &variant_iter);
+        if (dbus_message_iter_get_arg_type(&variant_iter) != DBUS_TYPE_UINT32) {
+            NFDi_SetError("D-Bus reply for version query is not a uint32.");
+            return NFD_ERROR;
+        }
+        dbus_message_iter_get_basic(&variant_iter, &outVersion);
+    }
+
+    return NFD_OKAY;
+}
+
 }  // namespace
 
 /* public */
@@ -1409,6 +1460,22 @@ nfdresult_t NFD_SaveDialogN(nfdnchar_t** outPath,
 
 nfdresult_t NFD_PickFolderN(nfdnchar_t** outPath, const nfdnchar_t* defaultPath) {
     (void)defaultPath;  // Default path not supported for portal backend
+
+    {
+        dbus_uint32_t version;
+        const nfdresult_t res = NFD_DBus_GetVersion(version);
+        if (res != NFD_OKAY) {
+            return res;
+        }
+        if (version < 3) {
+            NFDi_SetFormattedError(
+                "The xdg-desktop-portal installed on this system does not support a folder picker; "
+                "at least version 3 of the org.freedesktop.portal.FileChooser interface is "
+                "required but the installed interface version is %u.",
+                version);
+            return NFD_ERROR;
+        }
+    }
 
     DBusMessage* msg;
     {
