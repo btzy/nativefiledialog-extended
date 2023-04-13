@@ -252,11 +252,9 @@ SDL_Quit(); // Then deinitialize SDL2
 
 On Linux, you can use the portal implementation instead of GTK, which will open the "native" file chooser selected by the OS or customized by the user.  The user must have `xdg-desktop-portal` and a suitable backend installed (this comes pre-installed with most common desktop distros), otherwise `NFD_ERROR` will be returned.
 
-The portal implementation is much less battle-tested than the GTK implementation.  There may be bugs &mdash; please report them on the issue tracker.
-
 To use the portal implementation, add `-DNFD_PORTAL=ON` to the build command.
 
-*Note:  Setting a default path is not supported by the portal implementation, and any default path passed to NFDe will be ignored.  This is a limitation of the portal API, so there is no way NFDe can work around it.*
+*Note:  Setting a default path is not supported by the portal implementation, and any default path passed to NFDe will be ignored.  This is a limitation of the portal API, so there is no way NFDe can work around it.  If this feature is something you desire, please show your interest on https://github.com/flatpak/xdg-desktop-portal/pull/874.*
 
 ### What is a portal?
 
