@@ -256,6 +256,8 @@ To use the portal implementation, add `-DNFD_PORTAL=ON` to the build command.
 
 *Note:  Setting a default path is not supported by the portal implementation, and any default path passed to NFDe will be ignored.  This is a limitation of the portal API, so there is no way NFDe can work around it.  If this feature is something you desire, please show your interest on https://github.com/flatpak/xdg-desktop-portal/pull/874.*
 
+*Note 2:  The folder picker is only supported on org.freedesktop.portal.FileChooser interface version >= 3, which corresponds to xdg-desktop-portal version >= 1.7.1.  `NFD_PickFolder()` will query the interface version at runtime, and return `NFD_ERROR` if the version is too low.
+
 ### What is a portal?
 
 Unlike Windows and MacOS, Linux does not have a file chooser baked into the operating system.  Linux applications that want a file chooser usually link with a library that provides one (such as GTK, as in the Linux screenshot above).  This is a mostly acceptable solution that many applications use, but may make the file chooser look foreign on non-GTK distros.
