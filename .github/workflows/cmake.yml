@@ -78,7 +78,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ {label: macos-latest, name: latest}, {label: macos-10.15, name: 10.15} ]
+        os: [ {label: macos-latest, name: latest}, {label: macos-11, name: 11} ]
         shared_lib: [ {flag: OFF, name: Static} ]
         include:
         - os: {label: macos-latest, name: latest}
