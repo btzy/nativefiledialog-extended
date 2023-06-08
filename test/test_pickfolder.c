@@ -14,7 +14,7 @@ int main(void) {
     nfdchar_t* outPath;
 
     // show the dialog
-    nfdresult_t result = NFD_PickFolder(&outPath, NULL);
+    nfdresult_t result = NFD_PickFolder(&outPath, NULL, NULL);
     if (result == NFD_OKAY) {
         puts("Success!");
         puts(outPath);
