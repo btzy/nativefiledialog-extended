@@ -43,7 +43,18 @@ Features added in Native File Dialog Extended:
 
 There is also significant code refractoring, especially for the Windows implementation.
 
-The [wiki](https://github.com/btzy/nativefiledialog-extended/wiki) keeps track of known language bindings and known popular projects that depend on this library.
+## Bindings in other languages
+
+You can use this library in other languages too! 🚀 Here's a list of other
+projects that expose this native API to other programming languages. Please
+report issues with these bindings on their respective repositories.
+
+- **Rust:** [nfde-rs](https://github.com/btzy/nfde-rs)
+- **Java/Kotlin:** [Native File Dialog Java](https://github.com/WonderzGmbH/nativefiledialog-java)
+- **Java:** [LWJGL - Lightweight Java Game Library 3](https://github.com/LWJGL/lwjgl3)
+
+❤️ If you've made your own bindings for your favorite programming language, I'd
+love to add it to this list!
 
 # Basic Usage
 
@@ -298,16 +309,3 @@ Everything in this repository is distributed under the ZLib license, as is the o
 ## Support ##
 
 I don't provide any paid support.  [Michael Labbe](https://github.com/mlabbe) appears to provide paid support for his [library](https://github.com/mlabbe/nativefiledialog) at the time of writing.
-
-## Bindings in other languages
-
-You can use this library in other languages too! 🚀 Here's a list of other
-projects that expose this native API to other programming languages. Please
-report issues with these bindings on their respective repositories.
-
-- **Rust:** [nfde-rs](https://github.com/btzy/nfde-rs)
-- **Java/Kotlin:** [Native File Dialog Java](https://github.com/WonderzGmbH/nativefiledialog-java)
-- **Java:** [LWJGL - Lightweight Java Game Library 3](https://github.com/LWJGL/lwjgl3)
-
-❤️ If you've made your own bindings for your favorite programming language, I'd
-love to add it to this list!
