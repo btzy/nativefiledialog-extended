@@ -45,16 +45,16 @@ There is also significant code refractoring, especially for the Windows implemen
 
 ## Bindings in other languages
 
-You can use this library in other languages too! 🚀 Here's a list of other
-projects that expose this native API to other programming languages. Please
-report issues with these bindings on their respective repositories.
+This library is compatible with other programming languages as well. Below are
+some projects that provide bindings to the native API in different languages.
+Please report any issues with these bindings on their respective repositories.
 
 - **Rust:** [nfde-rs](https://github.com/btzy/nfde-rs)
 - **Java/Kotlin:** [Native File Dialog Java](https://github.com/WonderzGmbH/nativefiledialog-java)
 - **Java:** [LWJGL - Lightweight Java Game Library 3](https://github.com/LWJGL/lwjgl3)
 
-❤️ If you've made your own bindings for your favorite programming language, I'd
-love to add it to this list!
+❤️ If you have created bindings for your favorite programming language, feel
+free to share them for inclusion!
 
 # Basic Usage
 
