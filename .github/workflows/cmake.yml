@@ -112,7 +112,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
     - name: Configure
-      run: mkdir build && mkdir install && cd build && cmake -DCMAKE_INSTALL_PREFIX="../install" -DBUILD_SHARED_LIBS=${{ matrix.shared_lib.flag }} -DCMAKE_WINDOWS_EXPORT_ALL_SYMBOLS=${{ matrix.shared_lib.flag }} -DNFD_BUILD_TESTS=ON ..
+      run: mkdir build && mkdir install && cd build && cmake -DCMAKE_INSTALL_PREFIX="../install" -DBUILD_SHARED_LIBS=${{ matrix.shared_lib.flag }} -DNFD_BUILD_TESTS=ON ..
     - name: Build
       run: cmake --build build --target install --config Release
     - name: Upload test binaries
