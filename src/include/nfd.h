@@ -10,24 +10,22 @@
 #ifndef _NFD_H
 #define _NFD_H
 
-
 #if defined(_WIN32)
-#  if defined(NFD_EXPORT)
-#    define NFD_API __declspec(dllexport)
-#  elif defined(NFD_SHARED)
-#    define NFD_API __declspec(dllimport)
-#  endif
+#if defined(NFD_EXPORT)
+#define NFD_API __declspec(dllexport)
+#elif defined(NFD_SHARED)
+#define NFD_API __declspec(dllimport)
+#endif
 #else
-#  if defined(NFD_EXPORT) || defined(NFD_SHARED)
-#    if defined(__GNUC__) || defined(__clang__)
-#      define NFD_API __attribute__((visibility("default")))
-#    endif
-#  endif
+#if defined(NFD_EXPORT) || defined(NFD_SHARED)
+#if defined(__GNUC__) || defined(__clang__)
+#define NFD_API __attribute__((visibility("default")))
+#endif
+#endif
 #endif
 #ifndef NFD_API
-#  define NFD_API
+#define NFD_API
 #endif
-
 
 #ifdef __cplusplus
 extern "C" {
@@ -98,9 +96,9 @@ NFD_API void NFD_Quit(void);
 /* If filterCount is zero, filterList is ignored (you can use NULL) */
 /* If defaultPath is NULL, the operating system will decide */
 NFD_API nfdresult_t NFD_OpenDialogN(nfdnchar_t** outPath,
-                            const nfdnfilteritem_t* filterList,
-                            nfdfiltersize_t filterCount,
-                            const nfdnchar_t* defaultPath);
+                                    const nfdnfilteritem_t* filterList,
+                                    nfdfiltersize_t filterCount,
+                                    const nfdnchar_t* defaultPath);
 
 /* multiple file open dialog */
 /* It is the caller's responsibility to free `outPaths` via NFD_PathSet_Free() if this function
@@ -108,9 +106,9 @@ NFD_API nfdresult_t NFD_OpenDialogN(nfdnchar_t** outPath,
 /* If filterCount is zero, filterList is ignored (you can use NULL) */
 /* If defaultPath is NULL, the operating system will decide */
 NFD_API nfdresult_t NFD_OpenDialogMultipleN(const nfdpathset_t** outPaths,
-                                    const nfdnfilteritem_t* filterList,
-                                    nfdfiltersize_t filterCount,
-                                    const nfdnchar_t* defaultPath);
+                                            const nfdnfilteritem_t* filterList,
+                                            nfdfiltersize_t filterCount,
+                                            const nfdnchar_t* defaultPath);
 
 /* save dialog */
 /* It is the caller's responsibility to free `outPath` via NFD_FreePathN() if this function returns
@@ -118,10 +116,10 @@ NFD_API nfdresult_t NFD_OpenDialogMultipleN(const nfdpathset_t** outPaths,
 /* If filterCount is zero, filterList is ignored (you can use NULL) */
 /* If defaultPath is NULL, the operating system will decide */
 NFD_API nfdresult_t NFD_SaveDialogN(nfdnchar_t** outPath,
-                            const nfdnfilteritem_t* filterList,
-                            nfdfiltersize_t filterCount,
-                            const nfdnchar_t* defaultPath,
-                            const nfdnchar_t* defaultName);
+                                    const nfdnfilteritem_t* filterList,
+                                    nfdfiltersize_t filterCount,
+                                    const nfdnchar_t* defaultPath,
+                                    const nfdnchar_t* defaultName);
 
 /* select folder dialog */
 /* It is the caller's responsibility to free `outPath` via NFD_FreePathN() if this function returns
@@ -155,8 +153,8 @@ NFD_API nfdresult_t NFD_PathSet_GetCount(const nfdpathset_t* pathSet, nfdpathset
 /* It is the caller's responsibility to free `outPath` via NFD_PathSet_FreePathN() if this function
  * returns NFD_OKAY */
 NFD_API nfdresult_t NFD_PathSet_GetPathN(const nfdpathset_t* pathSet,
-                                 nfdpathsetsize_t index,
-                                 nfdnchar_t** outPath);
+                                         nfdpathsetsize_t index,
+                                         nfdnchar_t** outPath);
 /* Free the path gotten by NFD_PathSet_GetPathN */
 #ifdef _WIN32
 #define NFD_PathSet_FreePathN NFD_FreePathN
@@ -169,7 +167,8 @@ NFD_API void NFD_PathSet_FreePathN(const nfdnchar_t* filePath);
 /* Gets an enumerator of the path set. */
 /* It is the caller's responsibility to free `enumerator` via NFD_PathSet_FreeEnum() if this
  * function returns NFD_OKAY, and it should be freed before freeing the pathset. */
-NFD_API nfdresult_t NFD_PathSet_GetEnum(const nfdpathset_t* pathSet, nfdpathsetenum_t* outEnumerator);
+NFD_API nfdresult_t NFD_PathSet_GetEnum(const nfdpathset_t* pathSet,
+                                        nfdpathsetenum_t* outEnumerator);
 /* Frees an enumerator of the path set. */
 NFD_API void NFD_PathSet_FreeEnum(nfdpathsetenum_t* enumerator);
 /* Gets the next item from the path set enumerator.
@@ -202,26 +201,26 @@ NFD_API void NFD_FreePathU8(nfdu8char_t* outPath);
 /* It is the caller's responsibility to free `outPath` via NFD_FreePathU8() if this function returns
  * NFD_OKAY */
 NFD_API nfdresult_t NFD_OpenDialogU8(nfdu8char_t** outPath,
-                             const nfdu8filteritem_t* filterList,
-                             nfdfiltersize_t count,
-                             const nfdu8char_t* defaultPath);
+                                     const nfdu8filteritem_t* filterList,
+                                     nfdfiltersize_t count,
+                                     const nfdu8char_t* defaultPath);
 
 /* multiple file open dialog */
 /* It is the caller's responsibility to free `outPaths` via NFD_PathSet_Free() if this function
  * returns NFD_OKAY */
 NFD_API nfdresult_t NFD_OpenDialogMultipleU8(const nfdpathset_t** outPaths,
-                                     const nfdu8filteritem_t* filterList,
-                                     nfdfiltersize_t count,
-                                     const nfdu8char_t* defaultPath);
+                                             const nfdu8filteritem_t* filterList,
+                                             nfdfiltersize_t count,
+                                             const nfdu8char_t* defaultPath);
 
 /* save dialog */
 /* It is the caller's responsibility to free `outPath` via NFD_FreePathU8() if this function returns
  * NFD_OKAY */
 NFD_API nfdresult_t NFD_SaveDialogU8(nfdu8char_t** outPath,
-                             const nfdu8filteritem_t* filterList,
-                             nfdfiltersize_t count,
-                             const nfdu8char_t* defaultPath,
-                             const nfdu8char_t* defaultName);
+                                     const nfdu8filteritem_t* filterList,
+                                     nfdfiltersize_t count,
+                                     const nfdu8char_t* defaultPath,
+                                     const nfdu8char_t* defaultName);
 
 /* select folder dialog */
 /* It is the caller's responsibility to free `outPath` via NFD_FreePathU8() if this function returns
@@ -232,8 +231,8 @@ NFD_API nfdresult_t NFD_PickFolderU8(nfdu8char_t** outPath, const nfdu8char_t* d
 /* It is the caller's responsibility to free `outPath` via NFD_FreePathU8() if this function returns
  * NFD_OKAY */
 NFD_API nfdresult_t NFD_PathSet_GetPathU8(const nfdpathset_t* pathSet,
-                                  nfdpathsetsize_t index,
-                                  nfdu8char_t** outPath);
+                                          nfdpathsetsize_t index,
+                                          nfdu8char_t** outPath);
 
 /* Gets the next item from the path set enumerator.
  * If there are no more items, then *outPaths will be set to NULL. */
