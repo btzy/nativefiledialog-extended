@@ -59,6 +59,10 @@ endif()
 # Define the library
 add_library(${TARGET_NAME} ${SOURCE_FILES})
 
+if (BUILD_SHARED_LIBS)
+  target_compile_definitions(${TARGET_NAME} PRIVATE NFD_EXPORT INTERFACE NFD_SHARED)
+endif ()
+
 # Allow includes from include/
 target_include_directories(${TARGET_NAME}
   PUBLIC
