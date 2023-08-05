@@ -43,7 +43,18 @@ Features added in Native File Dialog Extended:
 
 There is also significant code refractoring, especially for the Windows implementation.
 
-The [wiki](https://github.com/btzy/nativefiledialog-extended/wiki) keeps track of known language bindings and known popular projects that depend on this library.
+## Bindings in other languages
+
+This library is compatible with other programming languages as well. Below are
+some projects that provide bindings to the native API in different languages.
+Please report any issues with these bindings on their respective repositories.
+
+- **Rust:** [nfde-rs](https://github.com/btzy/nfde-rs)
+- **Java/Kotlin:** [Native File Dialog Java](https://github.com/WonderzGmbH/nativefiledialog-java)
+- **Java:** [LWJGL - Lightweight Java Game Library 3](https://github.com/LWJGL/lwjgl3)
+
+❤️ If you have created bindings for your favorite programming language, feel
+free to share them for inclusion!
 
 # Basic Usage
 
@@ -54,7 +65,7 @@ The [wiki](https://github.com/btzy/nativefiledialog-extended/wiki) keeps track o
 
 int main(void)
 {
-    
+
     NFD_Init();
 
     nfdchar_t *outPath;
@@ -70,7 +81,7 @@ int main(void)
     {
         puts("User pressed cancel.");
     }
-    else 
+    else
     {
         printf("Error: %s\n", NFD_GetError());
     }
@@ -130,11 +141,11 @@ On Linux, if you want to use the Flatpak desktop portal instead of GTK, add `-DN
 See the [CI build file](.github/workflows/cmake.yml) for some example build commands.
 
 ### Visual Studio on Windows
-Recent versions of Visual Studio have CMake support built into the IDE. 
+Recent versions of Visual Studio have CMake support built into the IDE.
 You should be able to "Open Folder" in the project root directory,
 and Visual Studio will recognize and configure the project appropriately.
 From there, you will be able to set configurations for Debug vs Release,
-and for x86 vs x64. 
+and for x86 vs x64.
 For more information, see [the Microsoft Docs page]([https://docs.microsoft.com/en-us/cpp/build/cmake-projects-in-visual-studio?view=vs-2019](https://docs.microsoft.com/en-us/cpp/build/cmake-projects-in-visual-studio?view=vs-2019)).
 This has been tested to work on Visual Studio 2019,
 and it probably works on Visual Studio 2017 too.
