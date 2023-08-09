@@ -15,8 +15,7 @@ if(nfd_PLATFORM STREQUAL PLATFORM_LINUX)
   # for Linux, we support GTK3 and xdg-desktop-portal
   option(NFD_PORTAL "Use xdg-desktop-portal instead of GTK" OFF)
   if(NOT NFD_PORTAL)
-    pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
-    message("Using GTK version: ${GTK3_VERSION}")
+    pkg_check_modules(GTK3 REQUIRED IMPORTED_TARGET gtk+-3.0)
     list(APPEND SOURCE_FILES nfd_gtk.cpp)
   else()
     pkg_check_modules(DBUS REQUIRED dbus-1)
@@ -31,7 +30,7 @@ if(nfd_PLATFORM STREQUAL PLATFORM_MACOS)
 endif()
 
 # Define the library
-add_library(${TARGET_NAME} OBJECT
+add_library(${TARGET_NAME}
   ${SOURCE_FILES})
 
 # Allow includes from include/
@@ -40,10 +39,8 @@ target_include_directories(${TARGET_NAME}
 
 if(nfd_PLATFORM STREQUAL PLATFORM_LINUX)
   if(NOT NFD_PORTAL)
-    target_include_directories(${TARGET_NAME}
-      PRIVATE ${GTK3_INCLUDE_DIRS})
     target_link_libraries(${TARGET_NAME}
-      PRIVATE ${GTK3_LIBRARIES})
+      PRIVATE PkgConfig::GTK3)
   else()
     target_include_directories(${TARGET_NAME}
       PRIVATE ${DBUS_INCLUDE_DIRS})
