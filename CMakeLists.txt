@@ -11,7 +11,7 @@ if(WIN32)
 elseif(APPLE)
   set(nfd_PLATFORM PLATFORM_MACOS)
 elseif(UNIX AND NOT APPLE)
-  set(nfd_PLATFORM PLATFORM_LINUX)
+  set(nfd_PLATFORM PLATFORM_UNIX)
 endif()
 
 message("nfd Platform: ${nfd_PLATFORM}")

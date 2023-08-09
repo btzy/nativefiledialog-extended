@@ -10,7 +10,7 @@ if(nfd_PLATFORM STREQUAL PLATFORM_WIN32)
   list(APPEND SOURCE_FILES nfd_win.cpp)
 endif()
 
-if(nfd_PLATFORM STREQUAL PLATFORM_LINUX)
+if(nfd_PLATFORM STREQUAL PLATFORM_UNIX)
   find_package(PkgConfig REQUIRED)
   # for Linux, we support GTK3 and xdg-desktop-portal
   option(NFD_PORTAL "Use xdg-desktop-portal instead of GTK" OFF)
@@ -37,7 +37,7 @@ add_library(${TARGET_NAME}
 target_include_directories(${TARGET_NAME}
   PUBLIC include/)
 
-if(nfd_PLATFORM STREQUAL PLATFORM_LINUX)
+if(nfd_PLATFORM STREQUAL PLATFORM_UNIX)
   if(NOT NFD_PORTAL)
     target_link_libraries(${TARGET_NAME}
       PRIVATE PkgConfig::GTK3)
