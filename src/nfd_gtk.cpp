@@ -123,8 +123,8 @@ void AddFiltersToDialog(GtkFileChooser* chooser,
                     }
 
                     // +1 for the trailing '\0'
-                    nfdu8char_t* extnBuf = NFDi_Malloc<nfdu8char_t>(sizeof(nfdu8char_t) *
-                                                                  (p_spec - p_extensionStart + 3));
+                    nfdu8char_t* extnBuf = NFDi_Malloc<nfdu8char_t>(
+                        sizeof(nfdu8char_t) * (p_spec - p_extensionStart + 3));
                     nfdu8char_t* p_extnBufEnd = extnBuf;
                     *p_extnBufEnd++ = '*';
                     *p_extnBufEnd++ = '.';
@@ -223,8 +223,8 @@ Pair_GtkFileFilter_FileExtension* AddFiltersToDialogWithMap(GtkFileChooser* choo
                     }
 
                     // +1 for the trailing '\0'
-                    nfdu8char_t* extnBuf = NFDi_Malloc<nfdu8char_t>(sizeof(nfdu8char_t) *
-                                                                  (p_spec - p_extensionStart + 3));
+                    nfdu8char_t* extnBuf = NFDi_Malloc<nfdu8char_t>(
+                        sizeof(nfdu8char_t) * (p_spec - p_extensionStart + 3));
                     nfdu8char_t* p_extnBufEnd = extnBuf;
                     *p_extnBufEnd++ = '*';
                     *p_extnBufEnd++ = '.';
