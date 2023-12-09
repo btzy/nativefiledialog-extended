@@ -203,7 +203,7 @@ void AppendOpenFileQueryDictEntryDirectory<true>(DBusMessageIter& sub_iter) {
 template <>
 void AppendOpenFileQueryDictEntryDirectory<false>(DBusMessageIter&) {}
 
-void AppendSingleFilter(DBusMessageIter& base_iter, const nfdnfilteritem_t& filter) {
+void AppendSingleFilter(DBusMessageIter& base_iter, const nfdu8filteritem_t& filter) {
     DBusMessageIter filter_list_struct_iter;
     DBusMessageIter filter_sublist_iter;
     DBusMessageIter filter_sublist_struct_iter;
@@ -270,8 +270,8 @@ void AppendSingleFilter(DBusMessageIter& base_iter, const nfdnfilteritem_t& filt
 }
 
 bool AppendSingleFilterCheckExtn(DBusMessageIter& base_iter,
-                                 const nfdnfilteritem_t& filter,
-                                 const nfdnchar_t* match_extn) {
+                                 const nfdu8filteritem_t& filter,
+                                 const nfdu8char_t* match_extn) {
     DBusMessageIter filter_list_struct_iter;
     DBusMessageIter filter_sublist_iter;
     DBusMessageIter filter_sublist_struct_iter;
@@ -373,11 +373,11 @@ void AppendWildcardFilter(DBusMessageIter& base_iter) {
 
 template <bool FilterEnabled>
 void AppendOpenFileQueryDictEntryFilters(DBusMessageIter&,
-                                         const nfdnfilteritem_t*,
+                                         const nfdu8filteritem_t*,
                                          nfdfiltersize_t);
 template <>
 void AppendOpenFileQueryDictEntryFilters<true>(DBusMessageIter& sub_iter,
-                                               const nfdnfilteritem_t* filterList,
+                                               const nfdu8filteritem_t* filterList,
                                                nfdfiltersize_t filterCount) {
     if (filterCount != 0) {
         DBusMessageIter sub_sub_iter;
@@ -411,13 +411,13 @@ void AppendOpenFileQueryDictEntryFilters<true>(DBusMessageIter& sub_iter,
 }
 template <>
 void AppendOpenFileQueryDictEntryFilters<false>(DBusMessageIter&,
-                                                const nfdnfilteritem_t*,
+                                                const nfdu8filteritem_t*,
                                                 nfdfiltersize_t) {}
 
 void AppendSaveFileQueryDictEntryFilters(DBusMessageIter& sub_iter,
-                                         const nfdnfilteritem_t* filterList,
+                                         const nfdu8filteritem_t* filterList,
                                          nfdfiltersize_t filterCount,
-                                         const nfdnchar_t* defaultName) {
+                                         const nfdu8char_t* defaultName) {
     if (filterCount != 0) {
         DBusMessageIter sub_sub_iter;
         DBusMessageIter variant_iter;
@@ -425,9 +425,9 @@ void AppendSaveFileQueryDictEntryFilters(DBusMessageIter& sub_iter,
 
         // The extension of the defaultName (without the '.').  If NULL, it means that there is no
         // extension.
-        const nfdnchar_t* extn = NULL;
+        const nfdu8char_t* extn = NULL;
         if (defaultName) {
-            const nfdnchar_t* p = defaultName;
+            const nfdu8char_t* p = defaultName;
             while (*p) ++p;
             while (*--p != '.')
                 ;
@@ -550,9 +550,9 @@ void AppendSaveFileQueryDictEntryCurrentFile(DBusMessageIter& sub_iter,
 template <bool Multiple, bool Directory>
 void AppendOpenFileQueryParams(DBusMessage* query,
                                const char* handle_token,
-                               const nfdnfilteritem_t* filterList,
+                               const nfdu8filteritem_t* filterList,
                                nfdfiltersize_t filterCount,
-                               const nfdnchar_t* defaultPath) {
+                               const nfdu8char_t* defaultPath) {
     DBusMessageIter iter;
     dbus_message_iter_init_append(query, &iter);
 
@@ -573,10 +573,10 @@ void AppendOpenFileQueryParams(DBusMessage* query,
 // Append SaveFile() portal params to the given query.
 void AppendSaveFileQueryParams(DBusMessage* query,
                                const char* handle_token,
-                               const nfdnfilteritem_t* filterList,
+                               const nfdu8filteritem_t* filterList,
                                nfdfiltersize_t filterCount,
-                               const nfdnchar_t* defaultPath,
-                               const nfdnchar_t* defaultName) {
+                               const nfdu8char_t* defaultPath,
+                               const nfdu8char_t* defaultName) {
     DBusMessageIter iter;
     dbus_message_iter_init_append(query, &iter);
 
@@ -1121,9 +1121,9 @@ nfdresult_t AllocAndCopyFilePathWithExtn(const char* fileUri, const char* extn, 
 // DBusMessage_Guard).
 template <bool Multiple, bool Directory>
 nfdresult_t NFD_DBus_OpenFile(DBusMessage*& outMsg,
-                              const nfdnfilteritem_t* filterList,
+                              const nfdu8filteritem_t* filterList,
                               nfdfiltersize_t filterCount,
-                              const nfdnchar_t* defaultPath) {
+                              const nfdu8char_t* defaultPath) {
     const char* handle_token_ptr;
     char* handle_obj_path = MakeUniqueObjectPath(&handle_token_ptr);
     Free_Guard<char> handle_obj_path_guard(handle_obj_path);
@@ -1202,10 +1202,10 @@ nfdresult_t NFD_DBus_OpenFile(DBusMessage*& outMsg,
 // Caller is responsible for freeing the outMsg using dbus_message_unref() (or use
 // DBusMessage_Guard).
 nfdresult_t NFD_DBus_SaveFile(DBusMessage*& outMsg,
-                              const nfdnfilteritem_t* filterList,
+                              const nfdu8filteritem_t* filterList,
                               nfdfiltersize_t filterCount,
-                              const nfdnchar_t* defaultPath,
-                              const nfdnchar_t* defaultName) {
+                              const nfdu8char_t* defaultPath,
+                              const nfdu8char_t* defaultName) {
     const char* handle_token_ptr;
     char* handle_obj_path = MakeUniqueObjectPath(&handle_token_ptr);
     Free_Guard<char> handle_obj_path_guard(handle_obj_path);
@@ -1366,15 +1366,15 @@ void NFD_Quit(void) {
     // error.
 }
 
-void NFD_FreePathN(nfdnchar_t* filePath) {
+void NFD_FreePathU8(nfdu8char_t* filePath) {
     assert(filePath);
     NFDi_Free(filePath);
 }
 
-nfdresult_t NFD_OpenDialogN(nfdnchar_t** outPath,
-                            const nfdnfilteritem_t* filterList,
+nfdresult_t NFD_OpenDialogU8(nfdu8char_t** outPath,
+                            const nfdu8filteritem_t* filterList,
                             nfdfiltersize_t filterCount,
-                            const nfdnchar_t* defaultPath) {
+                            const nfdu8char_t* defaultPath) {
     DBusMessage* msg;
     {
         const nfdresult_t res =
@@ -1396,10 +1396,10 @@ nfdresult_t NFD_OpenDialogN(nfdnchar_t** outPath,
     return AllocAndCopyFilePath(uri, *outPath);
 }
 
-nfdresult_t NFD_OpenDialogMultipleN(const nfdpathset_t** outPaths,
-                                    const nfdnfilteritem_t* filterList,
+nfdresult_t NFD_OpenDialogMultipleU8(const nfdpathset_t** outPaths,
+                                    const nfdu8filteritem_t* filterList,
                                     nfdfiltersize_t filterCount,
-                                    const nfdnchar_t* defaultPath) {
+                                    const nfdu8char_t* defaultPath) {
     DBusMessage* msg;
     {
         const nfdresult_t res =
@@ -1420,11 +1420,11 @@ nfdresult_t NFD_OpenDialogMultipleN(const nfdpathset_t** outPaths,
     return NFD_OKAY;
 }
 
-nfdresult_t NFD_SaveDialogN(nfdnchar_t** outPath,
-                            const nfdnfilteritem_t* filterList,
+nfdresult_t NFD_SaveDialogU8(nfdu8char_t** outPath,
+                            const nfdu8filteritem_t* filterList,
                             nfdfiltersize_t filterCount,
-                            const nfdnchar_t* defaultPath,
-                            const nfdnchar_t* defaultName) {
+                            const nfdu8char_t* defaultPath,
+                            const nfdu8char_t* defaultName) {
     DBusMessage* msg;
     {
         const nfdresult_t res =
@@ -1459,7 +1459,7 @@ nfdresult_t NFD_SaveDialogN(nfdnchar_t** outPath,
 #endif
 }
 
-nfdresult_t NFD_PickFolderN(nfdnchar_t** outPath, const nfdnchar_t* defaultPath) {
+nfdresult_t NFD_PickFolderU8(nfdu8char_t** outPath, const nfdu8char_t* defaultPath) {
     (void)defaultPath;  // Default path not supported for portal backend
 
     {
@@ -1505,9 +1505,9 @@ nfdresult_t NFD_PathSet_GetCount(const nfdpathset_t* pathSet, nfdpathsetsize_t* 
     return NFD_OKAY;
 }
 
-nfdresult_t NFD_PathSet_GetPathN(const nfdpathset_t* pathSet,
+nfdresult_t NFD_PathSet_GetPathU8(const nfdpathset_t* pathSet,
                                  nfdpathsetsize_t index,
-                                 nfdnchar_t** outPath) {
+                                 nfdu8char_t** outPath) {
     assert(pathSet);
     DBusMessage* msg = const_cast<DBusMessage*>(static_cast<const DBusMessage*>(pathSet));
     DBusMessageIter uri_iter;
@@ -1533,9 +1533,9 @@ nfdresult_t NFD_PathSet_GetPathN(const nfdpathset_t* pathSet,
     return AllocAndCopyFilePath(uri, *outPath);
 }
 
-void NFD_PathSet_FreePathN(const nfdnchar_t* filePath) {
+void NFD_PathSet_FreePathU8(const nfdu8char_t* filePath) {
     assert(filePath);
-    NFD_FreePathN(const_cast<nfdnchar_t*>(filePath));
+    NFD_FreePathU8(const_cast<nfdu8char_t*>(filePath));
 }
 
 void NFD_PathSet_Free(const nfdpathset_t* pathSet) {
@@ -1555,7 +1555,7 @@ void NFD_PathSet_FreeEnum(nfdpathsetenum_t*) {
     // Do nothing, because the enumeration is just a message iterator
 }
 
-nfdresult_t NFD_PathSet_EnumNextN(nfdpathsetenum_t* enumerator, nfdnchar_t** outPath) {
+nfdresult_t NFD_PathSet_EnumNextU8(nfdpathsetenum_t* enumerator, nfdu8char_t** outPath) {
     DBusMessageIter& uri_iter = *reinterpret_cast<DBusMessageIter*>(enumerator);
     const int arg_type = dbus_message_iter_get_arg_type(&uri_iter);
     if (arg_type == DBUS_TYPE_INVALID) {

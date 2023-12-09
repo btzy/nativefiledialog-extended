@@ -48,21 +48,21 @@ static void NFDi_Free(void* ptr) {
 
 #if NFD_MACOS_ALLOWEDCONTENTTYPES == 1
 // Returns an NSArray of UTType representing the content types.
-static NSArray* BuildAllowedContentTypes(const nfdnfilteritem_t* filterList,
+static NSArray* BuildAllowedContentTypes(const nfdu8filteritem_t* filterList,
                                          nfdfiltersize_t filterCount) {
     NSMutableArray* buildFilterList = [[NSMutableArray alloc] init];
 
     for (nfdfiltersize_t filterIndex = 0; filterIndex != filterCount; ++filterIndex) {
         // this is the spec to parse (we don't use the friendly name on OS X)
-        const nfdnchar_t* filterSpec = filterList[filterIndex].spec;
+        const nfdu8char_t* filterSpec = filterList[filterIndex].spec;
 
-        const nfdnchar_t* p_currentFilterBegin = filterSpec;
-        for (const nfdnchar_t* p_filterSpec = filterSpec; *p_filterSpec; ++p_filterSpec) {
+        const nfdu8char_t* p_currentFilterBegin = filterSpec;
+        for (const nfdu8char_t* p_filterSpec = filterSpec; *p_filterSpec; ++p_filterSpec) {
             if (*p_filterSpec == ',') {
                 // add the extension to the array
                 NSString* filterStr = [[NSString alloc]
                     initWithBytes:(const void*)p_currentFilterBegin
-                           length:(sizeof(nfdnchar_t) * (p_filterSpec - p_currentFilterBegin))
+                           length:(sizeof(nfdu8char_t) * (p_filterSpec - p_currentFilterBegin))
                          encoding:NSUTF8StringEncoding];
                 UTType* filterType = [UTType typeWithFilenameExtension:filterStr
                                                       conformingToType:UTTypeData];
@@ -89,21 +89,21 @@ static NSArray* BuildAllowedContentTypes(const nfdnfilteritem_t* filterList,
 }
 #else
 // Returns an NSArray of NSString representing the file types.
-static NSArray* BuildAllowedFileTypes(const nfdnfilteritem_t* filterList,
+static NSArray* BuildAllowedFileTypes(const nfdu8filteritem_t* filterList,
                                       nfdfiltersize_t filterCount) {
     NSMutableArray* buildFilterList = [[NSMutableArray alloc] init];
 
     for (nfdfiltersize_t filterIndex = 0; filterIndex != filterCount; ++filterIndex) {
         // this is the spec to parse (we don't use the friendly name on OS X)
-        const nfdnchar_t* filterSpec = filterList[filterIndex].spec;
+        const nfdu8char_t* filterSpec = filterList[filterIndex].spec;
 
-        const nfdnchar_t* p_currentFilterBegin = filterSpec;
-        for (const nfdnchar_t* p_filterSpec = filterSpec; *p_filterSpec; ++p_filterSpec) {
+        const nfdu8char_t* p_currentFilterBegin = filterSpec;
+        for (const nfdu8char_t* p_filterSpec = filterSpec; *p_filterSpec; ++p_filterSpec) {
             if (*p_filterSpec == ',') {
                 // add the extension to the array
                 NSString* filterStr = [[[NSString alloc]
                     initWithBytes:(const void*)p_currentFilterBegin
-                           length:(sizeof(nfdnchar_t) * (p_filterSpec - p_currentFilterBegin))
+                           length:(sizeof(nfdu8char_t) * (p_filterSpec - p_currentFilterBegin))
                          encoding:NSUTF8StringEncoding] autorelease];
                 [buildFilterList addObject:filterStr];
                 p_currentFilterBegin = p_filterSpec + 1;
@@ -125,7 +125,7 @@ static NSArray* BuildAllowedFileTypes(const nfdnfilteritem_t* filterList,
 #endif
 
 static void AddFilterListToDialog(NSSavePanel* dialog,
-                                  const nfdnfilteritem_t* filterList,
+                                  const nfdu8filteritem_t* filterList,
                                   nfdfiltersize_t filterCount) {
     // note: NSOpenPanel inherits from NSSavePanel.
 
@@ -144,7 +144,7 @@ static void AddFilterListToDialog(NSSavePanel* dialog,
 #endif
 }
 
-static void SetDefaultPath(NSSavePanel* dialog, const nfdnchar_t* defaultPath) {
+static void SetDefaultPath(NSSavePanel* dialog, const nfdu8char_t* defaultPath) {
     if (!defaultPath || !*defaultPath) return;
 
     NSString* defaultPathString = [NSString stringWithUTF8String:defaultPath];
@@ -152,20 +152,20 @@ static void SetDefaultPath(NSSavePanel* dialog, const nfdnchar_t* defaultPath) {
     [dialog setDirectoryURL:url];
 }
 
-static void SetDefaultName(NSSavePanel* dialog, const nfdnchar_t* defaultName) {
+static void SetDefaultName(NSSavePanel* dialog, const nfdu8char_t* defaultName) {
     if (!defaultName || !*defaultName) return;
 
     NSString* defaultNameString = [NSString stringWithUTF8String:defaultName];
     [dialog setNameFieldStringValue:defaultNameString];
 }
 
-static nfdresult_t CopyUtf8String(const char* utf8Str, nfdnchar_t** out) {
+static nfdresult_t CopyUtf8String(const char* utf8Str, nfdu8char_t** out) {
     // byte count, not char count
     size_t len = strlen(utf8Str);
 
     // Too bad we have to use additional memory for all the result paths,
     // because we cannot reconstitute an NSString from a char* to release it properly.
-    *out = (nfdnchar_t*)NFDi_Malloc(len + 1);
+    *out = (nfdu8char_t*)NFDi_Malloc(len + 1);
     if (*out) {
         strcpy(*out, utf8Str);
         return NFD_OKAY;
@@ -184,7 +184,7 @@ void NFD_ClearError(void) {
     NFDi_SetError(NULL);
 }
 
-void NFD_FreePathN(nfdnchar_t* filePath) {
+void NFD_FreePathU8(nfdu8char_t* filePath) {
     NFDi_Free((void*)filePath);
 }
 
@@ -207,10 +207,10 @@ void NFD_Quit(void) {
     [[NSApplication sharedApplication] setActivationPolicy:old_app_policy];
 }
 
-nfdresult_t NFD_OpenDialogN(nfdnchar_t** outPath,
-                            const nfdnfilteritem_t* filterList,
+nfdresult_t NFD_OpenDialogU8(nfdu8char_t** outPath,
+                            const nfdu8filteritem_t* filterList,
                             nfdfiltersize_t filterCount,
-                            const nfdnchar_t* defaultPath) {
+                            const nfdu8char_t* defaultPath) {
     nfdresult_t result = NFD_CANCEL;
     @autoreleasepool {
         NSWindow* keyWindow = [[NSApplication sharedApplication] keyWindow];
@@ -236,10 +236,10 @@ nfdresult_t NFD_OpenDialogN(nfdnchar_t** outPath,
     return result;
 }
 
-nfdresult_t NFD_OpenDialogMultipleN(const nfdpathset_t** outPaths,
-                                    const nfdnfilteritem_t* filterList,
+nfdresult_t NFD_OpenDialogMultipleU8(const nfdpathset_t** outPaths,
+                                    const nfdu8filteritem_t* filterList,
                                     nfdfiltersize_t filterCount,
-                                    const nfdnchar_t* defaultPath) {
+                                    const nfdu8char_t* defaultPath) {
     nfdresult_t result = NFD_CANCEL;
     @autoreleasepool {
         NSWindow* keyWindow = [[NSApplication sharedApplication] keyWindow];
@@ -270,11 +270,11 @@ nfdresult_t NFD_OpenDialogMultipleN(const nfdpathset_t** outPaths,
     return result;
 }
 
-nfdresult_t NFD_SaveDialogN(nfdnchar_t** outPath,
-                            const nfdnfilteritem_t* filterList,
+nfdresult_t NFD_SaveDialogU8(nfdu8char_t** outPath,
+                            const nfdu8filteritem_t* filterList,
                             nfdfiltersize_t filterCount,
-                            const nfdnchar_t* defaultPath,
-                            const nfdnchar_t* defaultName) {
+                            const nfdu8char_t* defaultPath,
+                            const nfdu8char_t* defaultName) {
     nfdresult_t result = NFD_CANCEL;
     @autoreleasepool {
         NSWindow* keyWindow = [[NSApplication sharedApplication] keyWindow];
@@ -306,7 +306,7 @@ nfdresult_t NFD_SaveDialogN(nfdnchar_t** outPath,
     return result;
 }
 
-nfdresult_t NFD_PickFolderN(nfdnchar_t** outPath, const nfdnchar_t* defaultPath) {
+nfdresult_t NFD_PickFolderU8(nfdu8char_t** outPath, const nfdu8char_t* defaultPath) {
     nfdresult_t result = NFD_CANCEL;
     @autoreleasepool {
         NSWindow* keyWindow = [[NSApplication sharedApplication] keyWindow];
@@ -338,9 +338,9 @@ nfdresult_t NFD_PathSet_GetCount(const nfdpathset_t* pathSet, nfdpathsetsize_t* 
     return NFD_OKAY;
 }
 
-nfdresult_t NFD_PathSet_GetPathN(const nfdpathset_t* pathSet,
+nfdresult_t NFD_PathSet_GetPathU8(const nfdpathset_t* pathSet,
                                  nfdpathsetsize_t index,
-                                 nfdnchar_t** outPath) {
+                                 nfdu8char_t** outPath) {
     const NSArray* urls = (const NSArray*)pathSet;
 
     @autoreleasepool {
@@ -374,7 +374,7 @@ void NFD_PathSet_FreeEnum(nfdpathsetenum_t* enumerator) {
     [real_enum release];
 }
 
-nfdresult_t NFD_PathSet_EnumNextN(nfdpathsetenum_t* enumerator, nfdnchar_t** outPath) {
+nfdresult_t NFD_PathSet_EnumNextU8(nfdpathsetenum_t* enumerator, nfdu8char_t** outPath) {
     NSEnumerator* real_enum = (NSEnumerator*)enumerator->ptr;
 
     @autoreleasepool {

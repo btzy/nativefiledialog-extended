@@ -69,8 +69,8 @@ T* copy(const T* begin, const T* end, T* out) {
 // Does not own the filter and extension.
 struct Pair_GtkFileFilter_FileExtension {
     GtkFileFilter* filter;
-    const nfdnchar_t* extensionBegin;
-    const nfdnchar_t* extensionEnd;
+    const nfdu8char_t* extensionBegin;
+    const nfdu8char_t* extensionEnd;
 };
 
 struct ButtonClickedArgs {
@@ -79,7 +79,7 @@ struct ButtonClickedArgs {
 };
 
 void AddFiltersToDialog(GtkFileChooser* chooser,
-                        const nfdnfilteritem_t* filterList,
+                        const nfdu8filteritem_t* filterList,
                         nfdfiltersize_t filterCount) {
     if (filterCount) {
         assert(filterList);
@@ -91,7 +91,7 @@ void AddFiltersToDialog(GtkFileChooser* chooser,
 
             // count number of file extensions
             size_t sep = 1;
-            for (const nfdnchar_t* p_spec = filterList[index].spec; *p_spec; ++p_spec) {
+            for (const nfdu8char_t* p_spec = filterList[index].spec; *p_spec; ++p_spec) {
                 if (*p_spec == L',') {
                     ++sep;
                 }
@@ -105,17 +105,17 @@ void AddFiltersToDialog(GtkFileChooser* chooser,
                 sep + strlen(filterList[index].spec) + 3 + strlen(filterList[index].name);
 
             // malloc the required memory
-            nfdnchar_t* nameBuf = NFDi_Malloc<nfdnchar_t>(sizeof(nfdnchar_t) * nameSize);
+            nfdu8char_t* nameBuf = NFDi_Malloc<nfdu8char_t>(sizeof(nfdu8char_t) * nameSize);
 
-            nfdnchar_t* p_nameBuf = nameBuf;
-            for (const nfdnchar_t* p_filterName = filterList[index].name; *p_filterName;
+            nfdu8char_t* p_nameBuf = nameBuf;
+            for (const nfdu8char_t* p_filterName = filterList[index].name; *p_filterName;
                  ++p_filterName) {
                 *p_nameBuf++ = *p_filterName;
             }
             *p_nameBuf++ = ' ';
             *p_nameBuf++ = '(';
-            const nfdnchar_t* p_extensionStart = filterList[index].spec;
-            for (const nfdnchar_t* p_spec = filterList[index].spec; true; ++p_spec) {
+            const nfdu8char_t* p_extensionStart = filterList[index].spec;
+            for (const nfdu8char_t* p_spec = filterList[index].spec; true; ++p_spec) {
                 if (*p_spec == ',' || !*p_spec) {
                     if (*p_spec == ',') {
                         *p_nameBuf++ = ',';
@@ -123,15 +123,15 @@ void AddFiltersToDialog(GtkFileChooser* chooser,
                     }
 
                     // +1 for the trailing '\0'
-                    nfdnchar_t* extnBuf = NFDi_Malloc<nfdnchar_t>(sizeof(nfdnchar_t) *
+                    nfdu8char_t* extnBuf = NFDi_Malloc<nfdu8char_t>(sizeof(nfdu8char_t) *
                                                                   (p_spec - p_extensionStart + 3));
-                    nfdnchar_t* p_extnBufEnd = extnBuf;
+                    nfdu8char_t* p_extnBufEnd = extnBuf;
                     *p_extnBufEnd++ = '*';
                     *p_extnBufEnd++ = '.';
                     p_extnBufEnd = copy(p_extensionStart, p_spec, p_extnBufEnd);
                     *p_extnBufEnd++ = '\0';
                     assert((size_t)(p_extnBufEnd - extnBuf) ==
-                           sizeof(nfdnchar_t) * (p_spec - p_extensionStart + 3));
+                           sizeof(nfdu8char_t) * (p_spec - p_extensionStart + 3));
                     gtk_file_filter_add_pattern(filter, extnBuf);
                     NFDi_Free(extnBuf);
 
@@ -148,7 +148,7 @@ void AddFiltersToDialog(GtkFileChooser* chooser,
             }
             *p_nameBuf++ = ')';
             *p_nameBuf++ = '\0';
-            assert((size_t)(p_nameBuf - nameBuf) == sizeof(nfdnchar_t) * nameSize);
+            assert((size_t)(p_nameBuf - nameBuf) == sizeof(nfdu8char_t) * nameSize);
 
             // add to the filter
             gtk_file_filter_set_name(filter, nameBuf);
@@ -171,7 +171,7 @@ void AddFiltersToDialog(GtkFileChooser* chooser,
 
 // returns null-terminated map (trailing .filter is null)
 Pair_GtkFileFilter_FileExtension* AddFiltersToDialogWithMap(GtkFileChooser* chooser,
-                                                            const nfdnfilteritem_t* filterList,
+                                                            const nfdu8filteritem_t* filterList,
                                                             nfdfiltersize_t filterCount) {
     Pair_GtkFileFilter_FileExtension* map = NFDi_Malloc<Pair_GtkFileFilter_FileExtension>(
         sizeof(Pair_GtkFileFilter_FileExtension) * (filterCount + 1));
@@ -191,7 +191,7 @@ Pair_GtkFileFilter_FileExtension* AddFiltersToDialogWithMap(GtkFileChooser* choo
 
             // count number of file extensions
             size_t sep = 1;
-            for (const nfdnchar_t* p_spec = filterList[index].spec; *p_spec; ++p_spec) {
+            for (const nfdu8char_t* p_spec = filterList[index].spec; *p_spec; ++p_spec) {
                 if (*p_spec == L',') {
                     ++sep;
                 }
@@ -205,17 +205,17 @@ Pair_GtkFileFilter_FileExtension* AddFiltersToDialogWithMap(GtkFileChooser* choo
                 sep + strlen(filterList[index].spec) + 3 + strlen(filterList[index].name);
 
             // malloc the required memory
-            nfdnchar_t* nameBuf = NFDi_Malloc<nfdnchar_t>(sizeof(nfdnchar_t) * nameSize);
+            nfdu8char_t* nameBuf = NFDi_Malloc<nfdu8char_t>(sizeof(nfdu8char_t) * nameSize);
 
-            nfdnchar_t* p_nameBuf = nameBuf;
-            for (const nfdnchar_t* p_filterName = filterList[index].name; *p_filterName;
+            nfdu8char_t* p_nameBuf = nameBuf;
+            for (const nfdu8char_t* p_filterName = filterList[index].name; *p_filterName;
                  ++p_filterName) {
                 *p_nameBuf++ = *p_filterName;
             }
             *p_nameBuf++ = ' ';
             *p_nameBuf++ = '(';
-            const nfdnchar_t* p_extensionStart = filterList[index].spec;
-            for (const nfdnchar_t* p_spec = filterList[index].spec; true; ++p_spec) {
+            const nfdu8char_t* p_extensionStart = filterList[index].spec;
+            for (const nfdu8char_t* p_spec = filterList[index].spec; true; ++p_spec) {
                 if (*p_spec == ',' || !*p_spec) {
                     if (*p_spec == ',') {
                         *p_nameBuf++ = ',';
@@ -223,15 +223,15 @@ Pair_GtkFileFilter_FileExtension* AddFiltersToDialogWithMap(GtkFileChooser* choo
                     }
 
                     // +1 for the trailing '\0'
-                    nfdnchar_t* extnBuf = NFDi_Malloc<nfdnchar_t>(sizeof(nfdnchar_t) *
+                    nfdu8char_t* extnBuf = NFDi_Malloc<nfdu8char_t>(sizeof(nfdu8char_t) *
                                                                   (p_spec - p_extensionStart + 3));
-                    nfdnchar_t* p_extnBufEnd = extnBuf;
+                    nfdu8char_t* p_extnBufEnd = extnBuf;
                     *p_extnBufEnd++ = '*';
                     *p_extnBufEnd++ = '.';
                     p_extnBufEnd = copy(p_extensionStart, p_spec, p_extnBufEnd);
                     *p_extnBufEnd++ = '\0';
                     assert((size_t)(p_extnBufEnd - extnBuf) ==
-                           sizeof(nfdnchar_t) * (p_spec - p_extensionStart + 3));
+                           sizeof(nfdu8char_t) * (p_spec - p_extensionStart + 3));
                     gtk_file_filter_add_pattern(filter, extnBuf);
                     NFDi_Free(extnBuf);
 
@@ -254,7 +254,7 @@ Pair_GtkFileFilter_FileExtension* AddFiltersToDialogWithMap(GtkFileChooser* choo
             }
             *p_nameBuf++ = ')';
             *p_nameBuf++ = '\0';
-            assert((size_t)(p_nameBuf - nameBuf) == sizeof(nfdnchar_t) * nameSize);
+            assert((size_t)(p_nameBuf - nameBuf) == sizeof(nfdu8char_t) * nameSize);
 
             // add to the filter
             gtk_file_filter_set_name(filter, nameBuf);
@@ -405,15 +405,15 @@ void NFD_Quit(void) {
     // do nothing, GTK cannot be de-initialized
 }
 
-void NFD_FreePathN(nfdnchar_t* filePath) {
+void NFD_FreePathU8(nfdu8char_t* filePath) {
     assert(filePath);
     g_free(filePath);
 }
 
-nfdresult_t NFD_OpenDialogN(nfdnchar_t** outPath,
-                            const nfdnfilteritem_t* filterList,
+nfdresult_t NFD_OpenDialogU8(nfdu8char_t** outPath,
+                            const nfdu8filteritem_t* filterList,
                             nfdfiltersize_t filterCount,
-                            const nfdnchar_t* defaultPath) {
+                            const nfdu8char_t* defaultPath) {
     GtkWidget* widget = gtk_file_chooser_dialog_new("Open File",
                                                     nullptr,
                                                     GTK_FILE_CHOOSER_ACTION_OPEN,
@@ -442,10 +442,10 @@ nfdresult_t NFD_OpenDialogN(nfdnchar_t** outPath,
     }
 }
 
-nfdresult_t NFD_OpenDialogMultipleN(const nfdpathset_t** outPaths,
-                                    const nfdnfilteritem_t* filterList,
+nfdresult_t NFD_OpenDialogMultipleU8(const nfdpathset_t** outPaths,
+                                    const nfdu8filteritem_t* filterList,
                                     nfdfiltersize_t filterCount,
-                                    const nfdnchar_t* defaultPath) {
+                                    const nfdu8char_t* defaultPath) {
     GtkWidget* widget = gtk_file_chooser_dialog_new("Open Files",
                                                     nullptr,
                                                     GTK_FILE_CHOOSER_ACTION_OPEN,
@@ -478,11 +478,11 @@ nfdresult_t NFD_OpenDialogMultipleN(const nfdpathset_t** outPaths,
     }
 }
 
-nfdresult_t NFD_SaveDialogN(nfdnchar_t** outPath,
-                            const nfdnfilteritem_t* filterList,
+nfdresult_t NFD_SaveDialogU8(nfdu8char_t** outPath,
+                            const nfdu8filteritem_t* filterList,
                             nfdfiltersize_t filterCount,
-                            const nfdnchar_t* defaultPath,
-                            const nfdnchar_t* defaultName) {
+                            const nfdu8char_t* defaultPath,
+                            const nfdu8char_t* defaultName) {
     GtkWidget* widget = gtk_file_chooser_dialog_new("Save File",
                                                     nullptr,
                                                     GTK_FILE_CHOOSER_ACTION_SAVE,
@@ -534,7 +534,7 @@ nfdresult_t NFD_SaveDialogN(nfdnchar_t** outPath,
     }
 }
 
-nfdresult_t NFD_PickFolderN(nfdnchar_t** outPath, const nfdnchar_t* defaultPath) {
+nfdresult_t NFD_PickFolderU8(nfdu8char_t** outPath, const nfdu8char_t* defaultPath) {
     GtkWidget* widget = gtk_file_chooser_dialog_new("Select folder",
                                                     nullptr,
                                                     GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
@@ -570,21 +570,21 @@ nfdresult_t NFD_PathSet_GetCount(const nfdpathset_t* pathSet, nfdpathsetsize_t* 
     return NFD_OKAY;
 }
 
-nfdresult_t NFD_PathSet_GetPathN(const nfdpathset_t* pathSet,
+nfdresult_t NFD_PathSet_GetPathU8(const nfdpathset_t* pathSet,
                                  nfdpathsetsize_t index,
-                                 nfdnchar_t** outPath) {
+                                 nfdu8char_t** outPath) {
     assert(pathSet);
     // const_cast because methods on GSList aren't const, but it should act
     // like const to the caller
     GSList* fileList = const_cast<GSList*>(static_cast<const GSList*>(pathSet));
 
     // Note: this takes linear time... but should be good enough
-    *outPath = static_cast<nfdnchar_t*>(g_slist_nth_data(fileList, index));
+    *outPath = static_cast<nfdu8char_t*>(g_slist_nth_data(fileList, index));
 
     return NFD_OKAY;
 }
 
-void NFD_PathSet_FreePathN(const nfdnchar_t* filePath) {
+void NFD_PathSet_FreePathU8(const nfdu8char_t* filePath) {
     assert(filePath);
     (void)filePath;  // prevent warning in release build
     // no-op, because NFD_PathSet_Free does the freeing for us
@@ -617,11 +617,11 @@ void NFD_PathSet_FreeEnum(nfdpathsetenum_t*) {
     // Do nothing, because the enumeration is the pathset itself
 }
 
-nfdresult_t NFD_PathSet_EnumNextN(nfdpathsetenum_t* enumerator, nfdnchar_t** outPath) {
+nfdresult_t NFD_PathSet_EnumNextU8(nfdpathsetenum_t* enumerator, nfdu8char_t** outPath) {
     const GSList* fileList = static_cast<const GSList*>(enumerator->ptr);
 
     if (fileList) {
-        *outPath = static_cast<nfdnchar_t*>(fileList->data);
+        *outPath = static_cast<nfdu8char_t*>(fileList->data);
         enumerator->ptr = static_cast<void*>(fileList->next);
     } else {
         *outPath = nullptr;
