@@ -411,9 +411,9 @@ void NFD_FreePathU8(nfdu8char_t* filePath) {
 }
 
 nfdresult_t NFD_OpenDialogU8(nfdu8char_t** outPath,
-                            const nfdu8filteritem_t* filterList,
-                            nfdfiltersize_t filterCount,
-                            const nfdu8char_t* defaultPath) {
+                             const nfdu8filteritem_t* filterList,
+                             nfdfiltersize_t filterCount,
+                             const nfdu8char_t* defaultPath) {
     GtkWidget* widget = gtk_file_chooser_dialog_new("Open File",
                                                     nullptr,
                                                     GTK_FILE_CHOOSER_ACTION_OPEN,
@@ -443,9 +443,9 @@ nfdresult_t NFD_OpenDialogU8(nfdu8char_t** outPath,
 }
 
 nfdresult_t NFD_OpenDialogMultipleU8(const nfdpathset_t** outPaths,
-                                    const nfdu8filteritem_t* filterList,
-                                    nfdfiltersize_t filterCount,
-                                    const nfdu8char_t* defaultPath) {
+                                     const nfdu8filteritem_t* filterList,
+                                     nfdfiltersize_t filterCount,
+                                     const nfdu8char_t* defaultPath) {
     GtkWidget* widget = gtk_file_chooser_dialog_new("Open Files",
                                                     nullptr,
                                                     GTK_FILE_CHOOSER_ACTION_OPEN,
@@ -479,10 +479,10 @@ nfdresult_t NFD_OpenDialogMultipleU8(const nfdpathset_t** outPaths,
 }
 
 nfdresult_t NFD_SaveDialogU8(nfdu8char_t** outPath,
-                            const nfdu8filteritem_t* filterList,
-                            nfdfiltersize_t filterCount,
-                            const nfdu8char_t* defaultPath,
-                            const nfdu8char_t* defaultName) {
+                             const nfdu8filteritem_t* filterList,
+                             nfdfiltersize_t filterCount,
+                             const nfdu8char_t* defaultPath,
+                             const nfdu8char_t* defaultName) {
     GtkWidget* widget = gtk_file_chooser_dialog_new("Save File",
                                                     nullptr,
                                                     GTK_FILE_CHOOSER_ACTION_SAVE,
@@ -571,8 +571,8 @@ nfdresult_t NFD_PathSet_GetCount(const nfdpathset_t* pathSet, nfdpathsetsize_t* 
 }
 
 nfdresult_t NFD_PathSet_GetPathU8(const nfdpathset_t* pathSet,
-                                 nfdpathsetsize_t index,
-                                 nfdu8char_t** outPath) {
+                                  nfdpathsetsize_t index,
+                                  nfdu8char_t** outPath) {
     assert(pathSet);
     // const_cast because methods on GSList aren't const, but it should act
     // like const to the caller
