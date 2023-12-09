@@ -82,11 +82,13 @@ typedef struct {
 } nfdu8filteritem_t;
 
 #ifdef _WIN32
+/* UTF-16 Filter Item */
 typedef struct {
     const nfdnchar_t* name;
     const nfdnchar_t* spec;
 } nfdnfilteritem_t;
 #else
+/* UTF-8 Filter Item */
 typedef nfdu8filteritem_t nfdnfilteritem_t;
 #endif  // _WIN32
 
