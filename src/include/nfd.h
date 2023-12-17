@@ -247,6 +247,8 @@ NFD_API void NFD_PathSet_Free(const nfdpathset_t* pathSet);
  * versions */
 #define NFD_DIFFERENT_NATIVE_FUNCTIONS
 
+#endif  // _WIN32
+
 #ifdef NFD_NATIVE
 typedef nfdnchar_t nfdchar_t;
 typedef nfdnfilteritem_t nfdfilteritem_t;
@@ -270,22 +272,6 @@ typedef nfdu8filteritem_t nfdfilteritem_t;
 #define NFD_PathSet_FreePath NFD_PathSet_FreePathU8
 #define NFD_PathSet_EnumNext NFD_PathSet_EnumNextU8
 #endif  // NFD_NATIVE
-
-#else  // _WIN32
-
-/* the native charset is already UTF-8 */
-typedef nfdnchar_t nfdchar_t;
-typedef nfdnfilteritem_t nfdfilteritem_t;
-#define NFD_FreePath NFD_FreePathN
-#define NFD_OpenDialog NFD_OpenDialogN
-#define NFD_OpenDialogMultiple NFD_OpenDialogMultipleN
-#define NFD_SaveDialog NFD_SaveDialogN
-#define NFD_PickFolder NFD_PickFolderN
-#define NFD_PathSet_GetPath NFD_PathSet_GetPathN
-#define NFD_PathSet_FreePath NFD_PathSet_FreePathN
-#define NFD_PathSet_EnumNext NFD_PathSet_EnumNextN
-
-#endif  // _WIN32
 
 #ifdef __cplusplus
 }
