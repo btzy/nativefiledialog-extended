@@ -49,7 +49,7 @@ jobs:
           shared_lib: {flag: OFF, name: Static}
         - os: {label: ubuntu-latest, name: latest}
           portal: {flag: ON, dep: libdbus-1-dev, name: Portal}
-          autoappend: {flag: ON, name: NoAppendExtn}
+          autoappend: {flag: OFF, name: NoAppendExtn}
           compiler: {c: gcc, cpp: g++, name: GCC}
           cppstd: 11
           shared_lib: {flag: ON, name: Shared}
