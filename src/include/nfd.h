@@ -93,6 +93,28 @@ typedef struct {
 typedef nfdu8filteritem_t nfdnfilteritem_t;
 #endif  // _WIN32
 
+typedef size_t nfdversion_t;
+
+typedef struct {
+    const nfdu8filteritem_t* filterList;
+    nfdfiltersize_t filterCount;
+    const nfdu8char_t* defaultPath;
+} nfdopendialogu8args_t;
+
+#ifdef _WIN32
+typedef struct {
+    const nfdnfilteritem_t* filterList;
+    nfdfiltersize_t filterCount;
+    const nfdnchar_t* defaultPath;
+} nfdopendialognargs_t;
+#else
+typedef nfdopendialogu8args_t nfdopendialognargs_t;
+#endif  // _WIN32
+
+// This is a unique identifier tagged to all the NFD_*With() function calls, for backward
+// compatibility purposes. Users are not expected to directly use this.
+#define NFD_INTERFACE_VERSION 1
+
 /** Free a file path that was returned by the dialogs.
  *
  *  Note: use NFD_PathSet_FreePathN() to free path from pathset instead of this function. */
@@ -133,6 +155,32 @@ NFD_API nfdresult_t NFD_OpenDialogU8(nfdu8char_t** outPath,
                                      const nfdu8filteritem_t* filterList,
                                      nfdfiltersize_t filterCount,
                                      const nfdu8char_t* defaultPath);
+
+/** This function is a library implementation detail.  Please use NFD_OpenDialogWithN() instead. */
+NFD_API nfdresult_t NFD_OpenDialogN_With_Impl(nfdversion_t version,
+                                              nfdnchar_t** outPath,
+                                              const nfdopendialognargs_t* args);
+
+/** Single file open dialog, with additional parameters.
+ *
+ *  It's the caller's responsibility to free `args.outPath` via NFD_FreePathN() if this function
+ * returns NFD_OKAY.  See documentation of nfdopendialogargs_t for details. */
+inline nfdresult_t NFD_OpenDialogN_With(nfdnchar_t** outPath, nfdopendialognargs_t args) {
+    return NFD_OpenDialogN_With_Impl(NFD_INTERFACE_VERSION, outPath, &args);
+}
+
+/** This function is a library implementation detail.  Please use NFD_OpenDialogWithU8() instead. */
+NFD_API nfdresult_t NFD_OpenDialogU8_With_Impl(nfdversion_t version,
+                                               nfdu8char_t** outPath,
+                                               const nfdopendialogu8args_t* args);
+
+/** Single file open dialog, with additional parameters.
+ *
+ *  It's the caller's responsibility to free `args.outPath` via NFD_FreePathU8() if this function
+ * returns NFD_OKAY.  See documentation of nfdopendialogargs_t for details. */
+inline nfdresult_t NFD_OpenDialogU8_With(nfdu8char_t** outPath, nfdopendialogu8args_t args) {
+    return NFD_OpenDialogU8_With_Impl(NFD_INTERFACE_VERSION, outPath, &args);
+}
 
 /** Multiple file open dialog
  *
