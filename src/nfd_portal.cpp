@@ -1377,10 +1377,23 @@ nfdresult_t NFD_OpenDialogN(nfdnchar_t** outPath,
                             const nfdnfilteritem_t* filterList,
                             nfdfiltersize_t filterCount,
                             const nfdnchar_t* defaultPath) {
+    nfdopendialognargs_t args{};
+    args.filterList = filterList;
+    args.filterCount = filterCount;
+    args.defaultPath = defaultPath;
+    return NFD_OpenDialogN_With_Impl(NFD_INTERFACE_VERSION, outPath, &args);
+}
+
+nfdresult_t NFD_OpenDialogN_With_Impl(nfdversion_t version,
+                                      nfdnchar_t** outPath,
+                                      const nfdopendialognargs_t* args) {
+    // We haven't needed to bump the interface version yet.
+    (void)version;
+
     DBusMessage* msg;
     {
-        const nfdresult_t res =
-            NFD_DBus_OpenFile<false, false>(msg, filterList, filterCount, defaultPath);
+        const nfdresult_t res = NFD_DBus_OpenFile<false, false>(
+            msg, args->filterList, args->filterCount, args->defaultPath);
         if (res != NFD_OKAY) {
             return res;
         }
@@ -1404,14 +1417,32 @@ nfdresult_t NFD_OpenDialogU8(nfdu8char_t** outPath,
                              const nfdu8char_t* defaultPath)
     __attribute__((alias("NFD_OpenDialogN")));
 
+nfdresult_t NFD_OpenDialogU8_With_Impl(nfdversion_t version,
+                                       nfdu8char_t** outPath,
+                                       const nfdopendialogu8args_t* args)
+    __attribute__((alias("NFD_OpenDialogN_With_Impl")));
+
 nfdresult_t NFD_OpenDialogMultipleN(const nfdpathset_t** outPaths,
                                     const nfdnfilteritem_t* filterList,
                                     nfdfiltersize_t filterCount,
                                     const nfdnchar_t* defaultPath) {
+    nfdopendialognargs_t args{};
+    args.filterList = filterList;
+    args.filterCount = filterCount;
+    args.defaultPath = defaultPath;
+    return NFD_OpenDialogMultipleN_With_Impl(NFD_INTERFACE_VERSION, outPaths, &args);
+}
+
+nfdresult_t NFD_OpenDialogMultipleN_With_Impl(nfdversion_t version,
+                                              const nfdpathset_t** outPaths,
+                                              const nfdopendialognargs_t* args) {
+    // We haven't needed to bump the interface version yet.
+    (void)version;
+
     DBusMessage* msg;
     {
-        const nfdresult_t res =
-            NFD_DBus_OpenFile<true, false>(msg, filterList, filterCount, defaultPath);
+        const nfdresult_t res = NFD_DBus_OpenFile<true, false>(
+            msg, args->filterList, args->filterCount, args->defaultPath);
         if (res != NFD_OKAY) {
             return res;
         }
@@ -1434,15 +1465,34 @@ nfdresult_t NFD_OpenDialogMultipleU8(const nfdpathset_t** outPaths,
                                      const nfdu8char_t* defaultPath)
     __attribute__((alias("NFD_OpenDialogMultipleN")));
 
+nfdresult_t NFD_OpenDialogMultipleU8_With_Impl(nfdversion_t version,
+                                               const nfdpathset_t** outPaths,
+                                               const nfdopendialogu8args_t* args)
+    __attribute__((alias("NFD_OpenDialogMultipleN_With_Impl")));
+
 nfdresult_t NFD_SaveDialogN(nfdnchar_t** outPath,
                             const nfdnfilteritem_t* filterList,
                             nfdfiltersize_t filterCount,
                             const nfdnchar_t* defaultPath,
                             const nfdnchar_t* defaultName) {
+    nfdsavedialognargs_t args{};
+    args.filterList = filterList;
+    args.filterCount = filterCount;
+    args.defaultPath = defaultPath;
+    args.defaultName = defaultName;
+    return NFD_SaveDialogN_With_Impl(NFD_INTERFACE_VERSION, outPath, &args);
+}
+
+nfdresult_t NFD_SaveDialogN_With_Impl(nfdversion_t version,
+                                      nfdnchar_t** outPath,
+                                      const nfdsavedialognargs_t* args) {
+    // We haven't needed to bump the interface version yet.
+    (void)version;
+
     DBusMessage* msg;
     {
-        const nfdresult_t res =
-            NFD_DBus_SaveFile(msg, filterList, filterCount, defaultPath, defaultName);
+        const nfdresult_t res = NFD_DBus_SaveFile(
+            msg, args->filterList, args->filterCount, args->defaultPath, args->defaultName);
         if (res != NFD_OKAY) {
             return res;
         }
@@ -1480,8 +1530,24 @@ nfdresult_t NFD_SaveDialogU8(nfdu8char_t** outPath,
                              const nfdu8char_t* defaultName)
     __attribute__((alias("NFD_SaveDialogN")));
 
+nfdresult_t NFD_SaveDialogU8_With_Impl(nfdversion_t version,
+                                       nfdu8char_t** outPath,
+                                       const nfdsavedialogu8args_t* args)
+    __attribute__((alias("NFD_SaveDialogN_With_Impl")));
+
 nfdresult_t NFD_PickFolderN(nfdnchar_t** outPath, const nfdnchar_t* defaultPath) {
-    (void)defaultPath;  // Default path not supported for portal backend
+    nfdpickfoldernargs_t args{};
+    args.defaultPath = defaultPath;
+    return NFD_PickFolderN_With_Impl(NFD_INTERFACE_VERSION, outPath, &args);
+}
+
+nfdresult_t NFD_PickFolderN_With_Impl(nfdversion_t version,
+                                      nfdnchar_t** outPath,
+                                      const nfdpickfoldernargs_t* args) {
+    // We haven't needed to bump the interface version yet.
+    (void)version;
+
+    (void)args;  // Default path not supported for portal backend
 
     {
         dbus_uint32_t version;
@@ -1501,7 +1567,7 @@ nfdresult_t NFD_PickFolderN(nfdnchar_t** outPath, const nfdnchar_t* defaultPath)
 
     DBusMessage* msg;
     {
-        const nfdresult_t res = NFD_DBus_OpenFile<false, true>(msg, nullptr, 0, defaultPath);
+        const nfdresult_t res = NFD_DBus_OpenFile<false, true>(msg, nullptr, 0, args->defaultPath);
         if (res != NFD_OKAY) {
             return res;
         }
@@ -1521,6 +1587,11 @@ nfdresult_t NFD_PickFolderN(nfdnchar_t** outPath, const nfdnchar_t* defaultPath)
 
 nfdresult_t NFD_PickFolderU8(nfdu8char_t** outPath, const nfdu8char_t* defaultPath)
     __attribute__((alias("NFD_PickFolderN")));
+
+nfdresult_t NFD_PickFolderU8_With_Impl(nfdversion_t version,
+                                       nfdu8char_t** outPath,
+                                       const nfdpickfolderu8args_t* args)
+    __attribute__((alias("NFD_PickFolderN_With_Impl")));
 
 nfdresult_t NFD_PathSet_GetCount(const nfdpathset_t* pathSet, nfdpathsetsize_t* count) {
     assert(pathSet);

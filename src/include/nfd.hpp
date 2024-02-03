@@ -38,14 +38,16 @@ inline nfdresult_t OpenDialog(nfdnchar_t*& outPath,
                               const nfdnfilteritem_t* filterList = nullptr,
                               nfdfiltersize_t filterCount = 0,
                               const nfdnchar_t* defaultPath = nullptr) noexcept {
-    return ::NFD_OpenDialogN(&outPath, filterList, filterCount, defaultPath);
+    const nfdopendialognargs_t args{filterList, filterCount, defaultPath};
+    return ::NFD_OpenDialogN_With(&outPath, &args);
 }
 
 inline nfdresult_t OpenDialogMultiple(const nfdpathset_t*& outPaths,
                                       const nfdnfilteritem_t* filterList = nullptr,
                                       nfdfiltersize_t filterCount = 0,
                                       const nfdnchar_t* defaultPath = nullptr) noexcept {
-    return ::NFD_OpenDialogMultipleN(&outPaths, filterList, filterCount, defaultPath);
+    const nfdopendialognargs_t args{filterList, filterCount, defaultPath};
+    return ::NFD_OpenDialogMultipleN_With(&outPaths, &args);
 }
 
 inline nfdresult_t SaveDialog(nfdnchar_t*& outPath,
@@ -53,12 +55,14 @@ inline nfdresult_t SaveDialog(nfdnchar_t*& outPath,
                               nfdfiltersize_t filterCount = 0,
                               const nfdnchar_t* defaultPath = nullptr,
                               const nfdnchar_t* defaultName = nullptr) noexcept {
-    return ::NFD_SaveDialogN(&outPath, filterList, filterCount, defaultPath, defaultName);
+    const nfdsavedialognargs_t args{filterList, filterCount, defaultPath, defaultName};
+    return ::NFD_SaveDialogN_With(&outPath, &args);
 }
 
 inline nfdresult_t PickFolder(nfdnchar_t*& outPath,
                               const nfdnchar_t* defaultPath = nullptr) noexcept {
-    return ::NFD_PickFolderN(&outPath, defaultPath);
+    const nfdpickfoldernargs_t args{defaultPath};
+    return ::NFD_PickFolderN_With(&outPath, &args);
 }
 
 inline const char* GetError() noexcept {
@@ -99,29 +103,33 @@ inline void FreePath(nfdu8char_t* outPath) noexcept {
 
 inline nfdresult_t OpenDialog(nfdu8char_t*& outPath,
                               const nfdu8filteritem_t* filterList = nullptr,
-                              nfdfiltersize_t count = 0,
+                              nfdfiltersize_t filterCount = 0,
                               const nfdu8char_t* defaultPath = nullptr) noexcept {
-    return ::NFD_OpenDialogU8(&outPath, filterList, count, defaultPath);
+    const nfdopendialogu8args_t args{filterList, filterCount, defaultPath};
+    return ::NFD_OpenDialogU8_With(&outPath, &args);
 }
 
 inline nfdresult_t OpenDialogMultiple(const nfdpathset_t*& outPaths,
                                       const nfdu8filteritem_t* filterList = nullptr,
-                                      nfdfiltersize_t count = 0,
+                                      nfdfiltersize_t filterCount = 0,
                                       const nfdu8char_t* defaultPath = nullptr) noexcept {
-    return ::NFD_OpenDialogMultipleU8(&outPaths, filterList, count, defaultPath);
+    const nfdopendialogu8args_t args{filterList, filterCount, defaultPath};
+    return ::NFD_OpenDialogMultipleU8_With(&outPaths, &args);
 }
 
 inline nfdresult_t SaveDialog(nfdu8char_t*& outPath,
                               const nfdu8filteritem_t* filterList = nullptr,
-                              nfdfiltersize_t count = 0,
+                              nfdfiltersize_t filterCount = 0,
                               const nfdu8char_t* defaultPath = nullptr,
                               const nfdu8char_t* defaultName = nullptr) noexcept {
-    return ::NFD_SaveDialogU8(&outPath, filterList, count, defaultPath, defaultName);
+    const nfdsavedialogu8args_t args{filterList, filterCount, defaultPath, defaultName};
+    return ::NFD_SaveDialogU8_With(&outPath, &args);
 }
 
 inline nfdresult_t PickFolder(nfdu8char_t*& outPath,
                               const nfdu8char_t* defaultPath = nullptr) noexcept {
-    return ::NFD_PickFolderU8(&outPath, defaultPath);
+    const nfdpickfolderu8args_t args{defaultPath};
+    return ::NFD_PickFolderU8_With(&outPath, &args);
 }
 
 namespace PathSet {

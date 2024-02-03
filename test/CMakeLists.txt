@@ -3,6 +3,8 @@ set(TEST_LIST
   test_opendialog.c
   test_opendialog_cpp.cpp
   test_opendialog_native.c
+  test_opendialog_with.c
+  test_opendialog_native_with.c
   test_opendialogmultiple.c
   test_opendialogmultiple_cpp.cpp
   test_opendialogmultiple_native.c
@@ -11,8 +13,12 @@ set(TEST_LIST
   test_pickfolder.c
   test_pickfolder_cpp.cpp
   test_pickfolder_native.c
+  test_pickfolder_with.c
+  test_pickfolder_native_with.c
   test_savedialog.c
-  test_savedialog_native.c)
+  test_savedialog_native.c
+  test_savedialog_with.c
+  test_savedialog_native_with.c)
   
 foreach (TEST ${TEST_LIST})
   string(REPLACE "." "_" CLEAN_TEST_NAME ${TEST})

@@ -416,6 +416,19 @@ nfdresult_t NFD_OpenDialogN(nfdnchar_t** outPath,
                             const nfdnfilteritem_t* filterList,
                             nfdfiltersize_t filterCount,
                             const nfdnchar_t* defaultPath) {
+    nfdopendialognargs_t args{};
+    args.filterList = filterList;
+    args.filterCount = filterCount;
+    args.defaultPath = defaultPath;
+    return NFD_OpenDialogN_With_Impl(NFD_INTERFACE_VERSION, outPath, &args);
+}
+
+nfdresult_t NFD_OpenDialogN_With_Impl(nfdversion_t version,
+                                      nfdnchar_t** outPath,
+                                      const nfdopendialognargs_t* args) {
+    // We haven't needed to bump the interface version yet.
+    (void)version;
+
     GtkWidget* widget = gtk_file_chooser_dialog_new("Open File",
                                                     nullptr,
                                                     GTK_FILE_CHOOSER_ACTION_OPEN,
@@ -429,10 +442,10 @@ nfdresult_t NFD_OpenDialogN(nfdnchar_t** outPath,
     Widget_Guard widgetGuard(widget);
 
     /* Build the filter list */
-    AddFiltersToDialog(GTK_FILE_CHOOSER(widget), filterList, filterCount);
+    AddFiltersToDialog(GTK_FILE_CHOOSER(widget), args->filterList, args->filterCount);
 
     /* Set the default path */
-    SetDefaultPath(GTK_FILE_CHOOSER(widget), defaultPath);
+    SetDefaultPath(GTK_FILE_CHOOSER(widget), args->defaultPath);
 
     if (RunDialogWithFocus(GTK_DIALOG(widget)) == GTK_RESPONSE_ACCEPT) {
         // write out the file name
@@ -450,10 +463,28 @@ nfdresult_t NFD_OpenDialogU8(nfdu8char_t** outPath,
                              const nfdu8char_t* defaultPath)
     __attribute__((alias("NFD_OpenDialogN")));
 
+nfdresult_t NFD_OpenDialogU8_With_Impl(nfdversion_t version,
+                                       nfdu8char_t** outPath,
+                                       const nfdopendialogu8args_t* args)
+    __attribute__((alias("NFD_OpenDialogN_With_Impl")));
+
 nfdresult_t NFD_OpenDialogMultipleN(const nfdpathset_t** outPaths,
                                     const nfdnfilteritem_t* filterList,
                                     nfdfiltersize_t filterCount,
                                     const nfdnchar_t* defaultPath) {
+    nfdopendialognargs_t args{};
+    args.filterList = filterList;
+    args.filterCount = filterCount;
+    args.defaultPath = defaultPath;
+    return NFD_OpenDialogMultipleN_With_Impl(NFD_INTERFACE_VERSION, outPaths, &args);
+}
+
+nfdresult_t NFD_OpenDialogMultipleN_With_Impl(nfdversion_t version,
+                                              const nfdpathset_t** outPaths,
+                                              const nfdopendialognargs_t* args) {
+    // We haven't needed to bump the interface version yet.
+    (void)version;
+
     GtkWidget* widget = gtk_file_chooser_dialog_new("Open Files",
                                                     nullptr,
                                                     GTK_FILE_CHOOSER_ACTION_OPEN,
@@ -470,10 +501,10 @@ nfdresult_t NFD_OpenDialogMultipleN(const nfdpathset_t** outPaths,
     gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(widget), TRUE);
 
     /* Build the filter list */
-    AddFiltersToDialog(GTK_FILE_CHOOSER(widget), filterList, filterCount);
+    AddFiltersToDialog(GTK_FILE_CHOOSER(widget), args->filterList, args->filterCount);
 
     /* Set the default path */
-    SetDefaultPath(GTK_FILE_CHOOSER(widget), defaultPath);
+    SetDefaultPath(GTK_FILE_CHOOSER(widget), args->defaultPath);
 
     if (RunDialogWithFocus(GTK_DIALOG(widget)) == GTK_RESPONSE_ACCEPT) {
         // write out the file name
@@ -492,11 +523,30 @@ nfdresult_t NFD_OpenDialogMultipleU8(const nfdpathset_t** outPaths,
                                      const nfdu8char_t* defaultPath)
     __attribute__((alias("NFD_OpenDialogMultipleN")));
 
+nfdresult_t NFD_OpenDialogMultipleU8_With_Impl(nfdversion_t version,
+                                               const nfdpathset_t** outPaths,
+                                               const nfdopendialogu8args_t* args)
+    __attribute__((alias("NFD_OpenDialogMultipleN_With_Impl")));
+
 nfdresult_t NFD_SaveDialogN(nfdnchar_t** outPath,
                             const nfdnfilteritem_t* filterList,
                             nfdfiltersize_t filterCount,
                             const nfdnchar_t* defaultPath,
                             const nfdnchar_t* defaultName) {
+    nfdsavedialognargs_t args{};
+    args.filterList = filterList;
+    args.filterCount = filterCount;
+    args.defaultPath = defaultPath;
+    args.defaultName = defaultName;
+    return NFD_SaveDialogN_With_Impl(NFD_INTERFACE_VERSION, outPath, &args);
+}
+
+nfdresult_t NFD_SaveDialogN_With_Impl(nfdversion_t version,
+                                      nfdnchar_t** outPath,
+                                      const nfdsavedialognargs_t* args) {
+    // We haven't needed to bump the interface version yet.
+    (void)version;
+
     GtkWidget* widget = gtk_file_chooser_dialog_new("Save File",
                                                     nullptr,
                                                     GTK_FILE_CHOOSER_ACTION_SAVE,
@@ -516,13 +566,13 @@ nfdresult_t NFD_SaveDialogN(nfdnchar_t** outPath,
     ButtonClickedArgs buttonClickedArgs;
     buttonClickedArgs.chooser = GTK_FILE_CHOOSER(widget);
     buttonClickedArgs.map =
-        AddFiltersToDialogWithMap(GTK_FILE_CHOOSER(widget), filterList, filterCount);
+        AddFiltersToDialogWithMap(GTK_FILE_CHOOSER(widget), args->filterList, args->filterCount);
 
     /* Set the default path */
-    SetDefaultPath(GTK_FILE_CHOOSER(widget), defaultPath);
+    SetDefaultPath(GTK_FILE_CHOOSER(widget), args->defaultPath);
 
     /* Set the default file name */
-    SetDefaultName(GTK_FILE_CHOOSER(widget), defaultName);
+    SetDefaultName(GTK_FILE_CHOOSER(widget), args->defaultName);
 
     /* set the handler to add file extension */
     gulong handlerID = g_signal_connect(G_OBJECT(saveButton),
@@ -555,7 +605,23 @@ nfdresult_t NFD_SaveDialogU8(nfdu8char_t** outPath,
                              const nfdu8char_t* defaultName)
     __attribute__((alias("NFD_SaveDialogN")));
 
+nfdresult_t NFD_SaveDialogU8_With_Impl(nfdversion_t version,
+                                       nfdu8char_t** outPath,
+                                       const nfdsavedialogu8args_t* args)
+    __attribute__((alias("NFD_SaveDialogN_With_Impl")));
+
 nfdresult_t NFD_PickFolderN(nfdnchar_t** outPath, const nfdnchar_t* defaultPath) {
+    nfdpickfoldernargs_t args{};
+    args.defaultPath = defaultPath;
+    return NFD_PickFolderN_With_Impl(NFD_INTERFACE_VERSION, outPath, &args);
+}
+
+nfdresult_t NFD_PickFolderN_With_Impl(nfdversion_t version,
+                                      nfdnchar_t** outPath,
+                                      const nfdpickfoldernargs_t* args) {
+    // We haven't needed to bump the interface version yet.
+    (void)version;
+
     GtkWidget* widget = gtk_file_chooser_dialog_new("Select folder",
                                                     nullptr,
                                                     GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
@@ -569,7 +635,7 @@ nfdresult_t NFD_PickFolderN(nfdnchar_t** outPath, const nfdnchar_t* defaultPath)
     Widget_Guard widgetGuard(widget);
 
     /* Set the default path */
-    SetDefaultPath(GTK_FILE_CHOOSER(widget), defaultPath);
+    SetDefaultPath(GTK_FILE_CHOOSER(widget), args->defaultPath);
 
     if (RunDialogWithFocus(GTK_DIALOG(widget)) == GTK_RESPONSE_ACCEPT) {
         // write out the file name
@@ -583,6 +649,11 @@ nfdresult_t NFD_PickFolderN(nfdnchar_t** outPath, const nfdnchar_t* defaultPath)
 
 nfdresult_t NFD_PickFolderU8(nfdu8char_t** outPath, const nfdu8char_t* defaultPath)
     __attribute__((alias("NFD_PickFolderN")));
+
+nfdresult_t NFD_PickFolderU8_With_Impl(nfdversion_t version,
+                                       nfdu8char_t** outPath,
+                                       const nfdpickfolderu8args_t* args)
+    __attribute__((alias("NFD_PickFolderN_With_Impl")));
 
 nfdresult_t NFD_PathSet_GetCount(const nfdpathset_t* pathSet, nfdpathsetsize_t* count) {
     assert(pathSet);
