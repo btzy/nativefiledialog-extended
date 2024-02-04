@@ -21,6 +21,21 @@ jobs:
     - name: Check diff
       run: git diff --exit-code
 
+  line-endings:
+
+    name: Line endings check
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Installing Dependencies
+      run: sudo apt-get update && sudo apt-get install dos2unix
+    - name: Convert to Unix line endings
+      run: dos2unix */*
+    - name: Check diff
+      run: git diff --exit-code
+
   build-ubuntu:
     
     name: Ubuntu ${{ matrix.os.name }} - ${{ matrix.compiler.name }}, ${{ matrix.portal.name }}, ${{ matrix.autoappend.name }}, ${{ matrix.shared_lib.name }}, C++${{ matrix.cppstd }}
