@@ -110,6 +110,8 @@ Add `-DNFD_BUILD_TESTS=ON` to build sample programs and `-DNFD_INSTALL=ON` to en
 ## Standalone Library
 If you want to build the standalone static library,
 execute the following commands (starting from the project root directory):
+
+For GCC and Clang:
 ```
 mkdir build
 cd build
@@ -117,9 +119,17 @@ cmake -DCMAKE_BUILD_TYPE=Release ..
 cmake --build .
 ```
 
+For MSVC:
+```
+mkdir build
+cd build
+cmake ..
+cmake --build . --config Release
+```
+
 The above commands will make a `build` directory,
 and build the project (in release mode) there.
-If you are developing NFDe, you may want to do `-DCMAKE_BUILD_TYPE=Debug`
+If you are developing NFDe, you may want to do `-DCMAKE_BUILD_TYPE=Debug`/`--config Debug`
 to build a debug version of the library instead.
 
 When building as a standalone library, sample programs are built and the install target is enabled by default.
