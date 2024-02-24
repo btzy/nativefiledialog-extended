@@ -334,6 +334,16 @@ nfdresult_t NFD_OpenDialogN(nfdnchar_t** outPath,
                             const nfdnfilteritem_t* filterList,
                             nfdfiltersize_t filterCount,
                             const nfdnchar_t* defaultPath) {
+    const nfdopendialognargs_t args{filterList, filterCount, defaultPath};
+    return NFD_OpenDialogN_With_Impl(NFD_INTERFACE_VERSION, outPath, &args);
+}
+
+nfdresult_t NFD_OpenDialogN_With_Impl(nfdversion_t version,
+                                      nfdnchar_t** outPath,
+                                      const nfdopendialognargs_t* args) {
+    // We haven't needed to bump the interface version yet.
+    (void)version;
+
     ::IFileOpenDialog* fileOpenDialog;
 
     // Create dialog
@@ -352,17 +362,17 @@ nfdresult_t NFD_OpenDialogN(nfdnchar_t** outPath,
     Release_Guard<::IFileOpenDialog> fileOpenDialogGuard(fileOpenDialog);
 
     // Build the filter list
-    if (!AddFiltersToDialog(fileOpenDialog, filterList, filterCount)) {
+    if (!AddFiltersToDialog(fileOpenDialog, args->filterList, args->filterCount)) {
         return NFD_ERROR;
     }
 
     // Set auto-completed default extension
-    if (!SetDefaultExtension(fileOpenDialog, filterList, filterCount)) {
+    if (!SetDefaultExtension(fileOpenDialog, args->filterList, args->filterCount)) {
         return NFD_ERROR;
     }
 
     // Set the default path
-    if (!SetDefaultPath(fileOpenDialog, defaultPath)) {
+    if (!SetDefaultPath(fileOpenDialog, args->defaultPath)) {
         return NFD_ERROR;
     }
 
@@ -810,23 +820,34 @@ void NFD_FreePathU8(nfdu8char_t* outPath) {
 
 nfdresult_t NFD_OpenDialogU8(nfdu8char_t** outPath,
                              const nfdu8filteritem_t* filterList,
-                             nfdfiltersize_t count,
+                             nfdfiltersize_t filterCount,
                              const nfdu8char_t* defaultPath) {
+    const nfdopendialogu8args_t args{filterList, filterCount, defaultPath};
+    return NFD_OpenDialogU8_With_Impl(NFD_INTERFACE_VERSION, outPath, &args);
+}
+
+nfdresult_t NFD_OpenDialogU8_With_Impl(nfdversion_t version,
+                                       nfdu8char_t** outPath,
+                                       const nfdopendialogu8args_t* args) {
+    // We haven't needed to bump the interface version yet.
+    (void)version;
+
     // populate the real nfdnfilteritem_t
     FilterItem_Guard filterItemsNGuard;
-    if (!CopyFilterItem(filterList, count, filterItemsNGuard)) {
+    if (!CopyFilterItem(args->filterList, args->filterCount, filterItemsNGuard)) {
         return NFD_ERROR;
     }
 
     // convert and normalize the default path, but only if it is not nullptr
     FreeCheck_Guard<nfdnchar_t> defaultPathNGuard;
-    ConvertU8ToNative(defaultPath, defaultPathNGuard);
+    ConvertU8ToNative(args->defaultPath, defaultPathNGuard);
     NormalizePathSeparator(defaultPathNGuard.data);
 
     // call the native function
     nfdnchar_t* outPathN;
-    nfdresult_t res =
-        NFD_OpenDialogN(&outPathN, filterItemsNGuard.data, count, defaultPathNGuard.data);
+    const nfdopendialognargs_t argsN{
+        filterItemsNGuard.data, args->filterCount, defaultPathNGuard.data};
+    nfdresult_t res = NFD_OpenDialogN_With_Impl(NFD_INTERFACE_VERSION, &outPathN, &argsN);
 
     if (res != NFD_OKAY) {
         return res;
