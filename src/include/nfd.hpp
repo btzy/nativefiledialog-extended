@@ -65,6 +65,12 @@ inline nfdresult_t PickFolder(nfdnchar_t*& outPath,
     return ::NFD_PickFolderN_With(&outPath, &args);
 }
 
+inline nfdresult_t PickFolderMultiple(const nfdpathset_t*& outPaths,
+                                      const nfdnchar_t* defaultPath = nullptr) noexcept {
+    const nfdpickfoldernargs_t args{defaultPath};
+    return ::NFD_PickFolderMultipleN_With(&outPaths, &args);
+}
+
 inline const char* GetError() noexcept {
     return ::NFD_GetError();
 }
@@ -130,6 +136,12 @@ inline nfdresult_t PickFolder(nfdu8char_t*& outPath,
                               const nfdu8char_t* defaultPath = nullptr) noexcept {
     const nfdpickfolderu8args_t args{defaultPath};
     return ::NFD_PickFolderU8_With(&outPath, &args);
+}
+
+inline nfdresult_t PickFolderMultiple(const nfdpathset_t*& outPaths,
+                                      const nfdu8char_t* defaultPath = nullptr) noexcept {
+    const nfdpickfolderu8args_t args{defaultPath};
+    return ::NFD_PickFolderMultipleU8_With(&outPaths, &args);
 }
 
 namespace PathSet {
@@ -237,6 +249,16 @@ inline nfdresult_t PickFolder(UniquePathN& outPath,
     return res;
 }
 
+inline nfdresult_t PickFolderMultiple(UniquePathSet& outPaths,
+                                      const nfdnchar_t* defaultPath = nullptr) noexcept {
+    const nfdpathset_t* out;
+    nfdresult_t res = PickFolderMultiple(out, defaultPath);
+    if (res == NFD_OKAY) {
+        outPaths.reset(out);
+    }
+    return res;
+}
+
 #ifdef NFD_DIFFERENT_NATIVE_FUNCTIONS
 inline nfdresult_t OpenDialog(UniquePathU8& outPath,
                               const nfdu8filteritem_t* filterList = nullptr,
@@ -281,6 +303,16 @@ inline nfdresult_t PickFolder(UniquePathU8& outPath,
     nfdresult_t res = PickFolder(out, defaultPath);
     if (res == NFD_OKAY) {
         outPath.reset(out);
+    }
+    return res;
+}
+
+inline nfdresult_t PickFolderMultiple(UniquePathSet& outPaths,
+                                      const nfdu8char_t* defaultPath = nullptr) noexcept {
+    const nfdpathset_t* out;
+    nfdresult_t res = PickFolderMultiple(out, defaultPath);
+    if (res == NFD_OKAY) {
+        outPaths.reset(out);
     }
     return res;
 }

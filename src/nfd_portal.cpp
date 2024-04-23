@@ -120,6 +120,7 @@ constexpr const char* STR_OPEN_FILE = "Open File";
 constexpr const char* STR_OPEN_FILES = "Open Files";
 constexpr const char* STR_SAVE_FILE = "Save File";
 constexpr const char* STR_SELECT_FOLDER = "Select Folder";
+constexpr const char* STR_SELECT_FOLDERS = "Select Folders";
 constexpr const char* STR_HANDLE_TOKEN = "handle_token";
 constexpr const char* STR_MULTIPLE = "multiple";
 constexpr const char* STR_DIRECTORY = "directory";
@@ -148,6 +149,10 @@ void AppendOpenFileQueryTitle<true, false>(DBusMessageIter& iter) {
 template <>
 void AppendOpenFileQueryTitle<false, true>(DBusMessageIter& iter) {
     dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, &STR_SELECT_FOLDER);
+}
+template <>
+void AppendOpenFileQueryTitle<true, true>(DBusMessageIter& iter) {
+    dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, &STR_SELECT_FOLDERS);
 }
 
 void AppendSaveFileQueryTitle(DBusMessageIter& iter) {
@@ -1547,8 +1552,6 @@ nfdresult_t NFD_PickFolderN_With_Impl(nfdversion_t version,
     // We haven't needed to bump the interface version yet.
     (void)version;
 
-    (void)args;  // Default path not supported for portal backend
-
     {
         dbus_uint32_t version;
         const nfdresult_t res = NFD_DBus_GetVersion(version);
@@ -1592,6 +1595,61 @@ nfdresult_t NFD_PickFolderU8_With_Impl(nfdversion_t version,
                                        nfdu8char_t** outPath,
                                        const nfdpickfolderu8args_t* args)
     __attribute__((alias("NFD_PickFolderN_With_Impl")));
+
+nfdresult_t NFD_PickFolderMultipleN(const nfdpathset_t** outPaths, const nfdnchar_t* defaultPath) {
+    nfdpickfoldernargs_t args{};
+    args.defaultPath = defaultPath;
+    return NFD_PickFolderMultipleN_With_Impl(NFD_INTERFACE_VERSION, outPaths, &args);
+}
+
+nfdresult_t NFD_PickFolderMultipleN_With_Impl(nfdversion_t version,
+                                              const nfdpathset_t** outPaths,
+                                              const nfdpickfoldernargs_t* args) {
+    // We haven't needed to bump the interface version yet.
+    (void)version;
+
+    {
+        dbus_uint32_t version;
+        const nfdresult_t res = NFD_DBus_GetVersion(version);
+        if (res != NFD_OKAY) {
+            return res;
+        }
+        if (version < 3) {
+            NFDi_SetFormattedError(
+                "The xdg-desktop-portal installed on this system does not support a folder picker; "
+                "at least version 3 of the org.freedesktop.portal.FileChooser interface is "
+                "required but the installed interface version is %u.",
+                version);
+            return NFD_ERROR;
+        }
+    }
+
+    DBusMessage* msg;
+    {
+        const nfdresult_t res = NFD_DBus_OpenFile<true, true>(msg, nullptr, 0, args->defaultPath);
+        if (res != NFD_OKAY) {
+            return res;
+        }
+    }
+
+    DBusMessageIter uri_iter;
+    const nfdresult_t res = ReadResponseUris(msg, uri_iter);
+    if (res != NFD_OKAY) {
+        dbus_message_unref(msg);
+        return res;
+    }
+
+    *outPaths = msg;
+    return NFD_OKAY;
+}
+
+nfdresult_t NFD_PickFolderMultipleU8(const nfdpathset_t** outPaths, const nfdu8char_t* defaultPath)
+    __attribute__((alias("NFD_PickFolderMultipleN")));
+
+nfdresult_t NFD_PickFolderMultipleU8_With_Impl(nfdversion_t version,
+                                               const nfdpathset_t** outPaths,
+                                               const nfdpickfolderu8args_t* args)
+    __attribute__((alias("NFD_PickFolderMultipleN_With_Impl")));
 
 nfdresult_t NFD_PathSet_GetCount(const nfdpathset_t* pathSet, nfdpathsetsize_t* count) {
     assert(pathSet);

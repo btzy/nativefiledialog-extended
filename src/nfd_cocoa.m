@@ -437,6 +437,59 @@ nfdresult_t NFD_PickFolderU8_With_Impl(nfdversion_t version,
     return NFD_PickFolderN_With_Impl(version, outPath, args);
 }
 
+nfdresult_t NFD_PickFolderMultipleN(const nfdpathset_t** outPaths, const nfdnchar_t* defaultPath) {
+    nfdpickfoldernargs_t args = {0};
+    args.defaultPath = defaultPath;
+    return NFD_PickFolderMultipleN_With_Impl(NFD_INTERFACE_VERSION, outPaths, &args);
+}
+
+nfdresult_t NFD_PickFolderMultipleN_With_Impl(nfdversion_t version,
+                                              const nfdpathset_t** outPaths,
+                                              const nfdpickfoldernargs_t* args) {
+    // We haven't needed to bump the interface version yet.
+    (void)version;
+
+    nfdresult_t result = NFD_CANCEL;
+    @autoreleasepool {
+        NSWindow* keyWindow = [[NSApplication sharedApplication] keyWindow];
+
+        NSOpenPanel* dialog = [NSOpenPanel openPanel];
+        [dialog setAllowsMultipleSelection:YES];
+        [dialog setCanChooseDirectories:YES];
+        [dialog setCanCreateDirectories:YES];
+        [dialog setCanChooseFiles:NO];
+
+        // Set the starting directory
+        SetDefaultPath(dialog, args->defaultPath);
+
+        if ([dialog runModal] == NSModalResponseOK) {
+            const NSArray* urls = [dialog URLs];
+
+            if ([urls count] > 0) {
+                // have at least one URL, we return this NSArray
+                [urls retain];
+                *outPaths = (const nfdpathset_t*)urls;
+                result = NFD_OKAY;
+            }
+        }
+
+        // return focus to the key window (i.e. main window)
+        [keyWindow makeKeyAndOrderFront:nil];
+    }
+    return result;
+}
+
+nfdresult_t NFD_PickFolderMultipleU8(const nfdpathset_t** outPaths,
+                                     const nfdu8char_t* defaultPath) {
+    return NFD_PickFolderMultipleN(outPaths, defaultPath);
+}
+
+nfdresult_t NFD_PickFolderMultipleU8_With_Impl(nfdversion_t version,
+                                               const nfdpathset_t** outPaths,
+                                               const nfdpickfolderu8args_t* args) {
+    return NFD_PickFolderMultipleN_With_Impl(version, outPaths, args);
+}
+
 nfdresult_t NFD_PathSet_GetCount(const nfdpathset_t* pathSet, nfdpathsetsize_t* count) {
     const NSArray* urls = (const NSArray*)pathSet;
     *count = [urls count];

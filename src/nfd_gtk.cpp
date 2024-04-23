@@ -622,7 +622,7 @@ nfdresult_t NFD_PickFolderN_With_Impl(nfdversion_t version,
     // We haven't needed to bump the interface version yet.
     (void)version;
 
-    GtkWidget* widget = gtk_file_chooser_dialog_new("Select folder",
+    GtkWidget* widget = gtk_file_chooser_dialog_new("Select Folder",
                                                     nullptr,
                                                     GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
                                                     "_Cancel",
@@ -654,6 +654,52 @@ nfdresult_t NFD_PickFolderU8_With_Impl(nfdversion_t version,
                                        nfdu8char_t** outPath,
                                        const nfdpickfolderu8args_t* args)
     __attribute__((alias("NFD_PickFolderN_With_Impl")));
+
+nfdresult_t NFD_PickFolderMultipleN(const nfdpathset_t** outPaths, const nfdnchar_t* defaultPath) {
+    nfdpickfoldernargs_t args{};
+    args.defaultPath = defaultPath;
+    return NFD_PickFolderMultipleN_With_Impl(NFD_INTERFACE_VERSION, outPaths, &args);
+}
+
+nfdresult_t NFD_PickFolderMultipleN_With_Impl(nfdversion_t version,
+                                              const nfdpathset_t** outPaths,
+                                              const nfdpickfoldernargs_t* args) {
+    // We haven't needed to bump the interface version yet.
+    (void)version;
+
+    GtkWidget* widget = gtk_file_chooser_dialog_new("Select Folders",
+                                                    nullptr,
+                                                    GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
+                                                    "_Cancel",
+                                                    GTK_RESPONSE_CANCEL,
+                                                    "_Select",
+                                                    GTK_RESPONSE_ACCEPT,
+                                                    nullptr);
+
+    // guard to destroy the widget when returning from this function
+    Widget_Guard widgetGuard(widget);
+
+    /* Set the default path */
+    SetDefaultPath(GTK_FILE_CHOOSER(widget), args->defaultPath);
+
+    if (RunDialogWithFocus(GTK_DIALOG(widget)) == GTK_RESPONSE_ACCEPT) {
+        // write out the file name
+        GSList* fileList = gtk_file_chooser_get_filenames(GTK_FILE_CHOOSER(widget));
+
+        *outPaths = static_cast<void*>(fileList);
+        return NFD_OKAY;
+    } else {
+        return NFD_CANCEL;
+    }
+}
+
+nfdresult_t NFD_PickFolderMultipleU8(const nfdpathset_t** outPaths, const nfdu8char_t* defaultPath)
+    __attribute__((alias("NFD_PickFolderMultipleN")));
+
+nfdresult_t NFD_PickFolderMultipleU8_With_Impl(nfdversion_t version,
+                                               const nfdpathset_t** outPaths,
+                                               const nfdpickfolderu8args_t* args)
+    __attribute__((alias("NFD_PickFolderMultipleN_With_Impl")));
 
 nfdresult_t NFD_PathSet_GetCount(const nfdpathset_t* pathSet, nfdpathsetsize_t* count) {
     assert(pathSet);
