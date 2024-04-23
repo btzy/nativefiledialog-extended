@@ -2,7 +2,9 @@ set(TARGET_NAME nfd)
 
 set(PUBLIC_HEADER_FILES
   include/nfd.h
-  include/nfd.hpp)
+  include/nfd.hpp
+  include/nfd_sdl2.h
+  include/nfd_glfw3.h)
 
 set(SOURCE_FILES ${PUBLIC_HEADER_FILES})
 

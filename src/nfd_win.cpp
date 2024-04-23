@@ -284,6 +284,13 @@ nfdresult_t AddOptions(IFileDialog* dialog, FILEOPENDIALOGOPTIONS options) {
     }
     return NFD_OKAY;
 }
+
+HWND GetNativeWindowHandle(const nfdwindowhandle_t& parentWindow) {
+    if (parentWindow.type != NFD_WINDOW_HANDLE_TYPE_WINDOWS) {
+        return nullptr;
+    }
+    return static_cast<HWND>(parentWindow.handle);
+}
 }  // namespace
 
 const char* NFD_GetError(void) {
@@ -385,7 +392,7 @@ nfdresult_t NFD_OpenDialogN_With_Impl(nfdversion_t version,
     }
 
     // Show the dialog.
-    result = fileOpenDialog->Show(nullptr);
+    result = fileOpenDialog->Show(GetNativeWindowHandle(args->parentWindow));
     if (SUCCEEDED(result)) {
         // Get the file name
         ::IShellItem* psiResult;
@@ -469,7 +476,7 @@ nfdresult_t NFD_OpenDialogMultipleN_With_Impl(nfdversion_t version,
     }
 
     // Show the dialog.
-    result = fileOpenDialog->Show(nullptr);
+    result = fileOpenDialog->Show(GetNativeWindowHandle(args->parentWindow));
     if (SUCCEEDED(result)) {
         ::IShellItemArray* shellItems;
         result = fileOpenDialog->GetResults(&shellItems);
@@ -552,7 +559,7 @@ nfdresult_t NFD_SaveDialogN_With_Impl(nfdversion_t version,
     }
 
     // Show the dialog.
-    result = fileSaveDialog->Show(nullptr);
+    result = fileSaveDialog->Show(GetNativeWindowHandle(args->parentWindow));
     if (SUCCEEDED(result)) {
         // Get the file name
         ::IShellItem* psiResult;
@@ -618,7 +625,7 @@ nfdresult_t NFD_PickFolderN_With_Impl(nfdversion_t version,
     }
 
     // Show the dialog to the user
-    const HRESULT result = fileOpenDialog->Show(nullptr);
+    const HRESULT result = fileOpenDialog->Show(GetNativeWindowHandle(args->parentWindow));
     if (result == HRESULT_FROM_WIN32(ERROR_CANCELLED)) {
         return NFD_CANCEL;
     } else if (!SUCCEEDED(result)) {
@@ -685,7 +692,7 @@ nfdresult_t NFD_PickFolderMultipleN_With_Impl(nfdversion_t version,
     }
 
     // Show the dialog.
-    const HRESULT result = fileOpenDialog->Show(nullptr);
+    const HRESULT result = fileOpenDialog->Show(GetNativeWindowHandle(args->parentWindow));
     if (SUCCEEDED(result)) {
         ::IShellItemArray* shellItems;
         if (!SUCCEEDED(fileOpenDialog->GetResults(&shellItems))) {
@@ -948,7 +955,7 @@ nfdresult_t NFD_OpenDialogU8_With_Impl(nfdversion_t version,
     // call the native function
     nfdnchar_t* outPathN;
     const nfdopendialognargs_t argsN{
-        filterItemsNGuard.data, args->filterCount, defaultPathNGuard.data};
+        filterItemsNGuard.data, args->filterCount, defaultPathNGuard.data, args->parentWindow};
     nfdresult_t res = NFD_OpenDialogN_With_Impl(NFD_INTERFACE_VERSION, &outPathN, &argsN);
 
     if (res != NFD_OKAY) {
@@ -996,7 +1003,7 @@ nfdresult_t NFD_OpenDialogMultipleU8_With_Impl(nfdversion_t version,
 
     // call the native function
     const nfdopendialognargs_t argsN{
-        filterItemsNGuard.data, args->filterCount, defaultPathNGuard.data};
+        filterItemsNGuard.data, args->filterCount, defaultPathNGuard.data, args->parentWindow};
     return NFD_OpenDialogMultipleN_With_Impl(NFD_INTERFACE_VERSION, outPaths, &argsN);
 }
 
@@ -1039,8 +1046,11 @@ nfdresult_t NFD_SaveDialogU8_With_Impl(nfdversion_t version,
 
     // call the native function
     nfdnchar_t* outPathN;
-    const nfdsavedialognargs_t argsN{
-        filterItemsNGuard.data, args->filterCount, defaultPathNGuard.data, defaultNameNGuard.data};
+    const nfdsavedialognargs_t argsN{filterItemsNGuard.data,
+                                     args->filterCount,
+                                     defaultPathNGuard.data,
+                                     defaultNameNGuard.data,
+                                     args->parentWindow};
     nfdresult_t res = NFD_SaveDialogN_With_Impl(NFD_INTERFACE_VERSION, &outPathN, &argsN);
 
     if (res != NFD_OKAY) {
@@ -1077,7 +1087,7 @@ nfdresult_t NFD_PickFolderU8_With_Impl(nfdversion_t version,
 
     // call the native function
     nfdnchar_t* outPathN;
-    const nfdpickfoldernargs_t argsN{defaultPathNGuard.data};
+    const nfdpickfoldernargs_t argsN{defaultPathNGuard.data, args->parentWindow};
     nfdresult_t res = NFD_PickFolderN_With_Impl(NFD_INTERFACE_VERSION, &outPathN, &argsN);
 
     if (res != NFD_OKAY) {
@@ -1114,7 +1124,7 @@ nfdresult_t NFD_PickFolderMultipleU8_With_Impl(nfdversion_t version,
     NormalizePathSeparator(defaultPathNGuard.data);
 
     // call the native function
-    const nfdpickfoldernargs_t argsN{defaultPathNGuard.data};
+    const nfdpickfoldernargs_t argsN{defaultPathNGuard.data, args->parentWindow};
     return NFD_PickFolderMultipleN_With_Impl(NFD_INTERFACE_VERSION, outPaths, &argsN);
 }
 

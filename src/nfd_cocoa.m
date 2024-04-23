@@ -174,6 +174,13 @@ static nfdresult_t CopyUtf8String(const char* utf8Str, nfdnchar_t** out) {
     return NFD_ERROR;
 }
 
+static NSWindow* GetNativeWindowHandle(const nfdwindowhandle_t* parentWindow) {
+    if (parentWindow->type != NFD_WINDOW_HANDLE_TYPE_COCOA) {
+        return NULL;
+    }
+    return (NSWindow*)parentWindow->handle;
+}
+
 /* public */
 
 const char* NFD_GetError(void) {
@@ -230,7 +237,12 @@ nfdresult_t NFD_OpenDialogN_With_Impl(nfdversion_t version,
 
     nfdresult_t result = NFD_CANCEL;
     @autoreleasepool {
-        NSWindow* keyWindow = [[NSApplication sharedApplication] keyWindow];
+        NSWindow* keyWindow = GetNativeWindowHandle(&args->parentWindow);
+        if (keyWindow) {
+            [keyWindow makeKeyAndOrderFront:nil];
+        } else {
+            keyWindow = [[NSApplication sharedApplication] keyWindow];
+        }
 
         NSOpenPanel* dialog = [NSOpenPanel openPanel];
         [dialog setAllowsMultipleSelection:NO];
@@ -285,7 +297,12 @@ nfdresult_t NFD_OpenDialogMultipleN_With_Impl(nfdversion_t version,
 
     nfdresult_t result = NFD_CANCEL;
     @autoreleasepool {
-        NSWindow* keyWindow = [[NSApplication sharedApplication] keyWindow];
+        NSWindow* keyWindow = GetNativeWindowHandle(&args->parentWindow);
+        if (keyWindow) {
+            [keyWindow makeKeyAndOrderFront:nil];
+        } else {
+            keyWindow = [[NSApplication sharedApplication] keyWindow];
+        }
 
         NSOpenPanel* dialog = [NSOpenPanel openPanel];
         [dialog setAllowsMultipleSelection:YES];
@@ -347,7 +364,12 @@ nfdresult_t NFD_SaveDialogN_With_Impl(nfdversion_t version,
 
     nfdresult_t result = NFD_CANCEL;
     @autoreleasepool {
-        NSWindow* keyWindow = [[NSApplication sharedApplication] keyWindow];
+        NSWindow* keyWindow = GetNativeWindowHandle(&args->parentWindow);
+        if (keyWindow) {
+            [keyWindow makeKeyAndOrderFront:nil];
+        } else {
+            keyWindow = [[NSApplication sharedApplication] keyWindow];
+        }
 
         NSSavePanel* dialog = [NSSavePanel savePanel];
         [dialog setExtensionHidden:NO];
@@ -404,7 +426,12 @@ nfdresult_t NFD_PickFolderN_With_Impl(nfdversion_t version,
 
     nfdresult_t result = NFD_CANCEL;
     @autoreleasepool {
-        NSWindow* keyWindow = [[NSApplication sharedApplication] keyWindow];
+        NSWindow* keyWindow = GetNativeWindowHandle(&args->parentWindow);
+        if (keyWindow) {
+            [keyWindow makeKeyAndOrderFront:nil];
+        } else {
+            keyWindow = [[NSApplication sharedApplication] keyWindow];
+        }
 
         NSOpenPanel* dialog = [NSOpenPanel openPanel];
         [dialog setAllowsMultipleSelection:NO];
@@ -451,7 +478,12 @@ nfdresult_t NFD_PickFolderMultipleN_With_Impl(nfdversion_t version,
 
     nfdresult_t result = NFD_CANCEL;
     @autoreleasepool {
-        NSWindow* keyWindow = [[NSApplication sharedApplication] keyWindow];
+        NSWindow* keyWindow = GetNativeWindowHandle(&args->parentWindow);
+        if (keyWindow) {
+            [keyWindow makeKeyAndOrderFront:nil];
+        } else {
+            keyWindow = [[NSApplication sharedApplication] keyWindow];
+        }
 
         NSOpenPanel* dialog = [NSOpenPanel openPanel];
         [dialog setAllowsMultipleSelection:YES];
