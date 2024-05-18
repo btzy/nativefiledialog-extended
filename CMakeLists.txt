@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 3.2)
-project(nfd VERSION 1.1.0)
+cmake_minimum_required(VERSION 3.5)
+project(nfd VERSION 1.1.1)
 
 set(nfd_ROOT_PROJECT OFF)
 if (CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
