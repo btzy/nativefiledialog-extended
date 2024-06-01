@@ -12,10 +12,6 @@ endif()
 option(NFD_BUILD_TESTS "Build tests for nfd" ${nfd_ROOT_PROJECT})
 option(NFD_INSTALL "Generate install target for nfd" ${nfd_ROOT_PROJECT})
 
-if(NOT MSVC)
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -w")
-endif()
-
 set(nfd_PLATFORM Undefined)
 if(WIN32)
   set(nfd_PLATFORM PLATFORM_WIN32)

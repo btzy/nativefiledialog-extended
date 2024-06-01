@@ -124,14 +124,14 @@ void AddFiltersToDialog(GtkFileChooser* chooser,
 
                     // +1 for the trailing '\0'
                     nfdnchar_t* extnBuf = NFDi_Malloc<nfdnchar_t>(sizeof(nfdnchar_t) *
-                                                                  (p_spec - p_extensionStart + 3));
+                                                                  static_cast<size_t>(p_spec - p_extensionStart + 3));
                     nfdnchar_t* p_extnBufEnd = extnBuf;
                     *p_extnBufEnd++ = '*';
                     *p_extnBufEnd++ = '.';
                     p_extnBufEnd = copy(p_extensionStart, p_spec, p_extnBufEnd);
                     *p_extnBufEnd++ = '\0';
-                    assert((size_t)(p_extnBufEnd - extnBuf) ==
-                           sizeof(nfdnchar_t) * (p_spec - p_extensionStart + 3));
+                    assert(static_cast<size_t>(p_extnBufEnd - extnBuf) ==
+                           sizeof(nfdnchar_t) * static_cast<size_t>(p_spec - p_extensionStart + 3));
                     gtk_file_filter_add_pattern(filter, extnBuf);
                     NFDi_Free(extnBuf);
 
@@ -148,7 +148,7 @@ void AddFiltersToDialog(GtkFileChooser* chooser,
             }
             *p_nameBuf++ = ')';
             *p_nameBuf++ = '\0';
-            assert((size_t)(p_nameBuf - nameBuf) == sizeof(nfdnchar_t) * nameSize);
+            assert(static_cast<size_t>(p_nameBuf - nameBuf) == sizeof(nfdnchar_t) * nameSize);
 
             // add to the filter
             gtk_file_filter_set_name(filter, nameBuf);
@@ -224,14 +224,14 @@ Pair_GtkFileFilter_FileExtension* AddFiltersToDialogWithMap(GtkFileChooser* choo
 
                     // +1 for the trailing '\0'
                     nfdnchar_t* extnBuf = NFDi_Malloc<nfdnchar_t>(sizeof(nfdnchar_t) *
-                                                                  (p_spec - p_extensionStart + 3));
+                                                                  static_cast<size_t>(p_spec - p_extensionStart + 3));
                     nfdnchar_t* p_extnBufEnd = extnBuf;
                     *p_extnBufEnd++ = '*';
                     *p_extnBufEnd++ = '.';
                     p_extnBufEnd = copy(p_extensionStart, p_spec, p_extnBufEnd);
                     *p_extnBufEnd++ = '\0';
-                    assert((size_t)(p_extnBufEnd - extnBuf) ==
-                           sizeof(nfdnchar_t) * (p_spec - p_extensionStart + 3));
+                    assert(static_cast<size_t>(p_extnBufEnd - extnBuf) ==
+                           sizeof(nfdnchar_t) * static_cast<size_t>(p_spec - p_extensionStart + 3));
                     gtk_file_filter_add_pattern(filter, extnBuf);
                     NFDi_Free(extnBuf);
 
@@ -254,7 +254,7 @@ Pair_GtkFileFilter_FileExtension* AddFiltersToDialogWithMap(GtkFileChooser* choo
             }
             *p_nameBuf++ = ')';
             *p_nameBuf++ = '\0';
-            assert((size_t)(p_nameBuf - nameBuf) == sizeof(nfdnchar_t) * nameSize);
+            assert(static_cast<size_t>(p_nameBuf - nameBuf) == sizeof(nfdnchar_t) * nameSize);
 
             // add to the filter
             gtk_file_filter_set_name(filter, nameBuf);
@@ -338,7 +338,7 @@ void FileActivatedSignalHandler(GtkButton* saveButton, void* userdata) {
                 // memory for appended string (including '.' and
                 // trailing '\0')
                 char* appendedFileName = NFDi_Malloc<char>(
-                    sizeof(char) * ((p_period - currentFileName) +
+                    sizeof(char) * static_cast<size_t>((p_period - currentFileName) +
                                     (filterMap->extensionEnd - filterMap->extensionBegin) + 2));
                 char* p_fileName = copy(currentFileName, p_period, appendedFileName);
                 *p_fileName++ = '.';
