@@ -43,6 +43,8 @@ Features added in Native File Dialog Extended:
 
 There is also significant code refractoring, especially for the Windows implementation.
 
+The [wiki](https://github.com/btzy/nativefiledialog-extended/wiki) keeps track of known language bindings and known popular projects that depend on this library.
+
 # Basic Usage
 
 ```C
@@ -84,9 +86,12 @@ If you are using a platform abstraction framework such as SDL or GLFW, also see 
 
 # Screenshots #
 
-![Windows 10](screens/open_win10.png?raw=true)
-![MacOS 10.13](screens/open_macos_11.0.png?raw=true)
-![GTK3 on Ubuntu 20.04](screens/open_gtk3.png?raw=true)
+![Windows 10](screens/open_win10.png?raw=true#gh-light-mode-only)
+![Windows 10](screens/open_win10_dark.png?raw=true#gh-dark-mode-only)
+![MacOS 10.13](screens/open_macos_11.0.png?raw=true#gh-light-mode-only)
+![MacOS 10.13](screens/open_macos_11.0_dark.png?raw=true#gh-dark-mode-only)
+![GTK3 on Ubuntu 20.04](screens/open_gtk3.png?raw=true#gh-light-mode-only)
+![GTK3 on Ubuntu 20.04](screens/open_gtk3_dark.png?raw=true#gh-dark-mode-only)
 
 # Building
 
@@ -98,6 +103,9 @@ add_subdirectory(path/to/nativefiledialog-extended)
 target_link_libraries(MyProgram PRIVATE nfd)
 ```
 Make sure that you also have the needed [dependencies](#dependencies).
+
+When included as a subproject, sample programs are not built and the install target is disabled by default.
+Add `-DNFD_BUILD_TESTS=ON` to build sample programs and `-DNFD_INSTALL=ON` to enable the install target.
 
 ## Standalone Library
 If you want to build the standalone static library,
@@ -114,8 +122,8 @@ and build the project (in release mode) there.
 If you are developing NFDe, you may want to do `-DCMAKE_BUILD_TYPE=Debug`
 to build a debug version of the library instead.
 
-If you want to build the sample programs,
-add `-DNFD_BUILD_TESTS=ON` (sample programs are not built by default).
+When building as a standalone library, sample programs are built and the install target is enabled by default.
+Add `-DNFD_BUILD_TESTS=OFF` to disable building sample programs and `-DNFD_INSTALL=OFF` to disable the install target.
 
 On Linux, if you want to use the Flatpak desktop portal instead of GTK, add `-DNFD_PORTAL=ON`.  (Otherwise, GTK will be used.)  See the "Usage" section below for more information.
 
@@ -148,10 +156,10 @@ Make sure `libgtk-3-dev` is installed on your system.
 Make sure `libdbus-1-dev` is installed on your system.
 
 ### MacOS
-On MacOS, add `AppKit` to the list of frameworks.
+On MacOS, add `AppKit` and `UniformTypeIdentifiers` to the list of frameworks.
 
 ### Windows
-On Windows (both MSVC and MinGW), ensure you are building against `ole32.lib` and `uuid.lib`.
+On Windows (both MSVC and MinGW), ensure you are building against `ole32.lib`, `uuid.lib`, and `shell32.lib`.
 
 # Usage
 
@@ -244,17 +252,23 @@ SDL_Quit(); // Then deinitialize SDL2
 
 On Linux, you can use the portal implementation instead of GTK, which will open the "native" file chooser selected by the OS or customized by the user.  The user must have `xdg-desktop-portal` and a suitable backend installed (this comes pre-installed with most common desktop distros), otherwise `NFD_ERROR` will be returned.
 
-The portal implementation is much less battle-tested than the GTK implementation.  There may be bugs &mdash; please report them on the issue tracker.
-
 To use the portal implementation, add `-DNFD_PORTAL=ON` to the build command.
 
-*Note:  Setting a default path is not supported by the portal implementation, and any default path passed to NFDe will be ignored.  This is a limitation of the portal API, so there is no way NFDe can work around it.*
+*Note:  Setting a default path is not supported by the portal implementation, and any default path passed to NFDe will be ignored.  This is a limitation of the portal API, so there is no way NFDe can work around it.  If this feature is something you desire, please show your interest on https://github.com/flatpak/xdg-desktop-portal/pull/874.*
+
+*Note 2:  The folder picker is only supported on org.freedesktop.portal.FileChooser interface version >= 3, which corresponds to xdg-desktop-portal version >= 1.7.1.  `NFD_PickFolder()` will query the interface version at runtime, and return `NFD_ERROR` if the version is too low.
 
 ### What is a portal?
 
 Unlike Windows and MacOS, Linux does not have a file chooser baked into the operating system.  Linux applications that want a file chooser usually link with a library that provides one (such as GTK, as in the Linux screenshot above).  This is a mostly acceptable solution that many applications use, but may make the file chooser look foreign on non-GTK distros.
 
 Flatpak was introduced in 2015, and with it came a standardized interface to open a file chooser.  Applications using this interface did not need to come with a file chooser, and could use the one provided by Flatpak.  This interface became known as the desktop portal, and its use expanded to non-Flatpak applications.  Now, most major desktop Linux distros come with the desktop portal installed, with file choosers that fit the theme of the distro.  Users can also install a different portal backend if desired.  There are currently two known backends: GTK and KDE.  (XFCE does not currently seem to have a portal backend.)
+
+## Platform-specific Quirks
+
+### MacOS
+
+- If the MacOS deployment target is ≥ 11.0, the [allowedContentTypes](https://developer.apple.com/documentation/appkit/nssavepanel/3566857-allowedcontenttypes?language=objc) property of NSSavePanel is used instead of the deprecated [allowedFileTypes](https://developer.apple.com/documentation/appkit/nssavepanel/1534419-allowedfiletypes?language=objc) property for file filters.  Thus, if you are filtering by a custom file extension specific to your application, you will need to define the data type in your `Info.plist` file as per the [Apple documentation](https://developer.apple.com/documentation/uniformtypeidentifiers/defining_file_and_data_types_for_your_app).  (It is possible to force NFDe to use allowedFileTypes by adding `-DNFD_USE_ALLOWEDCONTENTTYPES_IF_AVAILABLE=OFF` to your CMake build command, but this is not recommended.  If you need to support older MacOS versions, you should be setting the correct deployment target instead.)
 
 # Known Limitations #
 
