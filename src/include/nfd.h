@@ -96,12 +96,31 @@ typedef struct {
 typedef nfdu8filteritem_t nfdnfilteritem_t;
 #endif  // _WIN32
 
+// The native window handle type.
+enum {
+    NFD_WINDOW_HANDLE_TYPE_UNSET = 0,
+    // Windows: handle is HWND (the Windows API typedefs this to void*)
+    NFD_WINDOW_HANDLE_TYPE_WINDOWS = 1,
+    // Cocoa: handle is NSWindow*
+    NFD_WINDOW_HANDLE_TYPE_COCOA = 2,
+    // X11: handle is Window
+    NFD_WINDOW_HANDLE_TYPE_X11 = 3,
+    // Wayland support will be implemented separately in the future
+};
+// The native window handle.  If using a platform abstraction framework (e.g. SDL2), this should be
+// obtained using the corresponding NFD glue header (e.g. nfd_sdl2.h).
+typedef struct {
+    size_t type;  // this is one of the values of the enum above
+    void* handle;
+} nfdwindowhandle_t;
+
 typedef size_t nfdversion_t;
 
 typedef struct {
     const nfdu8filteritem_t* filterList;
     nfdfiltersize_t filterCount;
     const nfdu8char_t* defaultPath;
+    nfdwindowhandle_t parentWindow;
 } nfdopendialogu8args_t;
 
 #ifdef _WIN32
@@ -109,6 +128,7 @@ typedef struct {
     const nfdnfilteritem_t* filterList;
     nfdfiltersize_t filterCount;
     const nfdnchar_t* defaultPath;
+    nfdwindowhandle_t parentWindow;
 } nfdopendialognargs_t;
 #else
 typedef nfdopendialogu8args_t nfdopendialognargs_t;
@@ -119,6 +139,7 @@ typedef struct {
     nfdfiltersize_t filterCount;
     const nfdu8char_t* defaultPath;
     const nfdu8char_t* defaultName;
+    nfdwindowhandle_t parentWindow;
 } nfdsavedialogu8args_t;
 
 #ifdef _WIN32
@@ -127,6 +148,7 @@ typedef struct {
     nfdfiltersize_t filterCount;
     const nfdnchar_t* defaultPath;
     const nfdnchar_t* defaultName;
+    nfdwindowhandle_t parentWindow;
 } nfdsavedialognargs_t;
 #else
 typedef nfdsavedialogu8args_t nfdsavedialognargs_t;
@@ -134,11 +156,13 @@ typedef nfdsavedialogu8args_t nfdsavedialognargs_t;
 
 typedef struct {
     const nfdu8char_t* defaultPath;
+    nfdwindowhandle_t parentWindow;
 } nfdpickfolderu8args_t;
 
 #ifdef _WIN32
 typedef struct {
     const nfdnchar_t* defaultPath;
+    nfdwindowhandle_t parentWindow;
 } nfdpickfoldernargs_t;
 #else
 typedef nfdpickfolderu8args_t nfdpickfoldernargs_t;

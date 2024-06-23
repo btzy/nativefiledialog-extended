@@ -11,6 +11,7 @@
 #include <dbus/dbus.h>
 #include <errno.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -115,6 +116,41 @@ T* transform(const T* begin, const T* end, T* out, Callback callback) {
     return out;
 }
 
+template <typename T>
+T* reverse_copy(const T* begin, const T* end, T* out) {
+    while (begin != end) {
+        *out++ = *--end;
+    }
+    return out;
+}
+
+// Returns true if ch is in [0-9A-Za-z], false otherwise.
+bool IsHex(char ch) {
+    return ('0' <= ch && ch <= '9') || ('A' <= ch && ch <= 'F') || ('a' <= ch && ch <= 'f');
+}
+
+// Returns the hexadecimal value contained in the char.  Precondition: IsHex(ch)
+char ParseHexUnchecked(char ch) {
+    if ('0' <= ch && ch <= '9') return ch - '0';
+    if ('A' <= ch && ch <= 'F') return ch - ('A' - 10);
+    if ('a' <= ch && ch <= 'f') return ch - ('a' - 10);
+#if defined(__GNUC__)
+    __builtin_unreachable();
+#endif
+}
+
+// Writes val as a hex string to out
+char* FormatUIntToHexString(char* out, uintptr_t val) {
+    char tmp[sizeof(uintptr_t) * 2];
+    char* tmp_end = tmp;
+    do {
+        const uintptr_t digit = val & 15u;
+        *tmp_end++ = digit < 10 ? '0' + digit : 'A' - 10 + digit;
+        val >>= 4;
+    } while (val != 0);
+    return reverse_copy(tmp, tmp_end, out);
+}
+
 constexpr const char* STR_EMPTY = "";
 constexpr const char* STR_OPEN_FILE = "Open File";
 constexpr const char* STR_OPEN_FILES = "Open Files";
@@ -135,6 +171,31 @@ constexpr const char* DBUS_DESTINATION = "org.freedesktop.portal.Desktop";
 constexpr const char* DBUS_PATH = "/org/freedesktop/portal/desktop";
 constexpr const char* DBUS_FILECHOOSER_IFACE = "org.freedesktop.portal.FileChooser";
 constexpr const char* DBUS_REQUEST_IFACE = "org.freedesktop.portal.Request";
+
+void AppendOpenFileQueryParentWindow(DBusMessageIter& iter, const nfdwindowhandle_t& parentWindow) {
+    switch (parentWindow.type) {
+        case NFD_WINDOW_HANDLE_TYPE_X11: {
+            constexpr size_t maxX11WindowStrLen =
+                4 + sizeof(uintptr_t) * 2 + 1;  // "x11:" + "<hex>" + "\0"
+            char serializedWindowBuf[maxX11WindowStrLen];
+            char* serializedWindow = serializedWindowBuf;
+            const uintptr_t handle = reinterpret_cast<uintptr_t>(parentWindow.handle);
+            char* out = serializedWindowBuf;
+            *out++ = 'x';
+            *out++ = '1';
+            *out++ = '1';
+            *out++ = ':';
+            out = FormatUIntToHexString(out, handle);
+            *out = '\0';
+            dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, &serializedWindow);
+            return;
+        }
+        default: {
+            dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, &STR_EMPTY);
+            return;
+        }
+    }
+}
 
 template <bool Multiple, bool Directory>
 void AppendOpenFileQueryTitle(DBusMessageIter&);
@@ -557,12 +618,12 @@ void AppendOpenFileQueryParams(DBusMessage* query,
                                const char* handle_token,
                                const nfdnfilteritem_t* filterList,
                                nfdfiltersize_t filterCount,
-                               const nfdnchar_t* defaultPath) {
+                               const nfdnchar_t* defaultPath,
+                               const nfdwindowhandle_t& parentWindow) {
     DBusMessageIter iter;
     dbus_message_iter_init_append(query, &iter);
 
-    dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, &STR_EMPTY);
-
+    AppendOpenFileQueryParentWindow(iter, parentWindow);
     AppendOpenFileQueryTitle<Multiple, Directory>(iter);
 
     DBusMessageIter sub_iter;
@@ -581,12 +642,12 @@ void AppendSaveFileQueryParams(DBusMessage* query,
                                const nfdnfilteritem_t* filterList,
                                nfdfiltersize_t filterCount,
                                const nfdnchar_t* defaultPath,
-                               const nfdnchar_t* defaultName) {
+                               const nfdnchar_t* defaultName,
+                               const nfdwindowhandle_t& parentWindow) {
     DBusMessageIter iter;
     dbus_message_iter_init_append(query, &iter);
 
-    dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, &STR_EMPTY);
-
+    AppendOpenFileQueryParentWindow(iter, parentWindow);
     AppendSaveFileQueryTitle(iter);
 
     DBusMessageIter sub_iter;
@@ -963,21 +1024,6 @@ class DBusSignalSubscriptionHandler {
     }
 };
 
-// Returns true if ch is in [0-9A-Za-z], false otherwise.
-bool IsHex(char ch) {
-    return ('0' <= ch && ch <= '9') || ('A' <= ch && ch <= 'F') || ('a' <= ch && ch <= 'f');
-}
-
-// Returns the hexadecimal value contained in the char.  Precondition: IsHex(ch)
-char ParseHexUnchecked(char ch) {
-    if ('0' <= ch && ch <= '9') return ch - '0';
-    if ('A' <= ch && ch <= 'F') return ch - ('A' - 10);
-    if ('a' <= ch && ch <= 'f') return ch - ('a' - 10);
-#if defined(__GNUC__)
-    __builtin_unreachable();
-#endif
-}
-
 // Returns true if the given file URI is decodable (i.e. not malformed), and false otherwise.
 // If this function returns true, then `out` will be populated with the length of the decoded URI
 // and `fileUriEnd` will point to the trailing null byte of `fileUri`. Otherwise, `out` and
@@ -1128,7 +1174,8 @@ template <bool Multiple, bool Directory>
 nfdresult_t NFD_DBus_OpenFile(DBusMessage*& outMsg,
                               const nfdnfilteritem_t* filterList,
                               nfdfiltersize_t filterCount,
-                              const nfdnchar_t* defaultPath) {
+                              const nfdnchar_t* defaultPath,
+                              const nfdwindowhandle_t& parentWindow) {
     const char* handle_token_ptr;
     char* handle_obj_path = MakeUniqueObjectPath(&handle_token_ptr);
     Free_Guard<char> handle_obj_path_guard(handle_obj_path);
@@ -1149,7 +1196,7 @@ nfdresult_t NFD_DBus_OpenFile(DBusMessage*& outMsg,
         DBUS_DESTINATION, DBUS_PATH, DBUS_FILECHOOSER_IFACE, "OpenFile");
     DBusMessage_Guard query_guard(query);
     AppendOpenFileQueryParams<Multiple, Directory>(
-        query, handle_token_ptr, filterList, filterCount, defaultPath);
+        query, handle_token_ptr, filterList, filterCount, defaultPath, parentWindow);
 
     DBusMessage* reply =
         dbus_connection_send_with_reply_and_block(dbus_conn, query, DBUS_TIMEOUT_INFINITE, &err);
@@ -1210,7 +1257,8 @@ nfdresult_t NFD_DBus_SaveFile(DBusMessage*& outMsg,
                               const nfdnfilteritem_t* filterList,
                               nfdfiltersize_t filterCount,
                               const nfdnchar_t* defaultPath,
-                              const nfdnchar_t* defaultName) {
+                              const nfdnchar_t* defaultName,
+                              const nfdwindowhandle_t& parentWindow) {
     const char* handle_token_ptr;
     char* handle_obj_path = MakeUniqueObjectPath(&handle_token_ptr);
     Free_Guard<char> handle_obj_path_guard(handle_obj_path);
@@ -1231,7 +1279,7 @@ nfdresult_t NFD_DBus_SaveFile(DBusMessage*& outMsg,
         DBUS_DESTINATION, DBUS_PATH, DBUS_FILECHOOSER_IFACE, "SaveFile");
     DBusMessage_Guard query_guard(query);
     AppendSaveFileQueryParams(
-        query, handle_token_ptr, filterList, filterCount, defaultPath, defaultName);
+        query, handle_token_ptr, filterList, filterCount, defaultPath, defaultName, parentWindow);
 
     DBusMessage* reply =
         dbus_connection_send_with_reply_and_block(dbus_conn, query, DBUS_TIMEOUT_INFINITE, &err);
@@ -1398,7 +1446,7 @@ nfdresult_t NFD_OpenDialogN_With_Impl(nfdversion_t version,
     DBusMessage* msg;
     {
         const nfdresult_t res = NFD_DBus_OpenFile<false, false>(
-            msg, args->filterList, args->filterCount, args->defaultPath);
+            msg, args->filterList, args->filterCount, args->defaultPath, args->parentWindow);
         if (res != NFD_OKAY) {
             return res;
         }
@@ -1447,7 +1495,7 @@ nfdresult_t NFD_OpenDialogMultipleN_With_Impl(nfdversion_t version,
     DBusMessage* msg;
     {
         const nfdresult_t res = NFD_DBus_OpenFile<true, false>(
-            msg, args->filterList, args->filterCount, args->defaultPath);
+            msg, args->filterList, args->filterCount, args->defaultPath, args->parentWindow);
         if (res != NFD_OKAY) {
             return res;
         }
@@ -1496,8 +1544,12 @@ nfdresult_t NFD_SaveDialogN_With_Impl(nfdversion_t version,
 
     DBusMessage* msg;
     {
-        const nfdresult_t res = NFD_DBus_SaveFile(
-            msg, args->filterList, args->filterCount, args->defaultPath, args->defaultName);
+        const nfdresult_t res = NFD_DBus_SaveFile(msg,
+                                                  args->filterList,
+                                                  args->filterCount,
+                                                  args->defaultPath,
+                                                  args->defaultName,
+                                                  args->parentWindow);
         if (res != NFD_OKAY) {
             return res;
         }
@@ -1570,7 +1622,8 @@ nfdresult_t NFD_PickFolderN_With_Impl(nfdversion_t version,
 
     DBusMessage* msg;
     {
-        const nfdresult_t res = NFD_DBus_OpenFile<false, true>(msg, nullptr, 0, args->defaultPath);
+        const nfdresult_t res =
+            NFD_DBus_OpenFile<false, true>(msg, nullptr, 0, args->defaultPath, args->parentWindow);
         if (res != NFD_OKAY) {
             return res;
         }
@@ -1626,7 +1679,8 @@ nfdresult_t NFD_PickFolderMultipleN_With_Impl(nfdversion_t version,
 
     DBusMessage* msg;
     {
-        const nfdresult_t res = NFD_DBus_OpenFile<true, true>(msg, nullptr, 0, args->defaultPath);
+        const nfdresult_t res =
+            NFD_DBus_OpenFile<true, true>(msg, nullptr, 0, args->defaultPath, args->parentWindow);
         if (res != NFD_OKAY) {
             return res;
         }

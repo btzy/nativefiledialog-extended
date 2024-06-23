@@ -8,6 +8,7 @@ endif ()
 
 option(BUILD_SHARED_LIBS "Build a shared library instead of static" OFF)
 option(NFD_BUILD_TESTS "Build tests for nfd" ${nfd_ROOT_PROJECT})
+option(NFD_BUILD_SDL2_TESTS "Build SDL2 tests for nfd" OFF)
 option(NFD_INSTALL "Generate install target for nfd" ${nfd_ROOT_PROJECT})
 
 set(nfd_PLATFORM Undefined)
@@ -48,6 +49,6 @@ endif()
 
 add_subdirectory(src)
 
-if(${NFD_BUILD_TESTS})
+if(${NFD_BUILD_TESTS} OR ${NFD_BUILD_SDL2_TESTS})
   add_subdirectory(test)
 endif()
