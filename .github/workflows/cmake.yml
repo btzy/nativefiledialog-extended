@@ -14,7 +14,7 @@ jobs:
     
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
     - name: Format code
       # ClangFormat 14 has a bug, which seems to be fixed in ClangFormat 15.  Until GitHub-hosted runners support ClangFormat 15, we will stay at ClangFormat 13.
       run: find src/ test/ -iname '*.c' -or -iname '*.cpp' -or -iname '*.m' -or -iname '*.mm' -or -iname '*.h' -or -iname '*.hpp' | xargs clang-format-13 -i -style=file
@@ -28,7 +28,7 @@ jobs:
     
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
     - name: Install Dependencies
       run: sudo apt-get update && sudo apt-get install dos2unix
     - name: Convert to Unix line endings
@@ -71,7 +71,7 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
     - name: Install Dependencies
       run: sudo apt-get update && sudo apt-get install ${{ matrix.portal.dep }}
     - name: Configure
@@ -79,7 +79,7 @@ jobs:
     - name: Build
       run: cmake --build build --target install
     - name: Upload test binaries
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: Ubuntu ${{ matrix.os.name }} - ${{ matrix.compiler.name }}, ${{ matrix.portal.name }}, ${{ matrix.autoappend.name }}, ${{ matrix.shared_lib.name }}, C++${{ matrix.cppstd }}
         path: |
@@ -93,21 +93,18 @@ jobs:
 
     strategy:
       matrix:
-        os: [ {label: macos-latest, name: latest}, {label: macos-11, name: 11} ]
-        shared_lib: [ {flag: OFF, name: Static} ]
-        include:
-        - os: {label: macos-latest, name: latest}
-          shared_lib: {flag: ON, name: Shared}
+        os: [ {label: macos-latest, name: latest} ]
+        shared_lib: [ {flag: OFF, name: Static}, {flag: ON, name: Shared} ]
     
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
     - name: Configure
       run: mkdir build && mkdir install && cd build && cmake -DCMAKE_INSTALL_PREFIX="../install" -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS="-Wall -Wextra -Werror -pedantic" -DCMAKE_CXX_FLAGS="-Wall -Wextra -Werror -pedantic" -DBUILD_SHARED_LIBS=${{ matrix.shared_lib.flag }} -DNFD_BUILD_TESTS=ON ..
     - name: Build
       run: cmake --build build --target install
     - name: Upload test binaries
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: MacOS ${{ matrix.os.name }} - Clang, ${{ matrix.shared_lib.name }}
         path: |
@@ -125,13 +122,13 @@ jobs:
     
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
     - name: Configure
       run: mkdir build && mkdir install && cd build && cmake -DCMAKE_INSTALL_PREFIX="../install" -DBUILD_SHARED_LIBS=${{ matrix.shared_lib.flag }} -DNFD_BUILD_TESTS=ON ..
     - name: Build
       run: cmake --build build --target install --config Release
     - name: Upload test binaries
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: Windows latest - MSVC, ${{ matrix.shared_lib.name }}
         path: |
@@ -145,13 +142,13 @@ jobs:
     
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
     - name: Configure
       run: mkdir build && mkdir install && cd build && cmake -DCMAKE_INSTALL_PREFIX="../install" -T ClangCL -DNFD_BUILD_TESTS=ON ..
     - name: Build
       run: cmake --build build --target install --config Release
     - name: Upload test binaries
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: Windows latest - Clang, Static
         path: |
@@ -169,7 +166,7 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
     - name: Set up MinGW-w64
       uses: msys2/setup-msys2@v2
       with:
@@ -183,7 +180,7 @@ jobs:
     - name: Build
       run: cmake --build build --target install
     - name: Upload test binaries
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: Windows latest - MinGW, Static
         path: |
@@ -201,7 +198,7 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
     - name: Install Dependencies
       run: sudo apt-get update && sudo apt-get install ${{ matrix.portal.dep }} libsdl2-dev libsdl2-ttf-dev
     - name: Configure
@@ -209,7 +206,7 @@ jobs:
     - name: Build
       run: cmake --build build --target install
     - name: Upload test binaries
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: Ubuntu latest - GCC, ${{ matrix.portal.name }}, Static, SDL2
         path: |
@@ -223,7 +220,7 @@ jobs:
     
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
     - name: Install Dependencies
       run: brew install sdl2 sdl2_ttf
     - name: Configure
@@ -231,7 +228,7 @@ jobs:
     - name: Build
       run: cmake --build build --target install
     - name: Upload test binaries
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: MacOS latest - Clang, Static, SDL2
         path: |
@@ -245,7 +242,7 @@ jobs:
     
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
     - name: Install pkgconfiglite
       run: choco install pkgconfiglite
     - name: Install Dependencies
@@ -255,7 +252,7 @@ jobs:
     - name: Build
       run: cmake --build build --target install --config Release
     - name: Upload test binaries
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: Windows latest - MSVC, Static, SDL2
         path: |
