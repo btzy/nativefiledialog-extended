@@ -15,6 +15,8 @@ set(TEST_LIST
   test_pickfolder_native.c
   test_pickfolder_with.c
   test_pickfolder_native_with.c
+  test_pickfoldermultiple.c
+  test_pickfoldermultiple_native.c
   test_savedialog.c
   test_savedialog_native.c
   test_savedialog_with.c
