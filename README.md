@@ -350,9 +350,7 @@ On Linux, you can use the portal implementation instead of GTK, which will open 
 
 To use the portal implementation, add `-DNFD_PORTAL=ON` to the build command.
 
-*Note:  Setting a default path is not supported by the portal implementation, and any default path passed to NFDe will be ignored.  This is a limitation of the portal API, so there is no way NFDe can work around it.  If this feature is something you desire, please show your interest on https://github.com/flatpak/xdg-desktop-portal/pull/874.*
-
-*Note 2:  The folder picker is only supported on org.freedesktop.portal.FileChooser interface version >= 3, which corresponds to xdg-desktop-portal version >= 1.7.1.  `NFD_PickFolder()` will query the interface version at runtime, and return `NFD_ERROR` if the version is too low.
+*Note:  The folder picker is only supported on org.freedesktop.portal.FileChooser interface version >= 3, which corresponds to xdg-desktop-portal version >= 1.7.1.  `NFD_PickFolder()` will query the interface version at runtime, and return `NFD_ERROR` if the version is too low.
 
 ### What is a portal?
 
@@ -371,7 +369,6 @@ Flatpak was introduced in 2015, and with it came a standardized interface to ope
  - No support for Windows XP's legacy dialogs such as `GetOpenFileName`.  (There are no plans to support this; you shouldn't be still using Windows XP anyway.)
  - No Emscripten (WebAssembly) bindings.  (This might get implemented if I decide to port Circuit Sandbox for the web, but I don't think there is any way to implement a web-based folder picker.)
  - GTK dialogs don't set the existing window as parent, so if users click the existing window while the dialog is open then the dialog will go behind it.  GTK writes a warning to stdout or stderr about this.
- - Portal dialogs (the alternative to GTK on Linux) don't support a default path.  Any default path you supply will be ignored.
  - This library is not compatible with the original Native File Dialog library.  Things might break if you use both in the same project.  (There are no plans to support this; you have to use one or the other.)
  - This library does not explicitly dispatch calls to the UI thread.  This may lead to crashes if you call functions from other threads when the platform does not support it (e.g. macOS).  Users are generally expected to call NFDe from an appropriate UI thread (i.e. the thread performing the UI event loop).
 
