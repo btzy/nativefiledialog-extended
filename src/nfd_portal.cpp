@@ -1605,17 +1605,17 @@ nfdresult_t NFD_PickFolderN_With_Impl(nfdversion_t version,
     (void)version;
 
     {
-        dbus_uint32_t version;
-        const nfdresult_t res = NFD_DBus_GetVersion(version);
+        dbus_uint32_t portal_version;
+        const nfdresult_t res = NFD_DBus_GetVersion(portal_version);
         if (res != NFD_OKAY) {
             return res;
         }
-        if (version < 3) {
+        if (portal_version < 3) {
             NFDi_SetFormattedError(
                 "The xdg-desktop-portal installed on this system does not support a folder picker; "
                 "at least version 3 of the org.freedesktop.portal.FileChooser interface is "
                 "required but the installed interface version is %u.",
-                version);
+                portal_version);
             return NFD_ERROR;
         }
     }
@@ -1662,17 +1662,17 @@ nfdresult_t NFD_PickFolderMultipleN_With_Impl(nfdversion_t version,
     (void)version;
 
     {
-        dbus_uint32_t version;
-        const nfdresult_t res = NFD_DBus_GetVersion(version);
+        dbus_uint32_t portal_version;
+        const nfdresult_t res = NFD_DBus_GetVersion(portal_version);
         if (res != NFD_OKAY) {
             return res;
         }
-        if (version < 3) {
+        if (portal_version < 3) {
             NFDi_SetFormattedError(
                 "The xdg-desktop-portal installed on this system does not support a folder picker; "
                 "at least version 3 of the org.freedesktop.portal.FileChooser interface is "
                 "required but the installed interface version is %u.",
-                version);
+                portal_version);
             return NFD_ERROR;
         }
     }

@@ -75,7 +75,7 @@ jobs:
     - name: Install Dependencies
       run: sudo apt-get update && sudo apt-get install ${{ matrix.portal.dep }}
     - name: Configure
-      run: mkdir build && mkdir install && cd build && cmake -DCMAKE_INSTALL_PREFIX="../install" -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=${{ matrix.compiler.c }} -DCMAKE_CXX_COMPILER=${{ matrix.compiler.cpp }} -DCMAKE_CXX_STANDARD=${{ matrix.cppstd }} -DCMAKE_C_FLAGS="-Wall -Wextra -Werror -pedantic" -DCMAKE_CXX_FLAGS="-Wall -Wextra -Werror -pedantic" -DNFD_PORTAL=${{ matrix.portal.flag }} -DNFD_APPEND_EXTENSION=${{ matrix.autoappend.flag }} -DBUILD_SHARED_LIBS=${{ matrix.shared_lib.flag }} -DNFD_BUILD_TESTS=ON ..
+      run: mkdir build && mkdir install && cd build && cmake -DCMAKE_INSTALL_PREFIX="../install" -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=${{ matrix.compiler.c }} -DCMAKE_CXX_COMPILER=${{ matrix.compiler.cpp }} -DCMAKE_CXX_STANDARD=${{ matrix.cppstd }} -DCMAKE_C_FLAGS="-Wall -Wextra -Wshadow -Werror -pedantic" -DCMAKE_CXX_FLAGS="-Wall -Wextra -Wshadow -Werror -pedantic" -DNFD_PORTAL=${{ matrix.portal.flag }} -DNFD_APPEND_EXTENSION=${{ matrix.autoappend.flag }} -DBUILD_SHARED_LIBS=${{ matrix.shared_lib.flag }} -DNFD_BUILD_TESTS=ON ..
     - name: Build
       run: cmake --build build --target install
     - name: Upload test binaries
@@ -100,7 +100,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
     - name: Configure
-      run: mkdir build && mkdir install && cd build && cmake -DCMAKE_INSTALL_PREFIX="../install" -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS="-Wall -Wextra -Werror -pedantic" -DCMAKE_CXX_FLAGS="-Wall -Wextra -Werror -pedantic" -DBUILD_SHARED_LIBS=${{ matrix.shared_lib.flag }} -DNFD_BUILD_TESTS=ON ..
+      run: mkdir build && mkdir install && cd build && cmake -DCMAKE_INSTALL_PREFIX="../install" -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS="-Wall -Wextra -Wshadow -Werror -pedantic" -DCMAKE_CXX_FLAGS="-Wall -Wextra -Wshadow -Werror -pedantic" -DBUILD_SHARED_LIBS=${{ matrix.shared_lib.flag }} -DNFD_BUILD_TESTS=ON ..
     - name: Build
       run: cmake --build build --target install
     - name: Upload test binaries
@@ -176,7 +176,7 @@ jobs:
           mingw-w64-x86_64-gcc
           mingw-w64-x86_64-cmake
     - name: Configure
-      run: mkdir build && mkdir install && cd build && cmake -DCMAKE_INSTALL_PREFIX="../install" -DCMAKE_C_COMPILER=x86_64-w64-mingw32-gcc -DCMAKE_CXX_COMPILER=x86_64-w64-mingw32-g++ -G 'MSYS Makefiles' -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS="-Wall -Wextra -Werror -pedantic" -DCMAKE_CXX_FLAGS="-Wall -Wextra -Werror -pedantic" -DNFD_BUILD_TESTS=ON ..
+      run: mkdir build && mkdir install && cd build && cmake -DCMAKE_INSTALL_PREFIX="../install" -DCMAKE_C_COMPILER=x86_64-w64-mingw32-gcc -DCMAKE_CXX_COMPILER=x86_64-w64-mingw32-g++ -G 'MSYS Makefiles' -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS="-Wall -Wextra -Wshadow -Werror -pedantic" -DCMAKE_CXX_FLAGS="-Wall -Wextra -Wshadow -Werror -pedantic" -DNFD_BUILD_TESTS=ON ..
     - name: Build
       run: cmake --build build --target install
     - name: Upload test binaries
@@ -202,7 +202,7 @@ jobs:
     - name: Install Dependencies
       run: sudo apt-get update && sudo apt-get install ${{ matrix.portal.dep }} libsdl2-dev libsdl2-ttf-dev
     - name: Configure
-      run: mkdir build && mkdir install && cd build && cmake -DCMAKE_INSTALL_PREFIX="../install" -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS="-Wall -Wextra -Werror -pedantic" -DCMAKE_CXX_FLAGS="-Wall -Wextra -Werror -pedantic" -DNFD_PORTAL=${{ matrix.portal.flag }} -DNFD_APPEND_EXTENSION=OFF -DNFD_BUILD_TESTS=OFF -DNFD_BUILD_SDL2_TESTS=ON ..
+      run: mkdir build && mkdir install && cd build && cmake -DCMAKE_INSTALL_PREFIX="../install" -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS="-Wall -Wextra -Wshadow -Werror -pedantic" -DCMAKE_CXX_FLAGS="-Wall -Wextra -Wshadow -Werror -pedantic" -DNFD_PORTAL=${{ matrix.portal.flag }} -DNFD_APPEND_EXTENSION=OFF -DNFD_BUILD_TESTS=OFF -DNFD_BUILD_SDL2_TESTS=ON ..
     - name: Build
       run: cmake --build build --target install
     - name: Upload test binaries
@@ -224,7 +224,7 @@ jobs:
     - name: Install Dependencies
       run: brew install sdl2 sdl2_ttf
     - name: Configure
-      run: mkdir build && mkdir install && cd build && cmake -DCMAKE_INSTALL_PREFIX="../install" -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS="-Wall -Wextra -Werror -pedantic" -DCMAKE_CXX_FLAGS="-Wall -Wextra -Werror -pedantic" -DNFD_BUILD_TESTS=OFF -DNFD_BUILD_SDL2_TESTS=ON ..
+      run: mkdir build && mkdir install && cd build && cmake -DCMAKE_INSTALL_PREFIX="../install" -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS="-Wall -Wextra -Wshadow -Werror -pedantic" -DCMAKE_CXX_FLAGS="-Wall -Wextra -Wshadow -Werror -pedantic" -DNFD_BUILD_TESTS=OFF -DNFD_BUILD_SDL2_TESTS=ON ..
     - name: Build
       run: cmake --build build --target install
     - name: Upload test binaries

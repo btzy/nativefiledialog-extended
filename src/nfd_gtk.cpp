@@ -447,8 +447,7 @@ void RealizedSignalHandler(GtkWidget* window, void* userdata) {
 }
 
 struct NativeWindowParenter {
-    NativeWindowParenter(GtkWidget* widget, const nfdwindowhandle_t& parentWindow) noexcept
-        : widget(widget) {
+    NativeWindowParenter(GtkWidget* w, const nfdwindowhandle_t& parentWindow) noexcept : widget(w) {
         parent = GetAllocNativeWindowHandle(parentWindow);
 
         if (parent) {
