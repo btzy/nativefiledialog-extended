@@ -30,6 +30,8 @@ struct IUnknown;  // Workaround for "combaseapi.h(229): error C2187: syntax erro
 #include <windows.h>
 #include "nfd.h"
 
+int NFD_OVERRIDE_RECENT_WITH_DEFAULT = 1;
+
 namespace {
 
 /* current error */
@@ -250,12 +252,19 @@ nfdresult_t SetDefaultPath(IFileDialog* dialog, const nfdnchar_t* defaultPath) {
 
     Release_Guard<IShellItem> folderGuard(folder);
 
-    // SetDefaultFolder() might use another recently used folder if available, so the user doesn't
-    // need to keep navigating back to the default folder (recommended by Windows). change to
-    // SetFolder() if you always want to use the default folder
-    if (!SUCCEEDED(dialog->SetDefaultFolder(folder))) {
-        NFDi_SetError("Failed to set default path.");
-        return NFD_ERROR;
+    if (NFD_OVERRIDE_RECENT_WITH_DEFAULT == 1) {
+        // Use SetFolder() if you always want to use the default folder
+        if (!SUCCEEDED(dialog->SetFolder(folder))) {
+            NFDi_SetError("Failed to set default path.");
+            return NFD_ERROR;
+        }
+    } else {
+        // SetDefaultFolder() might use another recently used folder if available, so the user
+        // doesn't need to keep navigating back to the default folder (recommended by Windows). 
+        if (!SUCCEEDED(dialog->SetDefaultFolder(folder))) {
+            NFDi_SetError("Failed to set default path.");
+            return NFD_ERROR;
+        }
     }
 
     return NFD_OKAY;

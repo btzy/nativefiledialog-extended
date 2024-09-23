@@ -34,6 +34,9 @@ extern "C" {
 #define NFD_INLINE static inline
 #endif  // __cplusplus
 
+//  If 1, use defaultPath instead of the recent path on Windows.
+extern int NFD_OVERRIDE_RECENT_WITH_DEFAULT;
+
 #include <stddef.h>
 
 typedef char nfdu8char_t;
