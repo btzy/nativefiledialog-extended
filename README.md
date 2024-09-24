@@ -223,7 +223,7 @@ typedef struct {
 ```
 
 - `filterList` and `filterCount`: Set these to customize the file filter (it appears as a dropdown menu on Windows and Linux, but simply hides files on macOS).  Set `filterList` to a pointer to the start of the array of filter items and `filterCount` to the number of filter items in that array.  See the "File Filter Syntax" section below for details.
-- `defaultPath`: Set this to the default folder that the dialog should open to (on Windows, if there is a recently used folder, it opens to that folder instead of the folder you pass, unless the `NFD_OVERRIDE_RECENT_WITH_DEFAULT` flag is set to 1).
+- `defaultPath`: Set this to the default folder that the dialog should open to (on Windows, if there is a recently used folder, it opens to that folder instead of the folder you pass, unless the `NFD_OVERRIDE_RECENT_WITH_DEFAULT` flag is set to ON).
 - `defaultName`: (For SaveDialog only) Set this to the file name that should be pre-filled on the dialog.
 - `parentWindow`: Set this to the native window handle of the parent of this dialog.  See the "Usage with a Platform Abstraction Framework" section for details.  It is also possible to pass a handle even if you do not use a platform abstraction framework.
 
@@ -257,7 +257,7 @@ A wildcard filter is always added to every dialog.
 
 *Note 3: On Linux, the file extension is appended (if missing) when the user presses down the "Save" button.  The appended file extension will remain visible to the user, even if an overwrite prompt is shown and the user then presses "Cancel".*
 
-*Note 4: On Windows, the default folder parameter is only used if there is no recently used folder available, unless the `NFD_OVERRIDE_RECENT_WITH_DEFAULT` flag is set to 1.  Otherwise, the default folder will be the folder that was last used.  Internally, the Windows implementation calls [IFileDialog::SetDefaultFolder(IShellItem)](https://docs.microsoft.com/en-us/windows/desktop/api/shobjidl_core/nf-shobjidl_core-ifiledialog-setdefaultfolder).  This is usual Windows behaviour and users expect it.*
+*Note 4: On Windows, the default folder parameter is only used if there is no recently used folder available, unless the `NFD_OVERRIDE_RECENT_WITH_DEFAULT` flag is set to ON.  Otherwise, the default folder will be the folder that was last used.  Internally, the Windows implementation calls [IFileDialog::SetDefaultFolder(IShellItem)](https://docs.microsoft.com/en-us/windows/desktop/api/shobjidl_core/nf-shobjidl_core-ifiledialog-setdefaultfolder).  This is usual Windows behaviour and users expect it.*
 
 ## Iterating Over PathSets
 
