@@ -257,7 +257,7 @@ A wildcard filter is always added to every dialog.
 
 *Note 3: On Linux, the file extension is appended (if missing) when the user presses down the "Save" button.  The appended file extension will remain visible to the user, even if an overwrite prompt is shown and the user then presses "Cancel".*
 
-*Note 4: On Windows, the default folder parameter is only used if there is no recently used folder available, unless the `NFD_OVERRIDE_RECENT_WITH_DEFAULT` flag is set to ON.  Otherwise, the default folder will be the folder that was last used.  Internally, the Windows implementation calls [IFileDialog::SetDefaultFolder(IShellItem)](https://docs.microsoft.com/en-us/windows/desktop/api/shobjidl_core/nf-shobjidl_core-ifiledialog-setdefaultfolder).  This is usual Windows behaviour and users expect it.*
+*Note 4: On Windows, the default folder parameter is only used if there is no recently used folder available, unless the `NFD_OVERRIDE_RECENT_WITH_DEFAULT` build option is set to ON.  Otherwise, the default folder will be the folder that was last used.  Internally, the Windows implementation calls [IFileDialog::SetDefaultFolder(IShellItem)](https://docs.microsoft.com/en-us/windows/desktop/api/shobjidl_core/nf-shobjidl_core-ifiledialog-setdefaultfolder).  This is usual Windows behaviour and users expect it.*
 
 ## Iterating Over PathSets
 
