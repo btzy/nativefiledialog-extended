@@ -255,7 +255,7 @@ nfdresult_t SetDefaultPath(IFileDialog* dialog, const nfdnchar_t* defaultPath) {
     if (!SUCCEEDED(dialog->SetFolder(folder))) {
         NFDi_SetError("Failed to set default path.");
         return NFD_ERROR;
-    }   
+    }
 #else
     // SetDefaultFolder() might use another recently used folder if available, so the user
     // doesn't need to keep navigating back to the default folder (recommended by Windows).
