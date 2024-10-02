@@ -250,7 +250,7 @@ nfdresult_t SetDefaultPath(IFileDialog* dialog, const nfdnchar_t* defaultPath) {
 
     Release_Guard<IShellItem> folderGuard(folder);
 
-#ifdef nfd_OVERRIDE_RECENT_WITH_DEFAULT
+#ifdef NFD_OVERRIDE_RECENT_WITH_DEFAULT
     // Use SetFolder() if you always want to use the default folder
     if (!SUCCEEDED(dialog->SetFolder(folder))) {
         NFDi_SetError("Failed to set default path.");
