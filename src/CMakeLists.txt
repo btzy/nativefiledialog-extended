@@ -141,5 +141,5 @@ endif()
 
 option(NFD_OVERRIDE_RECENT_WITH_DEFAULT "Use defaultPath instead of recent folder on Windows" ON)
 if (NFD_OVERRIDE_RECENT_WITH_DEFAULT)
-    target_compile_definitions(${TARGET_NAME} PRIVATE nfd_OVERRIDE_RECENT_WITH_DEFAULT)
+    target_compile_definitions(${TARGET_NAME} PRIVATE NFD_OVERRIDE_RECENT_WITH_DEFAULT)
 endif()
