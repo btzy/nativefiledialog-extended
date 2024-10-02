@@ -223,7 +223,7 @@ typedef struct {
 ```
 
 - `filterList` and `filterCount`: Set these to customize the file filter (it appears as a dropdown menu on Windows and Linux, but simply hides files on macOS).  Set `filterList` to a pointer to the start of the array of filter items and `filterCount` to the number of filter items in that array.  See the "File Filter Syntax" section below for details.
-- `defaultPath`: Set this to the default folder that the dialog should open to (on Windows, if there is a recently used folder, it opens to that folder instead of the folder you pass, unless the `NFD_OVERRIDE_RECENT_WITH_DEFAULT` flag is set to ON).
+- `defaultPath`: Set this to the default folder that the dialog should open to (on Windows, if there is a recently used folder, it opens to that folder instead of the folder you pass, unless the `NFD_OVERRIDE_RECENT_WITH_DEFAULT` build option is set to ON).
 - `defaultName`: (For SaveDialog only) Set this to the file name that should be pre-filled on the dialog.
 - `parentWindow`: Set this to the native window handle of the parent of this dialog.  See the "Usage with a Platform Abstraction Framework" section for details.  It is also possible to pass a handle even if you do not use a platform abstraction framework.
 
