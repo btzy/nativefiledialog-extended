@@ -26,6 +26,20 @@ extern "C" {
 #define NFD_INLINE static inline
 #endif  // __cplusplus
 
+NFD_INLINE bool NFD_SetDisplayPropertiesFromSDLWindow(SDL_Window* sdlWindow) {
+#if defined(SDL_VIDEO_DRIVER_WAYLAND)
+    SDL_SysWMinfo info;
+    SDL_VERSION(&info.version);
+    if (!SDL_GetWindowWMInfo(sdlWindow, &info) || info.subsystem != SDL_SYSWM_WAYLAND) {
+        return false;
+    }
+    return NFD_SetWaylandDisplay(info.info.wl.display) == NFD_OKAY;
+#else
+    (void)sdlWindow;
+    return true;
+#endif
+}
+
 /**
  *  Converts an SDL window handle to a native window handle that can be passed to NFDe.
  *  @param sdlWindow The SDL window handle.
@@ -58,6 +72,12 @@ NFD_INLINE bool NFD_GetNativeWindowFromSDLWindow(SDL_Window* sdlWindow,
         case SDL_SYSWM_X11:
             nativeWindow->type = NFD_WINDOW_HANDLE_TYPE_X11;
             nativeWindow->handle = (void*)info.info.x11.window;
+            return true;
+#endif
+#if defined(SDL_VIDEO_DRIVER_WAYLAND)
+        case SDL_SYSWM_WAYLAND:
+            nativeWindow->type = NFD_WINDOW_HANDLE_TYPE_WAYLAND;
+            nativeWindow->handle = (void*)info.info.wl.surface;
             return true;
 #endif
         default:
