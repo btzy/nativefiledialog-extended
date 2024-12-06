@@ -28,6 +28,8 @@
 
 #include "nfd.h"
 
+#include "nfd_linux_shared.hpp"
+
 /*
 Define NFD_APPEND_EXTENSION if you want the file extension to be appended when missing. Linux
 programs usually don't append the file extension, but for consistency with other OSes you might want
@@ -200,8 +202,38 @@ constexpr const char* DBUS_PATH = "/org/freedesktop/portal/desktop";
 constexpr const char* DBUS_FILECHOOSER_IFACE = "org.freedesktop.portal.FileChooser";
 constexpr const char* DBUS_REQUEST_IFACE = "org.freedesktop.portal.Request";
 
-void AppendOpenFileQueryParentWindow(DBusMessageIter& iter, const nfdwindowhandle_t& parentWindow) {
+#ifdef NFD_WAYLAND
+constexpr const char* WAYLAND_PREFIX = "wayland:";
+
+void DestroyXdgExported(void* context) {
+    zxdg_exported_v1_destroy(static_cast<struct zxdg_exported_v1*>(context));
+}
+
+void zxdg_exported_v1_handle(void* context, struct zxdg_exported_v1*, const char* handle) {
+    DBusMessageIter& iter = *static_cast<DBusMessageIter*>(context);
+    const size_t handle_len = strlen(handle);
+    const size_t prefix_len = strlen(WAYLAND_PREFIX);
+    char* const buf = NFDi_Malloc<char>(prefix_len + handle_len + 1);
+    char* buf_end = copy(WAYLAND_PREFIX, WAYLAND_PREFIX + prefix_len, buf);
+    buf_end = copy(handle, handle + handle_len, buf_end);
+    *buf_end = '\0';
+    dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, &buf);
+    NFDi_Free(buf);
+}
+
+constexpr struct zxdg_exported_v1_listener wayland_xdg_exported_v1_listener {
+    &zxdg_exported_v1_handle
+};
+#endif
+
+void AppendOpenFileQueryParentWindow(DBusMessageIter& iter,
+                                     const nfdwindowhandle_t& parentWindow,
+                                     DestroyFunc& destroy) {
+    (void)iter;
+    (void)parentWindow;
+    (void)destroy;
     switch (parentWindow.type) {
+#ifdef NFD_X11
         case NFD_WINDOW_HANDLE_TYPE_X11: {
             constexpr size_t maxX11WindowStrLen =
                 4 + sizeof(uintptr_t) * 2 + 1;  // "x11:" + "<hex>" + "\0"
@@ -218,6 +250,30 @@ void AppendOpenFileQueryParentWindow(DBusMessageIter& iter, const nfdwindowhandl
             dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, &serializedWindow);
             return;
         }
+#endif
+#ifdef NFD_WAYLAND
+        case NFD_WINDOW_HANDLE_TYPE_WAYLAND: {
+            if (wayland_display && wayland_xdg_exporter_v1) {
+                struct zxdg_exported_v1* exported = zxdg_exporter_v1_export(
+                    wayland_xdg_exporter_v1, static_cast<struct wl_surface*>(parentWindow.handle));
+                if (!exported) {
+                    // if we fail to export the wl_surface, act as if the window has no parent
+                    dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, &STR_EMPTY);
+                    return;
+                }
+                zxdg_exported_v1_add_listener(
+                    exported, &wayland_xdg_exported_v1_listener, static_cast<void*>(&iter));
+                wl_display_roundtrip(wayland_display);
+                zxdg_exported_v1_set_user_data(exported, nullptr);
+                destroy.fn = &DestroyXdgExported;
+                destroy.context = static_cast<void*>(exported);
+                return;
+            } else {
+                dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, &STR_EMPTY);
+                return;
+            }
+        }
+#endif
         default: {
             dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, &STR_EMPTY);
             return;
@@ -670,11 +726,12 @@ void AppendOpenFileQueryParams(DBusMessage* query,
                                const nfdnfilteritem_t* filterList,
                                nfdfiltersize_t filterCount,
                                const nfdnchar_t* defaultPath,
-                               const nfdwindowhandle_t& parentWindow) {
+                               const nfdwindowhandle_t& parentWindow,
+                               DestroyFunc& destroy) {
     DBusMessageIter iter;
     dbus_message_iter_init_append(query, &iter);
 
-    AppendOpenFileQueryParentWindow(iter, parentWindow);
+    AppendOpenFileQueryParentWindow(iter, parentWindow, destroy);
     AppendOpenFileQueryTitle<Multiple, Directory>(iter);
 
     DBusMessageIter sub_iter;
@@ -694,11 +751,12 @@ void AppendSaveFileQueryParams(DBusMessage* query,
                                nfdfiltersize_t filterCount,
                                const nfdnchar_t* defaultPath,
                                const nfdnchar_t* defaultName,
-                               const nfdwindowhandle_t& parentWindow) {
+                               const nfdwindowhandle_t& parentWindow,
+                               DestroyFunc& destroy) {
     DBusMessageIter iter;
     dbus_message_iter_init_append(query, &iter);
 
-    AppendOpenFileQueryParentWindow(iter, parentWindow);
+    AppendOpenFileQueryParentWindow(iter, parentWindow, destroy);
     AppendSaveFileQueryTitle(iter);
 
     DBusMessageIter sub_iter;
@@ -1245,8 +1303,10 @@ nfdresult_t NFD_DBus_OpenFile(DBusMessage*& outMsg,
     DBusMessage* query = dbus_message_new_method_call(
         DBUS_DESTINATION, DBUS_PATH, DBUS_FILECHOOSER_IFACE, "OpenFile");
     DBusMessage_Guard query_guard(query);
+
+    DestroyFunc destroy;
     AppendOpenFileQueryParams<Multiple, Directory>(
-        query, handle_token_ptr, filterList, filterCount, defaultPath, parentWindow);
+        query, handle_token_ptr, filterList, filterCount, defaultPath, parentWindow, destroy);
 
     DBusMessage* reply =
         dbus_connection_send_with_reply_and_block(dbus_conn, query, DBUS_TIMEOUT_INFINITE, &err);
@@ -1328,8 +1388,16 @@ nfdresult_t NFD_DBus_SaveFile(DBusMessage*& outMsg,
     DBusMessage* query = dbus_message_new_method_call(
         DBUS_DESTINATION, DBUS_PATH, DBUS_FILECHOOSER_IFACE, "SaveFile");
     DBusMessage_Guard query_guard(query);
-    AppendSaveFileQueryParams(
-        query, handle_token_ptr, filterList, filterCount, defaultPath, defaultName, parentWindow);
+
+    DestroyFunc destroy;
+    AppendSaveFileQueryParams(query,
+                              handle_token_ptr,
+                              filterList,
+                              filterCount,
+                              defaultPath,
+                              defaultName,
+                              parentWindow,
+                              destroy);
 
     DBusMessage* reply =
         dbus_connection_send_with_reply_and_block(dbus_conn, query, DBUS_TIMEOUT_INFINITE, &err);
@@ -1458,11 +1526,19 @@ nfdresult_t NFD_Init(void) {
     dbus_unique_name = dbus_bus_get_unique_name(dbus_conn);
     if (!dbus_unique_name) {
         NFDi_SetError("Unable to get the unique name of our D-Bus connection.");
+        dbus_connection_unref(dbus_conn);
         return NFD_ERROR;
     }
+#ifdef NFD_WAYLAND
+    NFD_Wayland_Init();
+#endif
     return NFD_OKAY;
 }
+
 void NFD_Quit(void) {
+#ifdef NFD_WAYLAND
+    NFD_Wayland_Quit();
+#endif
     dbus_connection_unref(dbus_conn);
     // Note: We do not free dbus_error since NFD_Init might set it.
     // To avoid leaking memory, the caller should explicitly call NFD_ClearError after reading the
