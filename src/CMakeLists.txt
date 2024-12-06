@@ -18,12 +18,32 @@ if(nfd_PLATFORM STREQUAL PLATFORM_LINUX)
   option(NFD_PORTAL "Use xdg-desktop-portal instead of GTK" OFF)
   if(NOT NFD_PORTAL)
     pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
-    message("Using GTK version: ${GTK3_VERSION}")
+    message(STATUS "Using GTK version: ${GTK3_VERSION}")
     list(APPEND SOURCE_FILES nfd_gtk.cpp)
   else()
     pkg_check_modules(DBUS REQUIRED dbus-1)
-    message("Using DBUS version: ${DBUS_VERSION}")
+    message(STATUS "Using D-Bus version: ${DBUS_VERSION}")
     list(APPEND SOURCE_FILES nfd_portal.cpp)
+  endif()
+
+  # for Linux, we support X11, Wayland, or both
+  option(NFD_X11 "Support X11 on Linux" ON)
+  option(NFD_WAYLAND "Support Wayland on Linux" ON)
+  if(NFD_WAYLAND)
+    pkg_check_modules(WAYLAND REQUIRED wayland-client)
+    message(STATUS "Using Wayland version: ${WAYLAND_VERSION}")
+    set(NFD_WAYLAND_PROTOCOL_XDG_FOREIGN ${CMAKE_CURRENT_SOURCE_DIR}/../3ps/wayland-protocols/unstable/xdg-foreign/xdg-foreign-unstable-v1.xml)
+    add_custom_command(
+      OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/xdg-foreign-unstable-v1.h
+      COMMAND wayland-scanner client-header < ${NFD_WAYLAND_PROTOCOL_XDG_FOREIGN} > ${CMAKE_CURRENT_BINARY_DIR}/xdg-foreign-unstable-v1.h
+      MAIN_DEPENDENCY ${NFD_WAYLAND_PROTOCOL_XDG_FOREIGN}
+    )
+    add_custom_command(
+      OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/xdg-foreign-unstable-v1.c
+      COMMAND wayland-scanner private-code < ${NFD_WAYLAND_PROTOCOL_XDG_FOREIGN} > ${CMAKE_CURRENT_BINARY_DIR}/xdg-foreign-unstable-v1.c
+      MAIN_DEPENDENCY ${NFD_WAYLAND_PROTOCOL_XDG_FOREIGN}
+    )
+    list(APPEND SOURCE_FILES ${CMAKE_CURRENT_BINARY_DIR}/xdg-foreign-unstable-v1.h ${CMAKE_CURRENT_BINARY_DIR}/xdg-foreign-unstable-v1.c)
   endif()
 endif()
 
@@ -94,9 +114,20 @@ if(nfd_PLATFORM STREQUAL PLATFORM_LINUX)
   if(NFD_APPEND_EXTENSION)
     target_compile_definitions(${TARGET_NAME} PRIVATE NFD_APPEND_EXTENSION)
   endif()
+
   option(NFD_CASE_SENSITIVE_FILTER "Make filters case sensitive" OFF)
   if(NFD_CASE_SENSITIVE_FILTER)
     target_compile_definitions(${TARGET_NAME} PRIVATE NFD_CASE_SENSITIVE_FILTER)
+  endif()
+
+  if(NFD_X11)
+    target_compile_definitions(${TARGET_NAME} PRIVATE NFD_X11)
+  endif()
+  if(NFD_WAYLAND)
+    target_include_directories(${TARGET_NAME} PRIVATE ${WAYLAND_INCLUDE_DIRS})
+    target_link_libraries(${TARGET_NAME} PRIVATE ${WAYLAND_LINK_LIBRARIES})
+    target_compile_definitions(${TARGET_NAME} PRIVATE NFD_WAYLAND)
+    target_include_directories(${TARGET_NAME} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
   endif()
 endif()
 
@@ -122,7 +153,7 @@ if(nfd_COMPILER STREQUAL COMPILER_CLANGCL)
 endif()
 
 if(nfd_COMPILER STREQUAL COMPILER_GNU)
-  target_compile_options(${TARGET_NAME} PRIVATE -nostdlib -fno-exceptions -fno-rtti)
+  target_compile_options(${TARGET_NAME} PRIVATE -nostdlib -fno-exceptions $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>)
 endif()
 
 set_target_properties(${TARGET_NAME} PROPERTIES
