@@ -143,6 +143,8 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
+    - name: Downgrade CMake # force downgrade CMake as later versions try to use the C++ standard flag to compile C programs, which cause an error.
+      run: choco install cmake --version 3.30.6 --allow-downgrade
     - name: Configure
       run: mkdir build && mkdir install && cd build && cmake -DCMAKE_INSTALL_PREFIX="../install" -T ClangCL -DNFD_BUILD_TESTS=ON ..
     - name: Build
