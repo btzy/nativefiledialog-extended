@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10)
 project(nativefiledialog-extended VERSION 1.2.1)
 
 set(nfd_ROOT_PROJECT OFF)
@@ -36,9 +36,7 @@ message("nfd Compiler: ${nfd_COMPILER}")
 
 # Use latest C++ by default (should be the best one), but let user override it
 if(NOT DEFINED CMAKE_CXX_STANDARD)
-  if(CMAKE_VERSION VERSION_LESS "3.8")
-    set (CMAKE_CXX_STANDARD 14)
-  elseif(CMAKE_VERSION VERSION_LESS "3.12")
+  if(CMAKE_VERSION VERSION_LESS "3.12")
     set (CMAKE_CXX_STANDARD 17)
   elseif(CMAKE_VERSION VERSION_LESS "3.20")
     set (CMAKE_CXX_STANDARD 20)
