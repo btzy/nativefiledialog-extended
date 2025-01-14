@@ -30,6 +30,27 @@ struct IUnknown;  // Workaround for "combaseapi.h(229): error C2187: syntax erro
 #include <windows.h>
 #include "nfd.h"
 
+#include <ShellScalingApi.h>
+#pragma comment(lib, "Shcore.lib")
+
+#define SET_DPI_AWARENESS() \
+do { \
+HMODULE hUser32 = LoadLibraryW(L"user32.dll"); \
+if (hUser32) \
+{ \
+typedef BOOL(WINAPI* SetProcessDpiAwarenessContextPtr)(DPI_AWARENESS_CONTEXT); \
+void* procAddr = (void*)GetProcAddress(hUser32, "SetProcessDpiAwarenessContext"); \
+SetProcessDpiAwarenessContextPtr setProcessDpiAwarenessContext = \
+(SetProcessDpiAwarenessContextPtr)(procAddr); \
+if (setProcessDpiAwarenessContext) \
+{ \
+setProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2); \
+} \
+FreeLibrary(hUser32); \
+} \
+} while(0)
+
+
 namespace {
 
 /* current error */
@@ -358,6 +379,9 @@ nfdresult_t NFD_OpenDialogN(nfdnchar_t** outPath,
 nfdresult_t NFD_OpenDialogN_With_Impl(nfdversion_t version,
                                       nfdnchar_t** outPath,
                                       const nfdopendialognargs_t* args) {
+
+    SET_DPI_AWARENESS();
+
     // We haven't needed to bump the interface version yet.
     (void)version;
 
@@ -442,6 +466,9 @@ nfdresult_t NFD_OpenDialogMultipleN(const nfdpathset_t** outPaths,
 nfdresult_t NFD_OpenDialogMultipleN_With_Impl(nfdversion_t version,
                                               const nfdpathset_t** outPaths,
                                               const nfdopendialognargs_t* args) {
+
+    SET_DPI_AWARENESS();
+
     // We haven't needed to bump the interface version yet.
     (void)version;
 
@@ -945,6 +972,9 @@ nfdresult_t NFD_OpenDialogU8(nfdu8char_t** outPath,
 nfdresult_t NFD_OpenDialogU8_With_Impl(nfdversion_t version,
                                        nfdu8char_t** outPath,
                                        const nfdopendialogu8args_t* args) {
+
+    SET_DPI_AWARENESS();
+
     // We haven't needed to bump the interface version yet.
     (void)version;
 
@@ -994,6 +1024,9 @@ nfdresult_t NFD_OpenDialogMultipleU8(const nfdpathset_t** outPaths,
 nfdresult_t NFD_OpenDialogMultipleU8_With_Impl(nfdversion_t version,
                                                const nfdpathset_t** outPaths,
                                                const nfdopendialogu8args_t* args) {
+
+    SET_DPI_AWARENESS();
+
     // We haven't needed to bump the interface version yet.
     (void)version;
 
@@ -1033,6 +1066,9 @@ nfdresult_t NFD_SaveDialogU8(nfdu8char_t** outPath,
 nfdresult_t NFD_SaveDialogU8_With_Impl(nfdversion_t version,
                                        nfdu8char_t** outPath,
                                        const nfdsavedialogu8args_t* args) {
+
+    SET_DPI_AWARENESS();
+
     // We haven't needed to bump the interface version yet.
     (void)version;
 

@@ -5,3 +5,5 @@
 
 # Mac OS X rubbish
 .DS_Store
+.idea
+cmake-build-debug
