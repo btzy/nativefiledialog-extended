@@ -16,8 +16,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
     - name: Format code
-      # ClangFormat 14 has a bug, which seems to be fixed in ClangFormat 15.  Until GitHub-hosted runners support ClangFormat 15, we will stay at ClangFormat 13.
-      run: find src/ test/ -iname '*.c' -or -iname '*.cpp' -or -iname '*.m' -or -iname '*.mm' -or -iname '*.h' -or -iname '*.hpp' | xargs clang-format-13 -i -style=file
+      run: find src/ test/ -iname '*.c' -or -iname '*.cpp' -or -iname '*.m' -or -iname '*.mm' -or -iname '*.h' -or -iname '*.hpp' | xargs clang-format -i -style=file
     - name: Check diff
       run: git diff --exit-code
 

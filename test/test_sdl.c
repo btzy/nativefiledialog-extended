@@ -45,6 +45,10 @@ void show_paths(const nfdpathset_t* paths, SDL_Window* window) {
         NFD_PathSet_FreePathU8(path);
     }
 
+    // We should never return NFD_OKAY with zero paths, but GCC doesn't know this and will emit a
+    // warning that we're trying to malloc with size zero if we write the following line.
+    if (!num_paths) num_chars = 1;
+
     char* message = malloc(num_chars);
     message[0] = '\0';
 

@@ -495,8 +495,7 @@ void AppendSaveFileQueryDictEntryFilters(DBusMessageIter& sub_iter,
         if (defaultName) {
             const nfdnchar_t* p = defaultName;
             while (*p) ++p;
-            while (*--p != '.')
-                ;
+            while (*--p != '.');
             ++p;
             if (*p) extn = p;
         }
@@ -1106,8 +1105,7 @@ bool TryGetValidExtension(const char* extn,
     ++extn;
     if (*extn != '.') return false;
     trimmed_extn = extn;
-    for (++extn; *extn != '\0'; ++extn)
-        ;
+    for (++extn; *extn != '\0'; ++extn);
     ++extn;
     trimmed_extn_end = extn;
     return true;
