@@ -92,7 +92,7 @@ void AddFiltersToDialog(GtkFileChooser* chooser,
             // count number of file extensions
             size_t sep = 1;
             for (const nfdnchar_t* p_spec = filterList[index].spec; *p_spec; ++p_spec) {
-                if (*p_spec == L',') {
+                if (*p_spec == ',') {
                     ++sep;
                 }
             }
@@ -192,7 +192,7 @@ Pair_GtkFileFilter_FileExtension* AddFiltersToDialogWithMap(GtkFileChooser* choo
             // count number of file extensions
             size_t sep = 1;
             for (const nfdnchar_t* p_spec = filterList[index].spec; *p_spec; ++p_spec) {
-                if (*p_spec == L',') {
+                if (*p_spec == ',') {
                     ++sep;
                 }
             }

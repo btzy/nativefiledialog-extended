@@ -278,7 +278,7 @@ void AppendSingleFilter(DBusMessageIter& base_iter, const nfdnfilteritem_t& filt
     // count number of file extensions
     size_t sep = 1;
     for (const char* p = filter.spec; *p; ++p) {
-        if (*p == L',') {
+        if (*p == ',') {
             ++sep;
         }
     }
@@ -346,7 +346,7 @@ bool AppendSingleFilterCheckExtn(DBusMessageIter& base_iter,
     // count number of file extensions
     size_t sep = 1;
     for (const char* p = filter.spec; *p; ++p) {
-        if (*p == L',') {
+        if (*p == ',') {
             ++sep;
         }
     }
