@@ -105,7 +105,8 @@ enum {
     NFD_WINDOW_HANDLE_TYPE_COCOA = 2,
     // X11: handle is Window
     NFD_WINDOW_HANDLE_TYPE_X11 = 3,
-    // Wayland support will be implemented separately in the future
+    // Wayland: handle is wl_surface*
+    NFD_WINDOW_HANDLE_TYPE_WAYLAND = 4,
 };
 // The native window handle.  If using a platform abstraction framework (e.g. SDL2), this should be
 // obtained using the corresponding NFD glue header (e.g. nfd_sdl2.h).

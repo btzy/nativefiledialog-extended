@@ -60,6 +60,12 @@ NFD_INLINE bool NFD_GetNativeWindowFromSDLWindow(SDL_Window* sdlWindow,
             nativeWindow->handle = (void*)info.info.x11.window;
             return true;
 #endif
+#if defined(SDL_VIDEO_DRIVER_WAYLAND)
+        case SDL_SYSWM_WAYLAND:
+            nativeWindow->type = NFD_WINDOW_HANDLE_TYPE_WAYLAND;
+            nativeWindow->handle = (void*)info.info.wl.surface;
+            return true;
+#endif
         default:
             // Silence the warning in case we are not using a supported backend.
             (void)nativeWindow;
