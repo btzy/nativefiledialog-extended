@@ -36,6 +36,13 @@ know that we appended an extension, so they will not check or whitelist the corr
 NFD_APPEND_EXTENSION is not recommended for portals.
 */
 
+// Linux file extensions are case-sensitive, but perhaps in the vast majority of cases we actually
+// want the filter list to be case-insensitive.  Set NFD_LINUX_CASE_SENSITIVE_FILTER to 0 for
+// case-insensitive filtering, or 1 for case-sensitive filtering.  If
+// NFD_LINUX_CASE_SENSITIVE_FILTER is undefined, then it will be set to 0.
+#if !defined(NFD_LINUX_CASE_SENSITIVE_FILTER)
+#define NFD_LINUX_CASE_SENSITIVE_FILTER 0
+#endif
 namespace {
 
 template <typename T = void>
@@ -123,6 +130,27 @@ T* reverse_copy(const T* begin, const T* end, T* out) {
     }
     return out;
 }
+
+#if NFD_LINUX_CASE_SENSITIVE_FILTER == 0
+nfdnchar_t* emit_case_insensitive_glob(const nfdnchar_t* begin,
+                                       const nfdnchar_t* end,
+                                       nfdnchar_t* out) {
+    // this code will only make regular Latin characters case-insensitive; other
+    // characters remain case sensitive
+    for (; begin != end; ++begin) {
+        if ((*begin >= 'A' && *begin <= 'Z') || (*begin >= 'a' && *begin <= 'z')) {
+            *out++ = '[';
+            *out++ = *begin;
+            // invert the case of the original character
+            *out++ = *begin ^ static_cast<nfdnchar_t>(0x20);
+            *out++ = ']';
+        } else {
+            *out++ = *begin;
+        }
+    }
+    return out;
+}
+#endif
 
 // Returns true if ch is in [0-9A-Za-z], false otherwise.
 bool IsHex(char ch) {
@@ -316,13 +344,25 @@ void AppendSingleFilter(DBusMessageIter& base_iter, const nfdnfilteritem_t& filt
             do {
                 ++extn_end;
             } while (*extn_end != ',' && *extn_end != '\0');
-            char* buf = static_cast<char*>(alloca(2 + (extn_end - extn_begin) + 1));
-            char* buf_end = buf;
-            *buf_end++ = '*';
-            *buf_end++ = '.';
-            buf_end = copy(extn_begin, extn_end, buf_end);
-            *buf_end = '\0';
-            dbus_message_iter_append_basic(&filter_sublist_struct_iter, DBUS_TYPE_STRING, &buf);
+            {
+#if NFD_LINUX_CASE_SENSITIVE_FILTER != 0
+                char* buf = static_cast<char*>(alloca(2 + (extn_end - extn_begin) + 1));
+                char* buf_end = buf;
+                *buf_end++ = '*';
+                *buf_end++ = '.';
+                buf_end = copy(extn_begin, extn_end, buf_end);
+                *buf_end = '\0';
+                dbus_message_iter_append_basic(&filter_sublist_struct_iter, DBUS_TYPE_STRING, &buf);
+#else
+                char* buf = static_cast<char*>(alloca(2 + (extn_end - extn_begin) * 4 + 1));
+                char* buf_end = buf;
+                *buf_end++ = '*';
+                *buf_end++ = '.';
+                buf_end = emit_case_insensitive_glob(extn_begin, extn_end, buf_end);
+                *buf_end = '\0';
+                dbus_message_iter_append_basic(&filter_sublist_struct_iter, DBUS_TYPE_STRING, &buf);
+#endif
+            }
             dbus_message_iter_close_container(&filter_sublist_iter, &filter_sublist_struct_iter);
             if (*extn_end == '\0') {
                 break;
@@ -385,13 +425,25 @@ bool AppendSingleFilterCheckExtn(DBusMessageIter& base_iter,
             do {
                 ++extn_end;
             } while (*extn_end != ',' && *extn_end != '\0');
-            char* buf = static_cast<char*>(alloca(2 + (extn_end - extn_begin) + 1));
-            char* buf_end = buf;
-            *buf_end++ = '*';
-            *buf_end++ = '.';
-            buf_end = copy(extn_begin, extn_end, buf_end);
-            *buf_end = '\0';
-            dbus_message_iter_append_basic(&filter_sublist_struct_iter, DBUS_TYPE_STRING, &buf);
+            {
+#if NFD_LINUX_CASE_SENSITIVE_FILTER != 0
+                char* buf = static_cast<char*>(alloca(2 + (extn_end - extn_begin) + 1));
+                char* buf_end = buf;
+                *buf_end++ = '*';
+                *buf_end++ = '.';
+                buf_end = copy(extn_begin, extn_end, buf_end);
+                *buf_end = '\0';
+                dbus_message_iter_append_basic(&filter_sublist_struct_iter, DBUS_TYPE_STRING, &buf);
+#else
+                char* buf = static_cast<char*>(alloca(2 + (extn_end - extn_begin) * 4 + 1));
+                char* buf_end = buf;
+                *buf_end++ = '*';
+                *buf_end++ = '.';
+                buf_end = emit_case_insensitive_glob(extn_begin, extn_end, buf_end);
+                *buf_end = '\0';
+                dbus_message_iter_append_basic(&filter_sublist_struct_iter, DBUS_TYPE_STRING, &buf);
+#endif
+            }
             dbus_message_iter_close_container(&filter_sublist_iter, &filter_sublist_struct_iter);
             if (!extn_matched) {
                 const char* match_extn_p;
