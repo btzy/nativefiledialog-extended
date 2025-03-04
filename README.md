@@ -259,6 +259,8 @@ A wildcard filter is always added to every dialog.
 
 *Note 4: On Windows, the default folder parameter is only used if there is no recently used folder available, unless the `NFD_OVERRIDE_RECENT_WITH_DEFAULT` build option is set to ON.  Otherwise, the default folder will be the folder that was last used.  Internally, the Windows implementation calls [IFileDialog::SetDefaultFolder(IShellItem)](https://docs.microsoft.com/en-us/windows/desktop/api/shobjidl_core/nf-shobjidl_core-ifiledialog-setdefaultfolder).  This is usual Windows behaviour and users expect it.*
 
+*Note 5: Linux is designed for case-sensitive file filters, but this is perhaps not what most users expect.  A simple hack is used to make filters case-insensitive.  To get case-sensitive filtering, set the `NFD_CASE_SENSITIVE_FILTER` build option to ON.*
+
 ## Iterating Over PathSets
 
 A file open dialog that supports multiple selection produces a PathSet, which is a thin abstraction over the platform-specific collection.  There are two ways to iterate over a PathSet:
