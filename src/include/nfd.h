@@ -105,7 +105,8 @@ enum {
     NFD_WINDOW_HANDLE_TYPE_COCOA = 2,
     // X11: handle is Window
     NFD_WINDOW_HANDLE_TYPE_X11 = 3,
-    // Wayland support will be implemented separately in the future
+    // Wayland: handle is wl_surface*
+    NFD_WINDOW_HANDLE_TYPE_WAYLAND = 4,
 };
 // The native window handle.  If using a platform abstraction framework (e.g. SDL2), this should be
 // obtained using the corresponding NFD glue header (e.g. nfd_sdl2.h).
@@ -189,6 +190,11 @@ NFD_API nfdresult_t NFD_Init(void);
 
 /** Call this to de-initialize NFD, if NFD_Init returned NFD_OKAY. */
 NFD_API void NFD_Quit(void);
+
+struct wl_display;
+/** Sets or updates the Wayland display used by your application. Use NULL to remove an existing
+ * display. Only defined on Linux. */
+NFD_API nfdresult_t NFD_SetWaylandDisplay(struct wl_display*);
 
 /** Single file open dialog
  *

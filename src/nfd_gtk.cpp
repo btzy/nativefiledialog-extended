@@ -549,6 +549,12 @@ nfdresult_t NFD_Init(void) {
     }
     return NFD_OKAY;
 }
+
+nfdresult_t NFD_SetWaylandDisplay(wl_display*) {
+    // TODO do something with the display
+    return NFD_OKAY;
+}
+
 void NFD_Quit(void) {
     // do nothing, GTK cannot be de-initialized
 }
