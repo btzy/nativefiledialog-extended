@@ -17,7 +17,7 @@ int main(void) {
     nfdfilteritem_t filterItem[2] = {{"Source code", "c,cpp,cc"}, {"Headers", "h,hpp"}};
 
     // show the dialog
-    nfdresult_t result = NFD_OpenDialog(&outPath, filterItem, 2, NULL);
+    nfdresult_t result = NFD_OpenDialog(&outPath, filterItem, 2, "build/");
     if (result == NFD_OKAY) {
         puts("Success!");
         puts(outPath);
