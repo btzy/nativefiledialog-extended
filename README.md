@@ -223,7 +223,7 @@ typedef struct {
 ```
 
 - `filterList` and `filterCount`: Set these to customize the file filter (it appears as a dropdown menu on Windows and Linux, but simply hides files on macOS).  Set `filterList` to a pointer to the start of the array of filter items and `filterCount` to the number of filter items in that array.  See the "File Filter Syntax" section below for details.
-- `defaultPath`: Set this to the default folder that the dialog should open to (on Windows, if there is a recently used folder, it opens to that folder instead of the folder you pass, unless the `NFD_OVERRIDE_RECENT_WITH_DEFAULT` build option is set to ON).
+- `defaultPath`: Set this to the default folder that the dialog should open to (see the "Platform-specific Quirks" section for more details about the behaviour of this option on Windows).
 - `defaultName`: (For SaveDialog only) Set this to the file name that should be pre-filled on the dialog.
 - `parentWindow`: Set this to the native window handle of the parent of this dialog.  See the "Usage with a Platform Abstraction Framework" section for details.  It is also possible to pass a handle even if you do not use a platform abstraction framework.
 
@@ -257,9 +257,7 @@ A wildcard filter is always added to every dialog.
 
 *Note 3: On Linux, the file extension is appended (if missing) when the user presses down the "Save" button.  The appended file extension will remain visible to the user, even if an overwrite prompt is shown and the user then presses "Cancel".*
 
-*Note 4: On Windows, the default folder parameter is only used if there is no recently used folder available, unless the `NFD_OVERRIDE_RECENT_WITH_DEFAULT` build option is set to ON.  Otherwise, the default folder will be the folder that was last used.  Internally, the Windows implementation calls [IFileDialog::SetDefaultFolder(IShellItem)](https://docs.microsoft.com/en-us/windows/desktop/api/shobjidl_core/nf-shobjidl_core-ifiledialog-setdefaultfolder).  This is usual Windows behaviour and users expect it.*
-
-*Note 5: Linux is designed for case-sensitive file filters, but this is perhaps not what most users expect.  A simple hack is used to make filters case-insensitive.  To get case-sensitive filtering, set the `NFD_CASE_SENSITIVE_FILTER` build option to ON.*
+*Note 4: Linux is designed for case-sensitive file filters, but this is perhaps not what most users expect.  A simple hack is used to make filters case-insensitive.  To get case-sensitive filtering, set the `NFD_CASE_SENSITIVE_FILTER` build option to ON.*
 
 ## Iterating Over PathSets
 
@@ -361,6 +359,12 @@ Unlike Windows and macOS, Linux does not have a file chooser baked into the oper
 Flatpak was introduced in 2015, and with it came a standardized interface to open a file chooser.  Applications using this interface did not need to come with a file chooser, and could use the one provided by Flatpak.  This interface became known as the desktop portal, and its use expanded to non-Flatpak applications.  Now, most major desktop Linux distros come with the desktop portal installed, with file choosers that fit the theme of the distro.  Users can also install a different portal backend if desired.  There are currently three known backends with file chooser support: GTK, KDE, and LXQt; Gnome and Xapp backends depend on the GTK one for this functionality.  The Xapp backend has been designed for Cinnamon, MATE, and XFCE.  Other desktop environments do not seem to currently have a portal backend.
 
 ## Platform-specific Quirks
+
+### Windows
+- The `defaultPath` option has slightly different behaviour on Windows.
+  - The option is only respected if there is no recently used folder available.  If there is a recently used folder, the dialog opens to that folder instead of the folder you pass, unless the `NFD_OVERRIDE_RECENT_WITH_DEFAULT` build option is set to ON.  Internally, the Windows implementation calls [IFileDialog::SetDefaultFolder(IShellItem)](https://docs.microsoft.com/en-us/windows/desktop/api/shobjidl_core/nf-shobjidl_core-ifiledialog-setdefaultfolder).  This is usual Windows behaviour and users expect it.
+  - Relative paths are not supported.  While you can manually get the current working directory and convert a relative path into an absolute path, this is not recommended.  The current directory of a Windows application launched from the Start Menu is usually a hidden app data directory, which should not contain files that the user can manipulate outside the application.  Furthermore, many Windows users may not even be aware that a running application has a "current directory".
+  - Windows has a concept of "virtual folders", which are specially named locations like "Documents" and "Pictures".  These locations can contain an aggregation of items from multiple actual folders.  The `defaultPath` option can be set to these named locations, because the implementation calls [SHCreateItemFromParsingName()](https://learn.microsoft.com/en-us/windows/win32/api/shobjidl_core/nf-shobjidl_core-shcreateitemfromparsingname) under the hood.
 
 ### macOS
 
