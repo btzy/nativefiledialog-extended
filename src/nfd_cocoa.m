@@ -7,6 +7,7 @@
 
 #include <AppKit/AppKit.h>
 #include <Availability.h>
+#include "include/nfd.h"
 #include "nfd.h"
 
 // MacOS is deprecating the allowedFileTypes property in favour of allowedContentTypes, so we have
@@ -269,13 +270,30 @@ nfdresult_t NFD_OpenDialogU8(nfdu8char_t** outPath,
                              const nfdu8filteritem_t* filterList,
                              nfdfiltersize_t filterCount,
                              const nfdu8char_t* defaultPath) {
-    return NFD_OpenDialogN(outPath, filterList, filterCount, defaultPath);
+    
+    __block nfdresult_t ret;
+    if([NSThread isMainThread])
+        ret = NFD_OpenDialogN(outPath, filterList, filterCount, defaultPath);
+    else
+        dispatch_sync(dispatch_get_main_queue(), ^{
+            ret = NFD_OpenDialogN(outPath, filterList, filterCount, defaultPath);
+        });
+
+    return ret;
 }
 
 nfdresult_t NFD_OpenDialogU8_With_Impl(nfdversion_t version,
                                        nfdu8char_t** outPath,
                                        const nfdopendialogu8args_t* args) {
-    return NFD_OpenDialogN_With_Impl(version, outPath, args);
+    __block nfdresult_t ret;
+    if([NSThread isMainThread])
+        ret = NFD_OpenDialogN_With_Impl(version, outPath, args);
+    else
+        dispatch_sync(dispatch_get_main_queue(), ^{
+            ret = NFD_OpenDialogN_With_Impl(version, outPath, args);
+        });
+
+    return ret;
 }
 
 nfdresult_t NFD_OpenDialogMultipleN(const nfdpathset_t** outPaths,
@@ -286,7 +304,15 @@ nfdresult_t NFD_OpenDialogMultipleN(const nfdpathset_t** outPaths,
     args.filterList = filterList;
     args.filterCount = filterCount;
     args.defaultPath = defaultPath;
-    return NFD_OpenDialogMultipleN_With_Impl(NFD_INTERFACE_VERSION, outPaths, &args);
+    __block nfdresult_t ret;
+    if([NSThread isMainThread])
+        ret = NFD_OpenDialogMultipleN_With_Impl(NFD_INTERFACE_VERSION, outPaths, &args);
+    else
+        dispatch_sync(dispatch_get_main_queue(), ^{
+            ret = NFD_OpenDialogMultipleN_With_Impl(NFD_INTERFACE_VERSION, outPaths, &args);
+        });
+
+    return ret;
 }
 
 nfdresult_t NFD_OpenDialogMultipleN_With_Impl(nfdversion_t version,
@@ -334,13 +360,29 @@ nfdresult_t NFD_OpenDialogMultipleU8(const nfdpathset_t** outPaths,
                                      const nfdu8filteritem_t* filterList,
                                      nfdfiltersize_t filterCount,
                                      const nfdu8char_t* defaultPath) {
-    return NFD_OpenDialogMultipleN(outPaths, filterList, filterCount, defaultPath);
+    __block nfdresult_t ret;
+    if([NSThread isMainThread])
+        ret = NFD_OpenDialogMultipleN(outPaths, filterList, filterCount, defaultPath);
+    else
+        dispatch_sync(dispatch_get_main_queue(), ^{
+            ret = NFD_OpenDialogMultipleN(outPaths, filterList, filterCount, defaultPath);
+        });
+    
+    return ret;
 }
 
 nfdresult_t NFD_OpenDialogMultipleU8_With_Impl(nfdversion_t version,
                                                const nfdpathset_t** outPaths,
                                                const nfdopendialogu8args_t* args) {
-    return NFD_OpenDialogMultipleN_With_Impl(version, outPaths, args);
+    __block nfdresult_t ret;
+    if([NSThread isMainThread])
+        ret = NFD_OpenDialogMultipleN_With_Impl(version, outPaths, args);
+    else
+        dispatch_sync(dispatch_get_main_queue(), ^{
+            ret = NFD_OpenDialogMultipleN_With_Impl(version, outPaths, args);
+        });
+    
+    return ret;
 }
 
 nfdresult_t NFD_SaveDialogN(nfdnchar_t** outPath,
@@ -353,7 +395,15 @@ nfdresult_t NFD_SaveDialogN(nfdnchar_t** outPath,
     args.filterCount = filterCount;
     args.defaultPath = defaultPath;
     args.defaultName = defaultName;
-    return NFD_SaveDialogN_With_Impl(NFD_INTERFACE_VERSION, outPath, &args);
+    __block nfdresult_t ret;
+    if([NSThread isMainThread])
+        ret = NFD_SaveDialogN_With_Impl(NFD_INTERFACE_VERSION, outPath, &args);
+    else
+        dispatch_sync(dispatch_get_main_queue(), ^{
+            ret = NFD_SaveDialogN_With_Impl(NFD_INTERFACE_VERSION, outPath, &args);
+        });
+    
+    return ret;
 }
 
 nfdresult_t NFD_SaveDialogN_With_Impl(nfdversion_t version,
@@ -403,19 +453,44 @@ nfdresult_t NFD_SaveDialogU8(nfdu8char_t** outPath,
                              nfdfiltersize_t filterCount,
                              const nfdu8char_t* defaultPath,
                              const nfdu8char_t* defaultName) {
-    return NFD_SaveDialogN(outPath, filterList, filterCount, defaultPath, defaultName);
+    __block nfdresult_t ret;
+    if([NSThread isMainThread])
+        ret = NFD_SaveDialogN(outPath, filterList, filterCount, defaultPath, defaultName);
+    else
+        dispatch_sync(dispatch_get_main_queue(), ^{
+            ret = NFD_SaveDialogN(outPath, filterList, filterCount, defaultPath, defaultName);
+        });
+    
+    return ret;
 }
 
 nfdresult_t NFD_SaveDialogU8_With_Impl(nfdversion_t version,
                                        nfdu8char_t** outPath,
                                        const nfdsavedialogu8args_t* args) {
-    return NFD_SaveDialogN_With_Impl(version, outPath, args);
+    __block nfdresult_t ret;
+    if([NSThread isMainThread])
+        ret = NFD_SaveDialogN_With_Impl(version, outPath, args);
+    else
+        dispatch_sync(dispatch_get_main_queue(), ^{
+            ret = NFD_SaveDialogN_With_Impl(version, outPath, args);
+        });
+    
+    return ret;
 }
 
 nfdresult_t NFD_PickFolderN(nfdnchar_t** outPath, const nfdnchar_t* defaultPath) {
     nfdpickfoldernargs_t args = {0};
     args.defaultPath = defaultPath;
-    return NFD_PickFolderN_With_Impl(NFD_INTERFACE_VERSION, outPath, &args);
+    
+    __block nfdresult_t ret;
+    if([NSThread isMainThread])
+        ret = NFD_PickFolderN_With_Impl(NFD_INTERFACE_VERSION, outPath, &args);
+    else
+        dispatch_sync(dispatch_get_main_queue(), ^{
+            ret = NFD_PickFolderN_With_Impl(NFD_INTERFACE_VERSION, outPath, &args);
+        });
+    
+    return ret;
 }
 
 nfdresult_t NFD_PickFolderN_With_Impl(nfdversion_t version,
@@ -455,19 +530,44 @@ nfdresult_t NFD_PickFolderN_With_Impl(nfdversion_t version,
 }
 
 nfdresult_t NFD_PickFolderU8(nfdu8char_t** outPath, const nfdu8char_t* defaultPath) {
-    return NFD_PickFolderN(outPath, defaultPath);
+    __block nfdresult_t ret;
+    if([NSThread isMainThread])
+        ret = NFD_PickFolderN(outPath, defaultPath);
+    else
+        dispatch_sync(dispatch_get_main_queue(), ^{
+            ret = NFD_PickFolderN(outPath, defaultPath);
+        });
+    
+    return ret;
 }
 
 nfdresult_t NFD_PickFolderU8_With_Impl(nfdversion_t version,
                                        nfdu8char_t** outPath,
                                        const nfdpickfolderu8args_t* args) {
-    return NFD_PickFolderN_With_Impl(version, outPath, args);
+    __block nfdresult_t ret;
+    if([NSThread isMainThread])
+        ret = NFD_PickFolderN_With_Impl(version, outPath, args);
+    else
+        dispatch_sync(dispatch_get_main_queue(), ^{
+            ret = NFD_PickFolderN_With_Impl(version, outPath, args);
+        });
+    
+    return ret;
 }
 
 nfdresult_t NFD_PickFolderMultipleN(const nfdpathset_t** outPaths, const nfdnchar_t* defaultPath) {
     nfdpickfoldernargs_t args = {0};
     args.defaultPath = defaultPath;
-    return NFD_PickFolderMultipleN_With_Impl(NFD_INTERFACE_VERSION, outPaths, &args);
+    
+    __block nfdresult_t ret;
+    if([NSThread isMainThread])
+        ret = NFD_PickFolderMultipleN_With_Impl(NFD_INTERFACE_VERSION, outPaths, &args);
+    else
+        dispatch_sync(dispatch_get_main_queue(), ^{
+            ret = NFD_PickFolderMultipleN_With_Impl(NFD_INTERFACE_VERSION, outPaths, &args);
+        });
+    
+    return ret;
 }
 
 nfdresult_t NFD_PickFolderMultipleN_With_Impl(nfdversion_t version,
@@ -513,13 +613,29 @@ nfdresult_t NFD_PickFolderMultipleN_With_Impl(nfdversion_t version,
 
 nfdresult_t NFD_PickFolderMultipleU8(const nfdpathset_t** outPaths,
                                      const nfdu8char_t* defaultPath) {
-    return NFD_PickFolderMultipleN(outPaths, defaultPath);
+    __block nfdresult_t ret;
+    if([NSThread isMainThread])
+        ret = NFD_PickFolderMultipleN(outPaths, defaultPath);
+    else
+        dispatch_sync(dispatch_get_main_queue(), ^{
+            ret = NFD_PickFolderMultipleN(outPaths, defaultPath);
+        });
+    
+    return ret;
 }
 
 nfdresult_t NFD_PickFolderMultipleU8_With_Impl(nfdversion_t version,
                                                const nfdpathset_t** outPaths,
                                                const nfdpickfolderu8args_t* args) {
-    return NFD_PickFolderMultipleN_With_Impl(version, outPaths, args);
+    __block nfdresult_t ret;
+    if([NSThread isMainThread])
+        ret = NFD_PickFolderMultipleN_With_Impl(version, outPaths, args);
+    else
+        dispatch_sync(dispatch_get_main_queue(), ^{
+            ret = NFD_PickFolderMultipleN_With_Impl(version, outPaths, args);
+        });
+    
+    return ret;
 }
 
 nfdresult_t NFD_PathSet_GetCount(const nfdpathset_t* pathSet, nfdpathsetsize_t* count) {
