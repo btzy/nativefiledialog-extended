@@ -172,12 +172,16 @@ void pickfoldermultiple_handler(SDL_Window* window) {
 }
 
 #if defined(_WIN32)
-const char font_file[] = "C:\\Windows\\Fonts\\calibri.ttf";
+const char* font_file[] = {"C:\\Windows\\Fonts\\calibri.ttf"};
 #elif defined(__APPLE__)
-const char font_file[] = "/System/Library/Fonts/SFNS.ttf";
+const char* font_file[] = {"/System/Library/Fonts/SFNS.ttf"};
 #else
-const char font_file[] = "/usr/share/fonts/truetype/noto/NotoSans-Regular.ttf";
+const char* font_file[] = {
+    "/usr/share/fonts/truetype/noto/NotoSans-Regular.ttf",  // Ubuntu
+    "/usr/share/fonts/google-noto/NotoSans-Regular.ttf",    // Fedora
+};
 #endif
+const size_t num_font_files = sizeof(font_file) / sizeof(const char*);
 
 #define NUM_STATES 3
 #define NUM_BUTTONS 5
@@ -237,6 +241,9 @@ int main(void)
         return 0;
     }
 
+    // this gives NFD the wl_display* on Wayland; this is needed to set the parent window
+    NFD_SetDisplayPropertiesFromSDLWindow(window);
+
     // create renderer
     SDL_Renderer* const renderer =
         SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
@@ -248,7 +255,11 @@ int main(void)
     // prepare the buttons and handlers
     SDL_Texture* textures_normal[NUM_BUTTONS][NUM_STATES];
 
-    TTF_Font* const font = TTF_OpenFont(font_file, 20);
+    TTF_Font* font = NULL;
+    for (size_t i = 0; i != num_font_files; ++i) {
+        font = TTF_OpenFont(font_file[i], 20);
+        if (font) break;
+    }
     if (!font) {
         printf("TTF_OpenFont failed: %s\n", TTF_GetError());
         return 0;
