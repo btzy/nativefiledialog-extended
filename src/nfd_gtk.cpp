@@ -7,14 +7,35 @@
   Note: We do not check for malloc failure on Linux - Linux overcommits memory!
 */
 
-#include <assert.h>
 #include <gtk/gtk.h>
+
+#if defined(NFD_X11)
+#if !defined(GDK_WINDOWING_X11)
+#if defined(__GNUC__)
+#pragma GCC warning \
+    "NFD is built with X11 but GTK does not support X11, so window parenting will not work."
+#endif
+#undef NFD_X11
+#endif
+#endif
+#if defined(NFD_WAYLAND)
+#if !defined(GDK_WINDOWING_WAYLAND)
+#if defined(__GNUC__)
+#pragma GCC warning \
+    "NFD is built with Wayland but GTK does not support Wayland, so window parenting will not work."
+#endif
+#undef NFD_WAYLAND
+#endif
+#endif
+
 #if defined(NFD_X11)
 #include <gdk/gdkx.h>
 #endif
-#ifdef NFD_WAYLAND
+#if defined(NFD_WAYLAND)
 #include <gdk/gdkwayland.h>
 #endif
+
+#include <assert.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -429,7 +450,7 @@ void FileActivatedSignalHandler(GtkButton* saveButton, void* userdata) {
 // https://github.com/mlabbe/nativefiledialog/pull/92
 // https://github.com/guillaumechereau/noc/pull/11
 gint RunDialogWithFocus(GtkDialog* dialog) {
-#if defined(GDK_WINDOWING_X11)
+#if defined(NFD_X11)
     gtk_widget_show_all(GTK_WIDGET(dialog));  // show the dialog so that it gets a display
     if (GDK_IS_X11_DISPLAY(gtk_widget_get_display(GTK_WIDGET(dialog)))) {
         GdkWindow* window = gtk_widget_get_window(GTK_WIDGET(dialog));
@@ -442,7 +463,7 @@ gint RunDialogWithFocus(GtkDialog* dialog) {
     return gtk_dialog_run(dialog);
 }
 
-#ifdef NFD_WAYLAND
+#if defined(NFD_WAYLAND)
 void DestroyXdgExported(void* context) {
     zxdg_exported_v1_destroy(static_cast<struct zxdg_exported_v1*>(context));
 }
@@ -458,101 +479,123 @@ constexpr struct zxdg_exported_v1_listener wayland_xdg_exported_v1_listener {
 };
 #endif
 
-void RealizedSignalHandler(GtkWidget* childWindow, void* userdata);
-
+// This is an RAII class that wraps the parenting of a GtkWidget (the file dialog).
+// To parent a window on GTK, the child GdkWindow needs to be on the same screen as the parent.
+// Before the GtkWidget is realized (i.e. the GdkWindow is created for it), we need to tell it the
+// GdkScreen to use. Then, after realization, we can get the GtkWidget's GdkWindow and set its
+// transient parent to the parent's GdkWindow (but this only works if the parent window uses the
+// display server (i.e. X11 or Wayland)). So before realization, we give the GtkWidget a GdkScreen
+// for the parent's display server, and after realization we set its transient parent.
 struct NativeWindowParenter {
-    NativeWindowParenter(GtkWidget* w, const nfdwindowhandle_t& parentHandle) noexcept
-        : widget(w),
-          parentWindow(parentHandle),
-          handlerID(g_signal_connect(G_OBJECT(widget),
-                                     "realize",
-                                     G_CALLBACK(RealizedSignalHandler),
-                                     static_cast<void*>(this))) {
-        // make the dialog window use the same GtkScreen as the parent (so that parenting works)
-        // gtk_window_set_screen(GTK_WINDOW(widget), gdk_window_get_screen(parent));
+    NativeWindowParenter(GtkWidget* w, const nfdwindowhandle_t& parentHandle) noexcept {
+        GdkScreen* gdk_screen;
+        void (*realized_handler)(GtkWidget*, void*);
+        GetScreenAndHandler(parentHandle.type, gdk_screen, realized_handler);
+
+        if (gdk_screen && realized_handler) {
+            widget = w;
+
+            parentWindowHandle = parentHandle.handle;
+
+            // make the dialog window use a GtkScreen with the same display server as the parent (so
+            // that parenting works)
+            gtk_window_set_screen(GTK_WINDOW(w), gdk_screen);
+
+            handlerID = g_signal_connect(
+                G_OBJECT(w), "realize", G_CALLBACK(realized_handler), static_cast<void*>(this));
+        } else {
+            widget = nullptr;
+        }
     }
+
     ~NativeWindowParenter() {
-        // unset the handler and delete the parent GdkWindow
-        g_signal_handler_disconnect(G_OBJECT(widget), handlerID);
-        if (destroy.fn) {
-            destroy.fn(destroy.context);
+        // unset the handler
+        if (widget) {
+            g_signal_handler_disconnect(G_OBJECT(widget), handlerID);
         }
+        // No need to call destroy.fn because it is destroyed in the destructor of DestroyFunc.
     }
-    GtkWidget* const widget;
-    const nfdwindowhandle_t& parentWindow;
-    DestroyFunc destroy;
-    gulong handlerID;
-};
 
-void RealizedSignalHandler(GtkWidget* childWindow, void* userdata) {
-    NativeWindowParenter& data = *static_cast<NativeWindowParenter*>(userdata);
-
-    switch (data.parentWindow.type) {
+    static void GetScreenAndHandler(size_t parentWindowType,
+                                    GdkScreen*& outScreen,
+                                    void (*&outHandler)(GtkWidget*, void*)) {
+        switch (parentWindowType) {
 #if defined(NFD_X11)
-#if !defined(GDK_WINDOWING_X11) && __GNUC__
-#pragma GCC warning \
-    "NFD is built with X11 but GTK does not support X11, so window parenting will not work."
-#endif
-        case NFD_WINDOW_HANDLE_TYPE_X11: {
-            // AFAIK, _any_ X11 display will do, because Windows are not associated to a specific
-            // Display.  Supposedly, a Display is just a connection to the X server.
-
-            // This will contain the X11 display we want to use.
-            GdkDisplay* x11_gdk_display = nullptr;
-            GdkDisplayManager* display_manager = gdk_display_manager_get();
-
-            // If we can find an existing X11 display, use it.
-            GSList* gdk_display_list = gdk_display_manager_list_displays(display_manager);
-            while (gdk_display_list) {
-                GSList* node = gdk_display_list;
-                GdkDisplay* display = GDK_DISPLAY(node->data);
-                if (GDK_IS_X11_DISPLAY(display)) {
-                    g_slist_free(node);
-                    x11_gdk_display = display;
-                    break;
-                } else {
-                    gdk_display_list = node->next;
-                    g_slist_free_1(node);
+            case NFD_WINDOW_HANDLE_TYPE_X11: {
+                if (x11_gdk_screen) {
+                    outScreen = x11_gdk_screen;
+                    outHandler = &RealizedSignalHandler<&NativeWindowParenter::SetParentX11>;
+                    return;
                 }
-            }
 
-            // Otherwise, we have to create our own X11 display.
-            if (!x11_gdk_display) {
-                // This is not very nice, because we are always resetting the allowed backends
-                // setting to NULL (which means all backends are allowed), even though we can't be
-                // sure that the user didn't call gdk_set_allowed_backends() earlier to force a
-                // specific backend.  But well if the user doesn't have an X11 display already open
-                // and yet is telling us with have an X11 window as parent, they probably don't use
-                // GTK in their application at all so they probably won't notice this.
-                //
-                // There is no way, AFAIK, to get the allowed backends first so we can restore it
-                // later, and gdk_x11_display_open() is GTK4-only (the GTK3 version is a private
-                // implementation detail).
-                //
-                // Also, we don't close the display we specially opened, since GTK will need it to
-                // show the dialog.  Though it probably doesn't matter very much if we want to free
-                // up resources and clean it up.
-                gdk_set_allowed_backends("x11");
-                x11_gdk_display = gdk_display_manager_open_display(display_manager, NULL);
-                gdk_set_allowed_backends(NULL);
+                GdkDisplayManager* display_manager = gdk_display_manager_get();
+
+                // If we can find an existing X11 display, use it.
+                GSList* gdk_display_list = gdk_display_manager_list_displays(display_manager);
+                while (gdk_display_list) {
+                    GSList* node = gdk_display_list;
+                    GdkDisplay* display = GDK_DISPLAY(node->data);
+                    if (GDK_IS_X11_DISPLAY(display)) {
+                        g_slist_free(node);
+                        x11_gdk_display = display;
+                        break;
+                    } else {
+                        gdk_display_list = node->next;
+                        g_slist_free_1(node);
+                    }
+                }
+
+                // Otherwise, we have to create our own X11 display.
+                if (!x11_gdk_display) {
+                    // This is not very nice, because we are always resetting the allowed backends
+                    // setting to NULL (which means all backends are allowed), even though we can't
+                    // be sure that the user didn't call gdk_set_allowed_backends() earlier to force
+                    // a specific backend.  But well if the user doesn't have an X11 display already
+                    // open and yet is telling us with have an X11 window as parent, they probably
+                    // don't use GTK in their application at all so they probably won't notice this.
+                    //
+                    // There is no way, AFAIK, to get the allowed backends first so we can restore
+                    // it later, and gdk_x11_display_open() is GTK4-only (the GTK3 version is a
+                    // private implementation detail).
+                    //
+                    // Also, we don't close the display we specially opened, since GTK will need it
+                    // to show the dialog.  Though it probably doesn't matter very much if we want
+                    // to free up resources and clean it up.
+                    gdk_set_allowed_backends("x11");
+                    GdkDisplay* display =
+                        gdk_display_manager_open_display(display_manager, nullptr);
+                    gdk_set_allowed_backends(nullptr);
+                    if (display) {
+                        if (GDK_IS_X11_DISPLAY(display))
+                            x11_gdk_display = display;
+                        else
+                            gdk_display_close(display);
+                    }
+                }
+
+                if (x11_gdk_display) {
+                    // Set the screen if we have a display.
+                    x11_gdk_screen = gdk_display_get_default_screen(x11_gdk_display);
+                    // In the unlikely situation that we can't get the default screen, set the
+                    // display back to null.
+                    if (!x11_gdk_screen) x11_gdk_display = nullptr;
+                }
+
+                outScreen = x11_gdk_screen;
+                outHandler = x11_gdk_screen
+                                 ? &RealizedSignalHandler<&NativeWindowParenter::SetParentX11>
+                                 : nullptr;
+                return;
             }
-            if (!x11_gdk_display) return;
-            const Window x11_handle = reinterpret_cast<Window>(data.parentWindow.handle);
-            GdkWindow* gdk_window =
-                gdk_x11_window_foreign_new_for_display(x11_gdk_display, x11_handle);
-            gdk_window_set_transient_for(gtk_widget_get_window(childWindow), gdk_window);
-            data.destroy.fn = &g_object_unref;
-            data.destroy.context = static_cast<void*>(gdk_window);
-            return;
-        }
 #endif
 #if defined(NFD_WAYLAND)
-#if !defined(GDK_WINDOWING_WAYLAND) && __GNUC__
-#pragma GCC warning \
-    "NFD is built with Wayland but GTK does not support Wayland, so window parenting will not work."
-#endif
-        case NFD_WINDOW_HANDLE_TYPE_WAYLAND: {
-            if (wayland_display && wayland_xdg_exporter_v1) {
+            case NFD_WINDOW_HANDLE_TYPE_WAYLAND: {
+                if (wayland_gdk_screen) {
+                    outScreen = wayland_gdk_screen;
+                    outHandler = &RealizedSignalHandler<&NativeWindowParenter::SetParentWayland>;
+                    return;
+                }
+
                 // This will contain the Wayland display we want to use.
                 GdkDisplay* wayland_gdk_display = nullptr;
                 GdkDisplayManager* display_manager = gdk_display_manager_get();
@@ -590,34 +633,87 @@ void RealizedSignalHandler(GtkWidget* childWindow, void* userdata) {
                     // to show the dialog.  Though it probably doesn't matter very much if we want
                     // to free up resources and clean it up.
                     gdk_set_allowed_backends("wayland");
-                    wayland_gdk_display = gdk_display_manager_open_display(display_manager, NULL);
+                    GdkDisplay* display = gdk_display_manager_open_display(display_manager, NULL);
                     gdk_set_allowed_backends(NULL);
+                    if (display) {
+                        if (GDK_IS_WAYLAND_DISPLAY(display))
+                            wayland_gdk_display = display;
+                        else
+                            gdk_display_close(display);
+                    }
                 }
-                if (!wayland_gdk_display) return;
-
-                struct zxdg_exported_v1* exported = zxdg_exporter_v1_export(
-                    wayland_xdg_exporter_v1,
-                    static_cast<struct wl_surface*>(data.parentWindow.handle));
-                if (!exported) {
-                    // if we fail to export the wl_surface, act as if the window has no parent
-                    return;
+                if (wayland_gdk_display) {
+                    // Set the screen if we have a display.
+                    wayland_gdk_screen = gdk_display_get_default_screen(wayland_gdk_display);
                 }
-                zxdg_exported_v1_add_listener(
-                    exported,
-                    &wayland_xdg_exported_v1_listener,
-                    static_cast<void*>(gtk_widget_get_window(childWindow)));
-                wl_display_roundtrip(wayland_display);
-                zxdg_exported_v1_set_user_data(exported, nullptr);
-                data.destroy.fn = &DestroyXdgExported;
-                data.destroy.context = static_cast<void*>(exported);
+                outScreen = wayland_gdk_screen;
+                outHandler = wayland_gdk_screen
+                                 ? &RealizedSignalHandler<&NativeWindowParenter::SetParentWayland>
+                                 : nullptr;
+                return;
             }
-            return;
-        }
 #endif
-        default:
-            return;
+            default:
+                outScreen = nullptr;
+                outHandler = nullptr;
+                return;
+        }
     }
-}
+
+    template <void (NativeWindowParenter::*Func)(GdkWindow*)>
+    static void RealizedSignalHandler(GtkWidget* childWindow, void* userdata) {
+        NativeWindowParenter& data = *static_cast<NativeWindowParenter*>(userdata);
+        (data.*Func)(gtk_widget_get_window(childWindow));
+    }
+
+#if defined(NFD_X11)
+    void SetParentX11(GdkWindow* childWindow) {
+        const Window x11_handle = reinterpret_cast<Window>(parentWindowHandle);
+        GdkWindow* gdk_window = gdk_x11_window_foreign_new_for_display(x11_gdk_display, x11_handle);
+        gdk_window_set_transient_for(childWindow, gdk_window);
+        destroy.fn = &g_object_unref;
+        destroy.context = static_cast<void*>(gdk_window);
+    }
+#endif
+
+#if defined(NFD_WAYLAND)
+    void SetParentWayland(GdkWindow* childWindow) {
+        if (wayland_display && wayland_xdg_exporter_v1) {
+            struct zxdg_exported_v1* exported = zxdg_exporter_v1_export(
+                wayland_xdg_exporter_v1, static_cast<struct wl_surface*>(parentWindowHandle));
+            if (!exported) {
+                // if we fail to export the wl_surface, act as if the window has no parent
+                return;
+            }
+            zxdg_exported_v1_add_listener(
+                exported, &wayland_xdg_exported_v1_listener, static_cast<void*>(childWindow));
+            wl_display_roundtrip(wayland_display);
+            zxdg_exported_v1_set_user_data(exported, nullptr);
+            destroy.fn = &DestroyXdgExported;
+            destroy.context = static_cast<void*>(exported);
+        }
+    }
+#endif
+
+    GtkWidget* widget;
+    void* parentWindowHandle;
+    DestroyFunc destroy;
+    gulong handlerID;
+#if defined(NFD_X11)
+    static GdkDisplay* x11_gdk_display;
+    static GdkScreen* x11_gdk_screen;
+#endif
+#if defined(NFD_WAYLAND)
+    static GdkScreen* wayland_gdk_screen;
+#endif
+};
+#if defined(NFD_X11)
+GdkDisplay* NativeWindowParenter::x11_gdk_display = nullptr;
+GdkScreen* NativeWindowParenter::x11_gdk_screen = nullptr;
+#endif
+#if defined(NFD_WAYLAND)
+GdkScreen* NativeWindowParenter::wayland_gdk_screen = nullptr;
+#endif
 
 }  // namespace
 
@@ -637,14 +733,14 @@ nfdresult_t NFD_Init(void) {
         NFDi_SetError("Failed to initialize GTK+ with gtk_init_check.");
         return NFD_ERROR;
     }
-#ifdef NFD_WAYLAND
+#if defined(NFD_WAYLAND)
     NFD_Wayland_Init();
 #endif
     return NFD_OKAY;
 }
 
 void NFD_Quit(void) {
-#ifdef NFD_WAYLAND
+#if defined(NFD_WAYLAND)
     NFD_Wayland_Quit();
 #endif
     // do nothing about GTK since it cannot be de-initialized
