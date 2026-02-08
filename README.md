@@ -10,20 +10,21 @@ This library is based on Michael Labbe's Native File Dialog ([mlabbe/nativefiled
 Features:
 
 - Lean C API, static library &mdash; no C++/ObjC runtime needed
-- Supports Windows (MSVC, MinGW, Clang), macOS (Clang), and Linux (GTK, portal) (GCC, Clang)
+- Support for Windows (MSVC, MinGW, Clang), macOS (Clang), and Linux (GTK, portal) (GCC, Clang)
 - Zlib licensed
 - Friendly names for filters (e.g. `C/C++ Source files (*.c;*.cpp)` instead of `(*.c;*.cpp)`) on platforms that support it
 - Automatically append file extension on platforms where users expect it
 - Support for setting a default folder path
 - Support for setting a default file name (e.g. `Untitled.c`)
+- Support for setting a parent window handle so that the dialog stays on top
 - Consistent UTF-8 support on all platforms
 - Native character set (UTF-16 `wchar_t`) support on Windows
 - Initialization and de-initialization of platform library (e.g. COM (Windows) / GTK (Linux GTK) / D-Bus (Linux portal)) decoupled from dialog functions, so applications can choose when to initialize/de-initialize
-- Multiple selection support (for file open and folder select dialogs)
+- Support for multiple selection (for file open and folder select dialogs)
 - Support for Vista's modern `IFileDialog` on Windows
 - No third party dependencies
 - Modern CMake build system
-- Works alongside [SDL2](http://www.libsdl.org) on all platforms
+- Works alongside [SDL](http://www.libsdl.org), [GLFW](https://www.glfw.org/), and [ImGui](https://github.com/ocornut/imgui) on all platforms
 - Optional C++ wrapper with `unique_ptr` auto-freeing semantics and optional parameters, for those using this library from C++
 
 **Comparison with original Native File Dialog:**
@@ -35,6 +36,7 @@ Features added in Native File Dialog Extended:
 - Friendly names for filters
 - Automatically appending file extensions
 - Support for setting a default file name
+- Support for setting a parent window handle so that the dialog stays on top
 - Native character set (UTF-16 `wchar_t`) support on Windows
 - xdg-desktop-portal support on Linux that opens the "native" file chooser (see "Usage" section below)
 - Multiple folder selection support
@@ -300,23 +302,49 @@ NFDe is known to work with SDL2 and GLFW, and should also work with other platfo
 
 The `parentWindow` argument allows the user to give the dialog a parent.
 
-If using SDL2, include `<nfd_sdl2.h>` and call the following function to set the parent window handle:
+Win32 (Windows), Cocoa (macOS), X11 (Linux), and Wayland (Linux) windows are supported.  Wayland support requires you to tell NFDe the `wl_display` that owns the windows in your application.
+
+#### SDL2
+
+If using SDL2, include `<nfd_sdl2.h>` and do the following:
+
+Call the following function once, after you create your first SDL2 window (usually with `SDL_CreateWindow()`) but before opening any file dialogs, to tell NFDe the `wl_display` your application is using (this is a no-op if your application isn't using Wayland):
+```C
+NFD_SetDisplayPropertiesFromSDLWindow(sdlWindow /* SDL_Window* */);
+```
+
+Each time you want to show a dialog, call the following function to retrieve the parent window handle and set the corresponding argument:
 ```C
 NFD_GetNativeWindowFromSDLWindow(sdlWindow /* SDL_Window* */, &args.parentWindow);
 ```
+
+See `test_sdl.c` for an example.
+
+#### GLFW3
 
 If using GLFW3, define the appropriate `GLFW_EXPOSE_NATIVE_*` macros described on the [GLFW native access page](https://www.glfw.org/docs/latest/group__native.html), and then include `<nfd_glfw3.h>` and call the following function to set the parent window handle:
 ```C
 NFD_GetNativeWindowFromGLFWWindow(glfwWindow /* GLFWwindow* */, &args.parentWindow);
 ```
 
-If you are using another platform abstraction framework, or not using any such framework, you can set `args.parentWindow` manually.
+#### Others
 
-Win32 (Windows), Cocoa (macOS), and X11 (Linux) windows are supported.  Passing a Wayland (Linux) window currently does nothing (i.e. the dialog acts as if it has no parent), but support is likely to be added in the future.
+If you are using another platform abstraction framework, or not using any such framework, you can do the following:
+
+If you are using Wayland, call the following function once, after connecting to the Wayland compositor (thereby obtaining a `wl_display*`) but before opening any file dialogs:
+```C
+NFD_SetWaylandDisplay(display /* wl_display* */);
+```
+
+Then, each time you want to show a dialog, set `args.parentWindow` manually.
 
 #### Why pass a parent window handle?
 
 To make a window (in this case the file dialog) stay above another window, we need to declare the bottom window as the parent of the top window.  This keeps the dialog window from disappearing behind the parent window if the user clicks on the parent window while the dialog is open.  Keeping the dialog above the window that invoked it is the expected behaviour on all supported operating systems, and so passing the parent window handle is recommended if possible.
+
+#### Why is Wayland special?
+
+Linux has two differences when compared with Windows and macOS: Linux applications open a connection with a display server (X11 or Wayland) to show their windows, and windows are owned by this connection.  It is possible to open multiple connections at the same time (including multiple connections to the same display server), and windows are not shared between those connections.  GTK needs to use a connection opened by itself, and so it opens a new connection if it hasn't previously opened a connection (which will be the case if your application doesn't create its own GTK windows).  Using portals essentially causes the file dialog to be shown by a separate helper process, which also opens its own connection.  In either case, the window handle needs to be passed to a different connection.  On X11, window handles are global identifiers that can be used as-is by another connection, but on Wayland, the handles need to be _exported_ to a string and then _imported_ by the receiving connection, and performing the export operation requires the owner's Wayland display handle.
 
 ### Initialization order
 
@@ -369,6 +397,10 @@ Flatpak was introduced in 2015, and with it came a standardized interface to ope
 ### macOS
 
 - If the macOS deployment target is ≥ 11.0, the [allowedContentTypes](https://developer.apple.com/documentation/appkit/nssavepanel/3566857-allowedcontenttypes?language=objc) property of NSSavePanel is used instead of the deprecated [allowedFileTypes](https://developer.apple.com/documentation/appkit/nssavepanel/1534419-allowedfiletypes?language=objc) property for file filters.  Thus, if you are filtering by a custom file extension specific to your application, you will need to define the data type in your `Info.plist` file as per the [Apple documentation](https://developer.apple.com/documentation/uniformtypeidentifiers/defining_file_and_data_types_for_your_app).  (It is possible to force NFDe to use allowedFileTypes by adding `-DNFD_USE_ALLOWEDCONTENTTYPES_IF_AVAILABLE=OFF` to your CMake build command, but this is not recommended.  If you need to support older macOS versions, you should be setting the correct deployment target instead.)
+
+### Linux
+
+- Window parenting does not work on XWayland.  Dialogs behave as if the parent window handle was not given, and there does not seem to be any way to make this work.
 
 # Known Limitations #
 
