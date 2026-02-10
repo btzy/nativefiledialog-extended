@@ -242,7 +242,9 @@ int main(void)
     }
 
     // this gives NFD the wl_display* on Wayland; this is needed to set the parent window
-    NFD_SetDisplayPropertiesFromSDLWindow(window);
+    if (!NFD_SetDisplayPropertiesFromSDLWindow(window)) {
+        printf("NFD_SetDisplayPropertiesFromSDLWindow failed: %s\n", SDL_GetError());
+    }
 
     // create renderer
     SDL_Renderer* const renderer =

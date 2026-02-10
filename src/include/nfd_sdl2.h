@@ -26,12 +26,21 @@ extern "C" {
 #define NFD_INLINE static inline
 #endif  // __cplusplus
 
+/**
+ * Sets the wayland display if the process is running under Wayland, otherwise does nothing.
+ * @param sdlWindow The SDL window handle.
+ * @return Either true to indicate success, or false to indicate failure.  If false is returned,
+ * you can call SDL_GetError() for more information.
+ */
 NFD_INLINE bool NFD_SetDisplayPropertiesFromSDLWindow(SDL_Window* sdlWindow) {
 #if defined(SDL_VIDEO_DRIVER_WAYLAND)
     SDL_SysWMinfo info;
     SDL_VERSION(&info.version);
-    if (!SDL_GetWindowWMInfo(sdlWindow, &info) || info.subsystem != SDL_SYSWM_WAYLAND) {
+    if (!SDL_GetWindowWMInfo(sdlWindow, &info)) {
         return false;
+    }
+    if (info.subsystem != SDL_SYSWM_WAYLAND) {
+        return true;
     }
     return NFD_SetWaylandDisplay(info.info.wl.display) == NFD_OKAY;
 #else
@@ -41,11 +50,11 @@ NFD_INLINE bool NFD_SetDisplayPropertiesFromSDLWindow(SDL_Window* sdlWindow) {
 }
 
 /**
- *  Converts an SDL window handle to a native window handle that can be passed to NFDe.
- *  @param sdlWindow The SDL window handle.
- *  @param[out] nativeWindow The output native window handle, populated if and only if this function
- *  returns true.
- *  @return Either true to indicate success, or false to indicate failure.  If false is returned,
+ * Converts an SDL window handle to a native window handle that can be passed to NFDe.
+ * @param sdlWindow The SDL window handle.
+ * @param[out] nativeWindow The output native window handle, populated if and only if this function
+ * returns true.
+ * @return Either true to indicate success, or false to indicate failure.  If false is returned,
  * you can call SDL_GetError() for more information.  However, it is intended that users ignore the
  * error and simply pass a value-initialized nfdwindowhandle_t to NFDe if this function fails. */
 NFD_INLINE bool NFD_GetNativeWindowFromSDLWindow(SDL_Window* sdlWindow,

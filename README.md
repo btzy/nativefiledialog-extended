@@ -1,7 +1,7 @@
 
 # Native File Dialog Extended
 
-![GitHub Actions](https://github.com/btzy/nativefiledialog-extended/workflows/build/badge.svg)
+![GitHub Actions](https://github.com/btzy/nativefiledialog-extended/workflows/build/badge.svg?branch=master&event=push)
 
 A small C library that portably invokes native file open, folder select and file save dialogs.  Write dialog code once and have it pop up native dialogs on all supported platforms.  Avoid linking large dependencies like wxWidgets and Qt.
 
@@ -298,54 +298,6 @@ Macros that might be defined by `nfd.h`:
 
 NFDe is known to work with SDL2 and GLFW, and should also work with other platform abstraction framworks.  This section explains how to use NFDe properly with such frameworks.
 
-### Parent window handle
-
-The `parentWindow` argument allows the user to give the dialog a parent.
-
-Win32 (Windows), Cocoa (macOS), X11 (Linux), and Wayland (Linux) windows are supported.  Wayland support requires you to tell NFDe the `wl_display` that owns the windows in your application.
-
-#### SDL2
-
-If using SDL2, include `<nfd_sdl2.h>` and do the following:
-
-Call the following function once, after you create your first SDL2 window (usually with `SDL_CreateWindow()`) but before opening any file dialogs, to tell NFDe the `wl_display` your application is using (this is a no-op if your application isn't using Wayland):
-```C
-NFD_SetDisplayPropertiesFromSDLWindow(sdlWindow /* SDL_Window* */);
-```
-
-Each time you want to show a dialog, call the following function to retrieve the parent window handle and set the corresponding argument:
-```C
-NFD_GetNativeWindowFromSDLWindow(sdlWindow /* SDL_Window* */, &args.parentWindow);
-```
-
-See `test_sdl.c` for an example.
-
-#### GLFW3
-
-If using GLFW3, define the appropriate `GLFW_EXPOSE_NATIVE_*` macros described on the [GLFW native access page](https://www.glfw.org/docs/latest/group__native.html), and then include `<nfd_glfw3.h>` and call the following function to set the parent window handle:
-```C
-NFD_GetNativeWindowFromGLFWWindow(glfwWindow /* GLFWwindow* */, &args.parentWindow);
-```
-
-#### Others
-
-If you are using another platform abstraction framework, or not using any such framework, you can do the following:
-
-If you are using Wayland, call the following function once, after connecting to the Wayland compositor (thereby obtaining a `wl_display*`) but before opening any file dialogs:
-```C
-NFD_SetWaylandDisplay(display /* wl_display* */);
-```
-
-Then, each time you want to show a dialog, set `args.parentWindow` manually.
-
-#### Why pass a parent window handle?
-
-To make a window (in this case the file dialog) stay above another window, we need to declare the bottom window as the parent of the top window.  This keeps the dialog window from disappearing behind the parent window if the user clicks on the parent window while the dialog is open.  Keeping the dialog above the window that invoked it is the expected behaviour on all supported operating systems, and so passing the parent window handle is recommended if possible.
-
-#### Why is Wayland special?
-
-Linux has two differences when compared with Windows and macOS: Linux applications open a connection with a display server (X11 or Wayland) to show their windows, and windows are owned by this connection.  It is possible to open multiple connections at the same time (including multiple connections to the same display server), and windows are not shared between those connections.  GTK needs to use a connection opened by itself, and so it opens a new connection if it hasn't previously opened a connection (which will be the case if your application doesn't create its own GTK windows).  Using portals essentially causes the file dialog to be shown by a separate helper process, which also opens its own connection.  In either case, the window handle needs to be passed to a different connection.  On X11, window handles are global identifiers that can be used as-is by another connection, but on Wayland, the handles need to be _exported_ to a string and then _imported_ by the receiving connection, and performing the export operation requires the owner's Wayland display handle.
-
 ### Initialization order
 
 You should initialize NFDe _after_ initializing the framework, and probably should deinitialize NFDe _before_ deinitializing the framework.  This is because some frameworks expect to be initialized on a "clean slate", and they may configure the system in a different way from NFDe.  `NFD_Init` is generally very careful not to disrupt the existing configuration unless necessary, and `NFD_Quit` restores the configuration back exactly to what it was before initialization.
@@ -372,13 +324,72 @@ NFD_Quit(); // deinitialize NFDe first
 SDL_Quit(); // Then deinitialize SDL2
 ```
 
+### Parent window handle
+
+The `parentWindow` argument allows the user to give the dialog a parent.
+
+Win32 (Windows), Cocoa (macOS), X11 (Linux), and Wayland (Linux) windows are supported.  Wayland support requires you to tell NFDe the `wl_display` that owns the windows in your application.
+
+#### SDL2
+
+If using SDL2, include `<nfd_sdl2.h>` and do the following:
+
+Call the following function once, after you create your first SDL2 window (usually with `SDL_CreateWindow()`) but before opening any file dialogs, to tell NFDe the `wl_display` your application is using (this function does nothing if your application isn't using Wayland):
+```C
+NFD_SetDisplayPropertiesFromSDLWindow(sdlWindow /* SDL_Window* */);
+```
+
+Each time you want to show a dialog, call the following function to retrieve the parent window handle and set the corresponding argument:
+```C
+NFD_GetNativeWindowFromSDLWindow(sdlWindow /* SDL_Window* */, &args.parentWindow);
+```
+
+See `test_sdl.c` for an example.
+
+#### GLFW3
+
+If using GLFW3, define the appropriate `GLFW_EXPOSE_NATIVE_*` macros as described on the [GLFW native access page](https://www.glfw.org/docs/latest/group__native.html), and then include `<nfd_glfw3.h>` and do the following:
+
+Call the following function once, after `glfwInit()` and `NFD_Init()` but before opening any file dialogs, to tell NFDe the `wl_display` your application is using (this function does nothing if your application isn't using Wayland):
+```C
+NFD_SetDisplayPropertiesFromGLFW();
+```
+
+Each time you want to show a dialog, call the following function to retrieve the parent window handle and set the corresponding argument:
+```C
+NFD_GetNativeWindowFromGLFWWindow(glfwWindow /* GLFWwindow* */, &args.parentWindow);
+```
+
+See `test_glfw.c` for an example.
+
+*Note:  GLFW version < 3.4 does not support dynamically selecting a display server at runtime, meaning that it will support either X11 or Wayland, but not both.  Make sure the `GLFW_EXPOSE_NATIVE_*` macros you define are indeed available on your GLFW library.*
+
+#### Others
+
+If using another platform abstraction framework or not using any such framework, do the following:
+
+Figure out if you are using Wayland in your application code, and if so, call the following function to tell NFDe the `wl_display` you are using:
+```C
+NFD_SetWaylandDisplay(display /* wl_display* */);
+```
+
+Then, each time you want to show a dialog, set `args.parentWindow` manually.
+
+#### Why pass a parent window handle?
+
+To make a window (in this case the file dialog) stay above another window, we need to declare the bottom window as the parent of the top window.  This keeps the dialog window from disappearing behind the parent window if the user clicks on the parent window while the dialog is open.  Keeping the dialog above the window that invoked it is the expected behaviour on all supported operating systems, and so passing the parent window handle is recommended if possible.
+
+#### Why is Wayland special?
+
+Linux has two differences when compared with Windows and macOS: (1) Linux applications open a connection with a display server (X11 or Wayland) to show their windows, and (2) windows are owned by this connection.  It is possible to open multiple connections at the same time (including multiple connections to the same display server), and windows are not shared between those connections.  GTK needs to use a connection opened by itself, and so it opens a new connection if it hasn't previously opened a connection (which will be the case if your application doesn't use GTK on its own).  Portals work by opening the file dialog in a separate helper process, which also opens its own connection.  In either case, the window handle needs to be passed to a different connection.  On X11, window handles are global identifiers that can be used as-is by another connection, but on Wayland, the handles need to be _exported_ to a string and then _imported_ by the receiving connection, and performing the export operation requires the owner's Wayland display handle.
+
 ## Using xdg-desktop-portal on Linux
 
 On Linux, you can use the portal implementation instead of GTK, which will open the "native" file chooser selected by the OS or customized by the user.  The user must have `xdg-desktop-portal` and a suitable backend installed (this comes pre-installed with most common desktop distros), otherwise `NFD_ERROR` will be returned.
 
 To use the portal implementation, add `-DNFD_PORTAL=ON` to the build command.
 
-*Note:  The folder picker is only supported on org.freedesktop.portal.FileChooser interface version >= 3, which corresponds to xdg-desktop-portal version >= 1.7.1.  `NFD_PickFolder()` will query the interface version at runtime, and return `NFD_ERROR` if the version is too low.
+*Note:  The folder picker is only supported on org.freedesktop.portal.FileChooser interface version >= 3, which corresponds to xdg-desktop-portal version >= 1.7.1.  `NFD_PickFolder()` will query the interface version at runtime, and return `NFD_ERROR` if the version is too low.*
 
 ### What is a portal?
 
