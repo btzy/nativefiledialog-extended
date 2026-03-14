@@ -103,6 +103,11 @@ If you are using a platform abstraction framework such as SDL or GLFW, also see 
 
 # Building
 
+On Linux, if building with Wayland support (the default), this project depends on [Wayland protocols](https://gitlab.freedesktop.org/wayland/wayland-protocols) as a git submodule, so it needs to be checked out:
+```
+git submodule update --init
+```
+
 ## CMake Projects
 If your project uses CMake,
 simply add the following lines to your CMakeLists.txt:
