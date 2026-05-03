@@ -54,71 +54,12 @@ filters to be case-insensitive.
 
 namespace {
 
-template <typename T>
-struct Free_Guard {
-    T* data;
-    Free_Guard(T* freeable) noexcept : data(freeable) {}
-    ~Free_Guard() { NFDi_Free(data); }
-};
-
-template <typename T>
-struct FreeCheck_Guard {
-    T* data;
-    FreeCheck_Guard(T* freeable = nullptr) noexcept : data(freeable) {}
-    ~FreeCheck_Guard() {
-        if (data) NFDi_Free(data);
-    }
-};
-
 /* current error */
 const char* g_errorstr = nullptr;
 
 void NFDi_SetError(const char* msg) {
     g_errorstr = msg;
 }
-
-template <typename T = void>
-T* NFDi_Malloc(size_t bytes) {
-    void* ptr = malloc(bytes);
-    if (!ptr) NFDi_SetError("NFDi_Malloc failed.");
-
-    return static_cast<T*>(ptr);
-}
-
-template <typename T>
-void NFDi_Free(T* ptr) {
-    assert(ptr);
-    free(static_cast<void*>(ptr));
-}
-
-template <typename T>
-T* copy(const T* begin, const T* end, T* out) {
-    for (; begin != end; ++begin) {
-        *out++ = *begin;
-    }
-    return out;
-}
-
-#ifndef NFD_CASE_SENSITIVE_FILTER
-nfdnchar_t* emit_case_insensitive_glob(const nfdnchar_t* begin,
-                                       const nfdnchar_t* end,
-                                       nfdnchar_t* out) {
-    // this code will only make regular Latin characters case-insensitive; other
-    // characters remain case sensitive
-    for (; begin != end; ++begin) {
-        if ((*begin >= 'A' && *begin <= 'Z') || (*begin >= 'a' && *begin <= 'z')) {
-            *out++ = '[';
-            *out++ = *begin;
-            // invert the case of the original character
-            *out++ = *begin ^ static_cast<nfdnchar_t>(0x20);
-            *out++ = ']';
-        } else {
-            *out++ = *begin;
-        }
-    }
-    return out;
-}
-#endif
 
 // Does not own the filter and extension.
 struct Pair_GtkFileFilter_FileExtension {
