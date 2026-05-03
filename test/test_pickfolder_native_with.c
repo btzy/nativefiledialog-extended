@@ -23,7 +23,7 @@ int main(void) {
 #ifdef _MSC_VER
         _putws(outPath);
 #else
-        fputws(outPath, stdin);
+        fputws(outPath, stdout);
 #endif
 #else
         puts(outPath);
