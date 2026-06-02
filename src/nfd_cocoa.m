@@ -159,6 +159,20 @@ static void SetDefaultName(NSSavePanel* dialog, const nfdnchar_t* defaultName) {
     [dialog setNameFieldStringValue:defaultNameString];
 }
 
+static void SetTitle(NSSavePanel* dialog, const nfdnchar_t* title) {
+    if (!title || !*title) return;
+
+    NSString* titleString = [NSString stringWithUTF8String:title];
+    [dialog setTitle:titleString];
+}
+
+static void SetAcceptLabel(NSSavePanel* dialog, const nfdnchar_t* acceptLabel) {
+    if (!acceptLabel || !*acceptLabel) return;
+
+    NSString* acceptLabelString = [NSString stringWithUTF8String:acceptLabel];
+    [dialog setPrompt:acceptLabelString];
+}
+
 static nfdresult_t CopyUtf8String(const char* utf8Str, nfdnchar_t** out) {
     // byte count, not char count
     size_t len = strlen(utf8Str);
@@ -232,9 +246,6 @@ nfdresult_t NFD_OpenDialogN(nfdnchar_t** outPath,
 nfdresult_t NFD_OpenDialogN_With_Impl(nfdversion_t version,
                                       nfdnchar_t** outPath,
                                       const nfdopendialognargs_t* args) {
-    // We haven't needed to bump the interface version yet.
-    (void)version;
-
     nfdresult_t result = NFD_CANCEL;
     @autoreleasepool {
         NSWindow* keyWindow = GetNativeWindowHandle(&args->parentWindow);
@@ -252,6 +263,11 @@ nfdresult_t NFD_OpenDialogN_With_Impl(nfdversion_t version,
 
         // Set the starting directory
         SetDefaultPath(dialog, args->defaultPath);
+
+        // Set the title and accept button label (added in interface version 2)
+        // Note that cancel button label can't be set on Cocoa
+        SetTitle(dialog, version >= 2 ? args->title : NULL);
+        SetAcceptLabel(dialog, version >= 2 ? args->acceptLabel : NULL);
 
         if ([dialog runModal] == NSModalResponseOK) {
             const NSURL* url = [dialog URL];
@@ -292,9 +308,6 @@ nfdresult_t NFD_OpenDialogMultipleN(const nfdpathset_t** outPaths,
 nfdresult_t NFD_OpenDialogMultipleN_With_Impl(nfdversion_t version,
                                               const nfdpathset_t** outPaths,
                                               const nfdopendialognargs_t* args) {
-    // We haven't needed to bump the interface version yet.
-    (void)version;
-
     nfdresult_t result = NFD_CANCEL;
     @autoreleasepool {
         NSWindow* keyWindow = GetNativeWindowHandle(&args->parentWindow);
@@ -312,6 +325,11 @@ nfdresult_t NFD_OpenDialogMultipleN_With_Impl(nfdversion_t version,
 
         // Set the starting directory
         SetDefaultPath(dialog, args->defaultPath);
+
+        // Set the title and accept button label (added in interface version 2)
+        // Note that cancel button label can't be set on Cocoa
+        SetTitle(dialog, version >= 2 ? args->title : NULL);
+        SetAcceptLabel(dialog, version >= 2 ? args->acceptLabel : NULL);
 
         if ([dialog runModal] == NSModalResponseOK) {
             const NSArray* urls = [dialog URLs];
@@ -359,9 +377,6 @@ nfdresult_t NFD_SaveDialogN(nfdnchar_t** outPath,
 nfdresult_t NFD_SaveDialogN_With_Impl(nfdversion_t version,
                                       nfdnchar_t** outPath,
                                       const nfdsavedialognargs_t* args) {
-    // We haven't needed to bump the interface version yet.
-    (void)version;
-
     nfdresult_t result = NFD_CANCEL;
     @autoreleasepool {
         NSWindow* keyWindow = GetNativeWindowHandle(&args->parentWindow);
@@ -385,6 +400,11 @@ nfdresult_t NFD_SaveDialogN_With_Impl(nfdversion_t version,
 
         // Set the default file name
         SetDefaultName(dialog, args->defaultName);
+
+        // Set the title and accept button label (added in interface version 2)
+        // Note that cancel button label can't be set on Cocoa
+        SetTitle(dialog, version >= 2 ? args->title : NULL);
+        SetAcceptLabel(dialog, version >= 2 ? args->acceptLabel : NULL);
 
         if ([dialog runModal] == NSModalResponseOK) {
             const NSURL* url = [dialog URL];
@@ -421,9 +441,6 @@ nfdresult_t NFD_PickFolderN(nfdnchar_t** outPath, const nfdnchar_t* defaultPath)
 nfdresult_t NFD_PickFolderN_With_Impl(nfdversion_t version,
                                       nfdnchar_t** outPath,
                                       const nfdpickfoldernargs_t* args) {
-    // We haven't needed to bump the interface version yet.
-    (void)version;
-
     nfdresult_t result = NFD_CANCEL;
     @autoreleasepool {
         NSWindow* keyWindow = GetNativeWindowHandle(&args->parentWindow);
@@ -441,6 +458,11 @@ nfdresult_t NFD_PickFolderN_With_Impl(nfdversion_t version,
 
         // Set the starting directory
         SetDefaultPath(dialog, args->defaultPath);
+
+        // Set the title and accept button label (added in interface version 2)
+        // Note that cancel button label can't be set on Cocoa
+        SetTitle(dialog, version >= 2 ? args->title : NULL);
+        SetAcceptLabel(dialog, version >= 2 ? args->acceptLabel : NULL);
 
         if ([dialog runModal] == NSModalResponseOK) {
             const NSURL* url = [dialog URL];
@@ -473,9 +495,6 @@ nfdresult_t NFD_PickFolderMultipleN(const nfdpathset_t** outPaths, const nfdncha
 nfdresult_t NFD_PickFolderMultipleN_With_Impl(nfdversion_t version,
                                               const nfdpathset_t** outPaths,
                                               const nfdpickfoldernargs_t* args) {
-    // We haven't needed to bump the interface version yet.
-    (void)version;
-
     nfdresult_t result = NFD_CANCEL;
     @autoreleasepool {
         NSWindow* keyWindow = GetNativeWindowHandle(&args->parentWindow);
@@ -493,6 +512,11 @@ nfdresult_t NFD_PickFolderMultipleN_With_Impl(nfdversion_t version,
 
         // Set the starting directory
         SetDefaultPath(dialog, args->defaultPath);
+
+        // Set the title and accept button label (added in interface version 2)
+        // Note that cancel button label can't be set on Cocoa
+        SetTitle(dialog, version >= 2 ? args->title : NULL);
+        SetAcceptLabel(dialog, version >= 2 ? args->acceptLabel : NULL);
 
         if ([dialog runModal] == NSModalResponseOK) {
             const NSArray* urls = [dialog URLs];

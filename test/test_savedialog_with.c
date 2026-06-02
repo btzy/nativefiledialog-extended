@@ -21,6 +21,10 @@ int main(void) {
     args.filterList = filterItem;
     args.filterCount = 2;
     args.defaultName = "Untitled.c";
+    // customize the window title and button labels (leave any of these unset to use the OS default)
+    args.title = "Save your source file";
+    args.acceptLabel = "Save it";
+    args.cancelLabel = "Never mind";
     nfdresult_t result = NFD_SaveDialogU8_With(&savePath, &args);
     if (result == NFD_OKAY) {
         puts("Success!");

@@ -14,8 +14,22 @@ int main(void) {
 
     nfdchar_t* outPath;
 
+    // customize the window title and button labels (leave any of these unset to use the OS default)
+#ifdef _WIN32
+    const nfdnchar_t* title = L"Choose a project folder";
+    const nfdnchar_t* acceptLabel = L"Use this folder";
+    const nfdnchar_t* cancelLabel = L"Never mind";
+#else
+    const nfdnchar_t* title = "Choose a project folder";
+    const nfdnchar_t* acceptLabel = "Use this folder";
+    const nfdnchar_t* cancelLabel = "Never mind";
+#endif
+
     // show the dialog
     nfdpickfoldernargs_t args = {0};
+    args.title = title;
+    args.acceptLabel = acceptLabel;
+    args.cancelLabel = cancelLabel;
     nfdresult_t result = NFD_PickFolderN_With(&outPath, &args);
     if (result == NFD_OKAY) {
         puts("Success!");

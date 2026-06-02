@@ -20,6 +20,10 @@ int main(void) {
     nfdopendialogu8args_t args = {0};
     args.filterList = filterItem;
     args.filterCount = 2;
+    // customize the window title and button labels (leave any of these unset to use the OS default)
+    args.title = "Open a source file";
+    args.acceptLabel = "Open it";
+    args.cancelLabel = "Never mind";
     nfdresult_t result = NFD_OpenDialogU8_With(&outPath, &args);
     if (result == NFD_OKAY) {
         puts("Success!");

@@ -279,6 +279,48 @@ nfdresult_t SetDefaultName(IFileDialog* dialog, const nfdnchar_t* defaultName) {
     return NFD_OKAY;
 }
 
+nfdresult_t SetTitle(IFileDialog* dialog, const nfdnchar_t* title) {
+    if (!title || !*title) return NFD_OKAY;
+
+    if (!SUCCEEDED(dialog->SetTitle(title))) {
+        NFDi_SetError("Failed to set title.");
+        return NFD_ERROR;
+    }
+
+    return NFD_OKAY;
+}
+
+nfdresult_t SetAcceptLabel(IFileDialog* dialog, const nfdnchar_t* acceptLabel) {
+    if (!acceptLabel || !*acceptLabel) return NFD_OKAY;
+
+    if (!SUCCEEDED(dialog->SetOkButtonLabel(acceptLabel))) {
+        NFDi_SetError("Failed to set accept button label.");
+        return NFD_ERROR;
+    }
+
+    return NFD_OKAY;
+}
+
+nfdresult_t SetCancelLabel(IFileDialog* dialog, const nfdnchar_t* cancelLabel) {
+    if (!cancelLabel || !*cancelLabel) return NFD_OKAY;
+
+    // The cancel button label can only be set via IFileDialog2 (available since Windows 7).  If
+    // IFileDialog2 is unavailable, the cancel button label is not customizable, so we carry on
+    // without setting it.
+    ::IFileDialog2* dialog2;
+    if (!SUCCEEDED(dialog->QueryInterface(IID_PPV_ARGS(&dialog2)))) {
+        return NFD_OKAY;
+    }
+    Release_Guard<::IFileDialog2> dialog2Guard(dialog2);
+
+    if (!SUCCEEDED(dialog2->SetCancelButtonLabel(cancelLabel))) {
+        NFDi_SetError("Failed to set cancel button label.");
+        return NFD_ERROR;
+    }
+
+    return NFD_OKAY;
+}
+
 nfdresult_t AddOptions(IFileDialog* dialog, FILEOPENDIALOGOPTIONS options) {
     FILEOPENDIALOGOPTIONS existingOptions;
     if (!SUCCEEDED(dialog->GetOptions(&existingOptions))) {
@@ -358,9 +400,6 @@ nfdresult_t NFD_OpenDialogN(nfdnchar_t** outPath,
 nfdresult_t NFD_OpenDialogN_With_Impl(nfdversion_t version,
                                       nfdnchar_t** outPath,
                                       const nfdopendialognargs_t* args) {
-    // We haven't needed to bump the interface version yet.
-    (void)version;
-
     ::IFileOpenDialog* fileOpenDialog;
 
     // Create dialog
@@ -395,6 +434,17 @@ nfdresult_t NFD_OpenDialogN_With_Impl(nfdversion_t version,
 
     // Only show file system items
     if (!AddOptions(fileOpenDialog, ::FOS_FORCEFILESYSTEM)) {
+        return NFD_ERROR;
+    }
+
+    // Set the title and button labels (these fields were added in interface version 2)
+    if (!SetTitle(fileOpenDialog, version >= 2 ? args->title : nullptr)) {
+        return NFD_ERROR;
+    }
+    if (!SetAcceptLabel(fileOpenDialog, version >= 2 ? args->acceptLabel : nullptr)) {
+        return NFD_ERROR;
+    }
+    if (!SetCancelLabel(fileOpenDialog, version >= 2 ? args->cancelLabel : nullptr)) {
         return NFD_ERROR;
     }
 
@@ -442,9 +492,6 @@ nfdresult_t NFD_OpenDialogMultipleN(const nfdpathset_t** outPaths,
 nfdresult_t NFD_OpenDialogMultipleN_With_Impl(nfdversion_t version,
                                               const nfdpathset_t** outPaths,
                                               const nfdopendialognargs_t* args) {
-    // We haven't needed to bump the interface version yet.
-    (void)version;
-
     ::IFileOpenDialog* fileOpenDialog;
 
     // Create dialog
@@ -479,6 +526,17 @@ nfdresult_t NFD_OpenDialogMultipleN_With_Impl(nfdversion_t version,
 
     // Set a flag for multiple options and file system items only
     if (!AddOptions(fileOpenDialog, ::FOS_FORCEFILESYSTEM | ::FOS_ALLOWMULTISELECT)) {
+        return NFD_ERROR;
+    }
+
+    // Set the title and button labels (these fields were added in interface version 2)
+    if (!SetTitle(fileOpenDialog, version >= 2 ? args->title : nullptr)) {
+        return NFD_ERROR;
+    }
+    if (!SetAcceptLabel(fileOpenDialog, version >= 2 ? args->acceptLabel : nullptr)) {
+        return NFD_ERROR;
+    }
+    if (!SetCancelLabel(fileOpenDialog, version >= 2 ? args->cancelLabel : nullptr)) {
         return NFD_ERROR;
     }
 
@@ -520,9 +578,6 @@ nfdresult_t NFD_SaveDialogN(nfdnchar_t** outPath,
 nfdresult_t NFD_SaveDialogN_With_Impl(nfdversion_t version,
                                       nfdnchar_t** outPath,
                                       const nfdsavedialognargs_t* args) {
-    // We haven't needed to bump the interface version yet.
-    (void)version;
-
     ::IFileSaveDialog* fileSaveDialog;
 
     // Create dialog
@@ -565,6 +620,17 @@ nfdresult_t NFD_SaveDialogN_With_Impl(nfdversion_t version,
         return NFD_ERROR;
     }
 
+    // Set the title and button labels (these fields were added in interface version 2)
+    if (!SetTitle(fileSaveDialog, version >= 2 ? args->title : nullptr)) {
+        return NFD_ERROR;
+    }
+    if (!SetAcceptLabel(fileSaveDialog, version >= 2 ? args->acceptLabel : nullptr)) {
+        return NFD_ERROR;
+    }
+    if (!SetCancelLabel(fileSaveDialog, version >= 2 ? args->cancelLabel : nullptr)) {
+        return NFD_ERROR;
+    }
+
     // Show the dialog.
     result = fileSaveDialog->Show(GetNativeWindowHandle(args->parentWindow));
     if (SUCCEEDED(result)) {
@@ -604,9 +670,6 @@ nfdresult_t NFD_PickFolderN(nfdnchar_t** outPath, const nfdnchar_t* defaultPath)
 nfdresult_t NFD_PickFolderN_With_Impl(nfdversion_t version,
                                       nfdnchar_t** outPath,
                                       const nfdpickfoldernargs_t* args) {
-    // We haven't needed to bump the interface version yet.
-    (void)version;
-
     ::IFileOpenDialog* fileOpenDialog;
 
     // Create dialog
@@ -628,6 +691,17 @@ nfdresult_t NFD_PickFolderN_With_Impl(nfdversion_t version,
 
     // Only show items that are folders and on the file system
     if (!AddOptions(fileOpenDialog, ::FOS_FORCEFILESYSTEM | ::FOS_PICKFOLDERS)) {
+        return NFD_ERROR;
+    }
+
+    // Set the title and button labels (these fields were added in interface version 2)
+    if (!SetTitle(fileOpenDialog, version >= 2 ? args->title : nullptr)) {
+        return NFD_ERROR;
+    }
+    if (!SetAcceptLabel(fileOpenDialog, version >= 2 ? args->acceptLabel : nullptr)) {
+        return NFD_ERROR;
+    }
+    if (!SetCancelLabel(fileOpenDialog, version >= 2 ? args->cancelLabel : nullptr)) {
         return NFD_ERROR;
     }
 
@@ -670,9 +744,6 @@ nfdresult_t NFD_PickFolderMultipleN(const nfdpathset_t** outPaths, const nfdncha
 nfdresult_t NFD_PickFolderMultipleN_With_Impl(nfdversion_t version,
                                               const nfdpathset_t** outPaths,
                                               const nfdpickfoldernargs_t* args) {
-    // We haven't needed to bump the interface version yet.
-    (void)version;
-
     ::IFileOpenDialog* fileOpenDialog;
 
     // Create dialog
@@ -695,6 +766,17 @@ nfdresult_t NFD_PickFolderMultipleN_With_Impl(nfdversion_t version,
     // Allow multiple selection; only show items that are folders and on the file system
     if (!AddOptions(fileOpenDialog,
                     ::FOS_FORCEFILESYSTEM | ::FOS_PICKFOLDERS | ::FOS_ALLOWMULTISELECT)) {
+        return NFD_ERROR;
+    }
+
+    // Set the title and button labels (these fields were added in interface version 2)
+    if (!SetTitle(fileOpenDialog, version >= 2 ? args->title : nullptr)) {
+        return NFD_ERROR;
+    }
+    if (!SetAcceptLabel(fileOpenDialog, version >= 2 ? args->acceptLabel : nullptr)) {
+        return NFD_ERROR;
+    }
+    if (!SetCancelLabel(fileOpenDialog, version >= 2 ? args->cancelLabel : nullptr)) {
         return NFD_ERROR;
     }
 
@@ -918,6 +1000,21 @@ nfdresult_t ConvertU8ToNative(const nfdu8char_t* u8Text, FreeCheck_Guard<nfdncha
     }
     return NFD_OKAY;
 }
+// Converts the title/acceptLabel/cancelLabel UTF-8 fields to native (wide) strings.  These fields
+// were added in interface version 2, so they are only read if the caller's interface version is new
+// enough.  The guards own the converted memory.
+template <typename Args>
+void ConvertLabels(nfdversion_t version,
+                   const Args* args,
+                   FreeCheck_Guard<nfdnchar_t>& title,
+                   FreeCheck_Guard<nfdnchar_t>& acceptLabel,
+                   FreeCheck_Guard<nfdnchar_t>& cancelLabel) {
+    if (version >= 2) {
+        ConvertU8ToNative(args->title, title);
+        ConvertU8ToNative(args->acceptLabel, acceptLabel);
+        ConvertU8ToNative(args->cancelLabel, cancelLabel);
+    }
+}
 void NormalizePathSeparator(nfdnchar_t* path) {
     if (path) {
         for (; *path; ++path) {
@@ -945,9 +1042,6 @@ nfdresult_t NFD_OpenDialogU8(nfdu8char_t** outPath,
 nfdresult_t NFD_OpenDialogU8_With_Impl(nfdversion_t version,
                                        nfdu8char_t** outPath,
                                        const nfdopendialogu8args_t* args) {
-    // We haven't needed to bump the interface version yet.
-    (void)version;
-
     // populate the real nfdnfilteritem_t
     FilterItem_Guard filterItemsNGuard;
     if (!CopyFilterItem(args->filterList, args->filterCount, filterItemsNGuard)) {
@@ -959,10 +1053,21 @@ nfdresult_t NFD_OpenDialogU8_With_Impl(nfdversion_t version,
     ConvertU8ToNative(args->defaultPath, defaultPathNGuard);
     NormalizePathSeparator(defaultPathNGuard.data);
 
+    // convert the title and button labels, but only if they are not nullptr
+    FreeCheck_Guard<nfdnchar_t> titleNGuard;
+    FreeCheck_Guard<nfdnchar_t> acceptLabelNGuard;
+    FreeCheck_Guard<nfdnchar_t> cancelLabelNGuard;
+    ConvertLabels(version, args, titleNGuard, acceptLabelNGuard, cancelLabelNGuard);
+
     // call the native function
     nfdnchar_t* outPathN;
-    const nfdopendialognargs_t argsN{
-        filterItemsNGuard.data, args->filterCount, defaultPathNGuard.data, args->parentWindow};
+    const nfdopendialognargs_t argsN{filterItemsNGuard.data,
+                                     args->filterCount,
+                                     defaultPathNGuard.data,
+                                     args->parentWindow,
+                                     titleNGuard.data,
+                                     acceptLabelNGuard.data,
+                                     cancelLabelNGuard.data};
     nfdresult_t res = NFD_OpenDialogN_With_Impl(NFD_INTERFACE_VERSION, &outPathN, &argsN);
 
     if (res != NFD_OKAY) {
@@ -994,9 +1099,6 @@ nfdresult_t NFD_OpenDialogMultipleU8(const nfdpathset_t** outPaths,
 nfdresult_t NFD_OpenDialogMultipleU8_With_Impl(nfdversion_t version,
                                                const nfdpathset_t** outPaths,
                                                const nfdopendialogu8args_t* args) {
-    // We haven't needed to bump the interface version yet.
-    (void)version;
-
     // populate the real nfdnfilteritem_t
     FilterItem_Guard filterItemsNGuard;
     if (!CopyFilterItem(args->filterList, args->filterCount, filterItemsNGuard)) {
@@ -1008,9 +1110,20 @@ nfdresult_t NFD_OpenDialogMultipleU8_With_Impl(nfdversion_t version,
     ConvertU8ToNative(args->defaultPath, defaultPathNGuard);
     NormalizePathSeparator(defaultPathNGuard.data);
 
+    // convert the title and button labels, but only if they are not nullptr
+    FreeCheck_Guard<nfdnchar_t> titleNGuard;
+    FreeCheck_Guard<nfdnchar_t> acceptLabelNGuard;
+    FreeCheck_Guard<nfdnchar_t> cancelLabelNGuard;
+    ConvertLabels(version, args, titleNGuard, acceptLabelNGuard, cancelLabelNGuard);
+
     // call the native function
-    const nfdopendialognargs_t argsN{
-        filterItemsNGuard.data, args->filterCount, defaultPathNGuard.data, args->parentWindow};
+    const nfdopendialognargs_t argsN{filterItemsNGuard.data,
+                                     args->filterCount,
+                                     defaultPathNGuard.data,
+                                     args->parentWindow,
+                                     titleNGuard.data,
+                                     acceptLabelNGuard.data,
+                                     cancelLabelNGuard.data};
     return NFD_OpenDialogMultipleN_With_Impl(NFD_INTERFACE_VERSION, outPaths, &argsN);
 }
 
@@ -1033,9 +1146,6 @@ nfdresult_t NFD_SaveDialogU8(nfdu8char_t** outPath,
 nfdresult_t NFD_SaveDialogU8_With_Impl(nfdversion_t version,
                                        nfdu8char_t** outPath,
                                        const nfdsavedialogu8args_t* args) {
-    // We haven't needed to bump the interface version yet.
-    (void)version;
-
     // populate the real nfdnfilteritem_t
     FilterItem_Guard filterItemsNGuard;
     if (!CopyFilterItem(args->filterList, args->filterCount, filterItemsNGuard)) {
@@ -1051,13 +1161,22 @@ nfdresult_t NFD_SaveDialogU8_With_Impl(nfdversion_t version,
     FreeCheck_Guard<nfdnchar_t> defaultNameNGuard;
     ConvertU8ToNative(args->defaultName, defaultNameNGuard);
 
+    // convert the title and button labels, but only if they are not nullptr
+    FreeCheck_Guard<nfdnchar_t> titleNGuard;
+    FreeCheck_Guard<nfdnchar_t> acceptLabelNGuard;
+    FreeCheck_Guard<nfdnchar_t> cancelLabelNGuard;
+    ConvertLabels(version, args, titleNGuard, acceptLabelNGuard, cancelLabelNGuard);
+
     // call the native function
     nfdnchar_t* outPathN;
     const nfdsavedialognargs_t argsN{filterItemsNGuard.data,
                                      args->filterCount,
                                      defaultPathNGuard.data,
                                      defaultNameNGuard.data,
-                                     args->parentWindow};
+                                     args->parentWindow,
+                                     titleNGuard.data,
+                                     acceptLabelNGuard.data,
+                                     cancelLabelNGuard.data};
     nfdresult_t res = NFD_SaveDialogN_With_Impl(NFD_INTERFACE_VERSION, &outPathN, &argsN);
 
     if (res != NFD_OKAY) {
@@ -1084,17 +1203,24 @@ nfdresult_t NFD_PickFolderU8(nfdu8char_t** outPath, const nfdu8char_t* defaultPa
 nfdresult_t NFD_PickFolderU8_With_Impl(nfdversion_t version,
                                        nfdu8char_t** outPath,
                                        const nfdpickfolderu8args_t* args) {
-    // We haven't needed to bump the interface version yet.
-    (void)version;
-
     // convert and normalize the default path, but only if it is not nullptr
     FreeCheck_Guard<nfdnchar_t> defaultPathNGuard;
     ConvertU8ToNative(args->defaultPath, defaultPathNGuard);
     NormalizePathSeparator(defaultPathNGuard.data);
 
+    // convert the title and button labels, but only if they are not nullptr
+    FreeCheck_Guard<nfdnchar_t> titleNGuard;
+    FreeCheck_Guard<nfdnchar_t> acceptLabelNGuard;
+    FreeCheck_Guard<nfdnchar_t> cancelLabelNGuard;
+    ConvertLabels(version, args, titleNGuard, acceptLabelNGuard, cancelLabelNGuard);
+
     // call the native function
     nfdnchar_t* outPathN;
-    const nfdpickfoldernargs_t argsN{defaultPathNGuard.data, args->parentWindow};
+    const nfdpickfoldernargs_t argsN{defaultPathNGuard.data,
+                                     args->parentWindow,
+                                     titleNGuard.data,
+                                     acceptLabelNGuard.data,
+                                     cancelLabelNGuard.data};
     nfdresult_t res = NFD_PickFolderN_With_Impl(NFD_INTERFACE_VERSION, &outPathN, &argsN);
 
     if (res != NFD_OKAY) {
@@ -1122,16 +1248,23 @@ nfdresult_t NFD_PickFolderMultipleU8(const nfdpathset_t** outPaths,
 nfdresult_t NFD_PickFolderMultipleU8_With_Impl(nfdversion_t version,
                                                const nfdpathset_t** outPaths,
                                                const nfdpickfolderu8args_t* args) {
-    // We haven't needed to bump the interface version yet.
-    (void)version;
-
     // convert and normalize the default path, but only if it is not nullptr
     FreeCheck_Guard<nfdnchar_t> defaultPathNGuard;
     ConvertU8ToNative(args->defaultPath, defaultPathNGuard);
     NormalizePathSeparator(defaultPathNGuard.data);
 
+    // convert the title and button labels, but only if they are not nullptr
+    FreeCheck_Guard<nfdnchar_t> titleNGuard;
+    FreeCheck_Guard<nfdnchar_t> acceptLabelNGuard;
+    FreeCheck_Guard<nfdnchar_t> cancelLabelNGuard;
+    ConvertLabels(version, args, titleNGuard, acceptLabelNGuard, cancelLabelNGuard);
+
     // call the native function
-    const nfdpickfoldernargs_t argsN{defaultPathNGuard.data, args->parentWindow};
+    const nfdpickfoldernargs_t argsN{defaultPathNGuard.data,
+                                     args->parentWindow,
+                                     titleNGuard.data,
+                                     acceptLabelNGuard.data,
+                                     cancelLabelNGuard.data};
     return NFD_PickFolderMultipleN_With_Impl(NFD_INTERFACE_VERSION, outPaths, &argsN);
 }
 
