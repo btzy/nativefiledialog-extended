@@ -207,6 +207,9 @@ typedef struct {
     nfdfiltersize_t filterCount;
     const nfdu8char_t* defaultPath;
     nfdwindowhandle_t parentWindow;
+    const nfdu8char_t* title;
+    const nfdu8char_t* acceptLabel;
+    const nfdu8char_t* cancelLabel;
 } nfdopendialogu8args_t;
 ```
 
@@ -218,6 +221,9 @@ typedef struct {
     const nfdu8char_t* defaultPath;
     const nfdu8char_t* defaultName;
     nfdwindowhandle_t parentWindow;
+    const nfdu8char_t* title;
+    const nfdu8char_t* acceptLabel;
+    const nfdu8char_t* cancelLabel;
 } nfdsavedialogu8args_t;
 ```
 
@@ -226,6 +232,9 @@ typedef struct {
 typedef struct {
     const nfdu8char_t* defaultPath;
     nfdwindowhandle_t parentWindow;
+    const nfdu8char_t* title;
+    const nfdu8char_t* acceptLabel;
+    const nfdu8char_t* cancelLabel;
 } nfdpickfolderu8args_t;
 ```
 
@@ -233,6 +242,9 @@ typedef struct {
 - `defaultPath`: Set this to the default folder that the dialog should open to (see the "Platform-specific Quirks" section for more details about the behaviour of this option on Windows).
 - `defaultName`: (For SaveDialog only) Set this to the file name that should be pre-filled on the dialog.
 - `parentWindow`: Set this to the native window handle of the parent of this dialog.  See the "Usage with a Platform Abstraction Framework" section for details.  It is also possible to pass a handle even if you do not use a platform abstraction framework.
+- `title`: Set this to customize the title of the dialog window.  If left unset, the operating system's default title (in the user's language) is used on Windows and macOS, while a hardcoded English title (such as "Open File" or "Save File") is used on Linux (GTK and Portal).
+- `acceptLabel`: Set this to customize the text of the accept (confirmation) button, e.g. the "Open" or "Save" button.  If left unset, the operating system's default text (in the user's language) is used, except on Linux (GTK), where a hardcoded English label (such as "Open" or "Save") is used.
+- `cancelLabel`: Set this to customize the text of the cancel button.  If left unset, the operating system's default text (in the user's language) is used, except on Linux (GTK), where the hardcoded English label "Cancel" is used.  *This option is supported on Windows (7 and later) and Linux (GTK); it is ignored on macOS and Linux (Portal), where the cancel button text is not customizable.*
 
 ## Examples
 

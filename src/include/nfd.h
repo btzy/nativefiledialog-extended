@@ -122,6 +122,9 @@ typedef struct {
     nfdfiltersize_t filterCount;
     const nfdu8char_t* defaultPath;
     nfdwindowhandle_t parentWindow;
+    const nfdu8char_t* title;
+    const nfdu8char_t* acceptLabel;
+    const nfdu8char_t* cancelLabel;
 } nfdopendialogu8args_t;
 
 #ifdef _WIN32
@@ -130,6 +133,9 @@ typedef struct {
     nfdfiltersize_t filterCount;
     const nfdnchar_t* defaultPath;
     nfdwindowhandle_t parentWindow;
+    const nfdnchar_t* title;
+    const nfdnchar_t* acceptLabel;
+    const nfdnchar_t* cancelLabel;
 } nfdopendialognargs_t;
 #else
 typedef nfdopendialogu8args_t nfdopendialognargs_t;
@@ -141,6 +147,9 @@ typedef struct {
     const nfdu8char_t* defaultPath;
     const nfdu8char_t* defaultName;
     nfdwindowhandle_t parentWindow;
+    const nfdu8char_t* title;
+    const nfdu8char_t* acceptLabel;
+    const nfdu8char_t* cancelLabel;
 } nfdsavedialogu8args_t;
 
 #ifdef _WIN32
@@ -150,6 +159,9 @@ typedef struct {
     const nfdnchar_t* defaultPath;
     const nfdnchar_t* defaultName;
     nfdwindowhandle_t parentWindow;
+    const nfdnchar_t* title;
+    const nfdnchar_t* acceptLabel;
+    const nfdnchar_t* cancelLabel;
 } nfdsavedialognargs_t;
 #else
 typedef nfdsavedialogu8args_t nfdsavedialognargs_t;
@@ -158,12 +170,18 @@ typedef nfdsavedialogu8args_t nfdsavedialognargs_t;
 typedef struct {
     const nfdu8char_t* defaultPath;
     nfdwindowhandle_t parentWindow;
+    const nfdu8char_t* title;
+    const nfdu8char_t* acceptLabel;
+    const nfdu8char_t* cancelLabel;
 } nfdpickfolderu8args_t;
 
 #ifdef _WIN32
 typedef struct {
     const nfdnchar_t* defaultPath;
     nfdwindowhandle_t parentWindow;
+    const nfdnchar_t* title;
+    const nfdnchar_t* acceptLabel;
+    const nfdnchar_t* cancelLabel;
 } nfdpickfoldernargs_t;
 #else
 typedef nfdpickfolderu8args_t nfdpickfoldernargs_t;
@@ -172,7 +190,7 @@ typedef nfdpickfolderu8args_t nfdpickfoldernargs_t;
 // This is a unique identifier tagged to all the NFD_*With() function calls, for backward
 // compatibility purposes.  There is usually no need to use this directly, unless you want to use
 // NFD differently depending on the version you're building with.
-#define NFD_INTERFACE_VERSION 1
+#define NFD_INTERFACE_VERSION 2
 
 /** Free a file path that was returned by the dialogs.
  *

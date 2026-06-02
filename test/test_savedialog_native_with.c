@@ -23,8 +23,12 @@ int main(void) {
 
 #ifdef _WIN32
     const wchar_t* defaultPath = L"Untitled.c";
+    const nfdnchar_t* title = L"Save your source file";
+    const nfdnchar_t* acceptLabel = L"Save it";
 #else
     const char* defaultPath = "Untitled.c";
+    const nfdnchar_t* title = "Save your source file";
+    const nfdnchar_t* acceptLabel = "Save it";
 #endif
 
     // show the dialog
@@ -32,6 +36,9 @@ int main(void) {
     args.filterList = filterItem;
     args.filterCount = 2;
     args.defaultName = defaultPath;
+    // customize the window title and accept button label (leave unset to use the OS default)
+    args.title = title;
+    args.acceptLabel = acceptLabel;
     nfdresult_t result = NFD_SaveDialogN_With(&savePath, &args);
     if (result == NFD_OKAY) {
         puts("Success!");
