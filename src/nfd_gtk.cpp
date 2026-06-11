@@ -415,9 +415,8 @@ void zxdg_exported_v1_handle(void* context, struct zxdg_exported_v1*, const char
     gdk_wayland_window_set_transient_for_exported(childWindow, const_cast<char*>(handle));
 }
 
-constexpr struct zxdg_exported_v1_listener wayland_xdg_exported_v1_listener {
-    &zxdg_exported_v1_handle
-};
+constexpr struct zxdg_exported_v1_listener wayland_xdg_exported_v1_listener{
+    &zxdg_exported_v1_handle};
 #endif
 
 // This is an RAII class that wraps the parenting of a GtkWidget (the file dialog).
