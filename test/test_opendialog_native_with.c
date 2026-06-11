@@ -21,10 +21,24 @@ int main(void) {
     nfdfilteritem_t filterItem[2] = {{"Source code", "c,cpp,cc"}, {"Headers", "h,hpp"}};
 #endif
 
+    // customize the window title and button labels (leave any of these unset to use the OS default)
+#ifdef _WIN32
+    const nfdnchar_t* title = L"Open a source file";
+    const nfdnchar_t* acceptLabel = L"Open it";
+    const nfdnchar_t* cancelLabel = L"Never mind";
+#else
+    const nfdnchar_t* title = "Open a source file";
+    const nfdnchar_t* acceptLabel = "Open it";
+    const nfdnchar_t* cancelLabel = "Never mind";
+#endif
+
     // show the dialog
     nfdopendialognargs_t args = {0};
     args.filterList = filterItem;
     args.filterCount = 2;
+    args.title = title;
+    args.acceptLabel = acceptLabel;
+    args.cancelLabel = cancelLabel;
     nfdresult_t result = NFD_OpenDialogN_With(&outPath, &args);
     if (result == NFD_OKAY) {
         puts("Success!");

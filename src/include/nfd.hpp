@@ -38,8 +38,12 @@ inline nfdresult_t OpenDialog(nfdnchar_t*& outPath,
                               const nfdnfilteritem_t* filterList = nullptr,
                               nfdfiltersize_t filterCount = 0,
                               const nfdnchar_t* defaultPath = nullptr,
-                              nfdwindowhandle_t parentWindow = {}) noexcept {
-    const nfdopendialognargs_t args{filterList, filterCount, defaultPath, parentWindow};
+                              nfdwindowhandle_t parentWindow = {},
+                              const nfdnchar_t* title = nullptr,
+                              const nfdnchar_t* acceptLabel = nullptr,
+                              const nfdnchar_t* cancelLabel = nullptr) noexcept {
+    const nfdopendialognargs_t args{
+        filterList, filterCount, defaultPath, parentWindow, title, acceptLabel, cancelLabel};
     return ::NFD_OpenDialogN_With(&outPath, &args);
 }
 
@@ -47,8 +51,12 @@ inline nfdresult_t OpenDialogMultiple(const nfdpathset_t*& outPaths,
                                       const nfdnfilteritem_t* filterList = nullptr,
                                       nfdfiltersize_t filterCount = 0,
                                       const nfdnchar_t* defaultPath = nullptr,
-                                      nfdwindowhandle_t parentWindow = {}) noexcept {
-    const nfdopendialognargs_t args{filterList, filterCount, defaultPath, parentWindow};
+                                      nfdwindowhandle_t parentWindow = {},
+                                      const nfdnchar_t* title = nullptr,
+                                      const nfdnchar_t* acceptLabel = nullptr,
+                                      const nfdnchar_t* cancelLabel = nullptr) noexcept {
+    const nfdopendialognargs_t args{
+        filterList, filterCount, defaultPath, parentWindow, title, acceptLabel, cancelLabel};
     return ::NFD_OpenDialogMultipleN_With(&outPaths, &args);
 }
 
@@ -57,23 +65,38 @@ inline nfdresult_t SaveDialog(nfdnchar_t*& outPath,
                               nfdfiltersize_t filterCount = 0,
                               const nfdnchar_t* defaultPath = nullptr,
                               const nfdnchar_t* defaultName = nullptr,
-                              nfdwindowhandle_t parentWindow = {}) noexcept {
-    const nfdsavedialognargs_t args{
-        filterList, filterCount, defaultPath, defaultName, parentWindow};
+                              nfdwindowhandle_t parentWindow = {},
+                              const nfdnchar_t* title = nullptr,
+                              const nfdnchar_t* acceptLabel = nullptr,
+                              const nfdnchar_t* cancelLabel = nullptr) noexcept {
+    const nfdsavedialognargs_t args{filterList,
+                                    filterCount,
+                                    defaultPath,
+                                    defaultName,
+                                    parentWindow,
+                                    title,
+                                    acceptLabel,
+                                    cancelLabel};
     return ::NFD_SaveDialogN_With(&outPath, &args);
 }
 
 inline nfdresult_t PickFolder(nfdnchar_t*& outPath,
                               const nfdnchar_t* defaultPath = nullptr,
-                              nfdwindowhandle_t parentWindow = {}) noexcept {
-    const nfdpickfoldernargs_t args{defaultPath, parentWindow};
+                              nfdwindowhandle_t parentWindow = {},
+                              const nfdnchar_t* title = nullptr,
+                              const nfdnchar_t* acceptLabel = nullptr,
+                              const nfdnchar_t* cancelLabel = nullptr) noexcept {
+    const nfdpickfoldernargs_t args{defaultPath, parentWindow, title, acceptLabel, cancelLabel};
     return ::NFD_PickFolderN_With(&outPath, &args);
 }
 
 inline nfdresult_t PickFolderMultiple(const nfdpathset_t*& outPaths,
                                       const nfdnchar_t* defaultPath = nullptr,
-                                      nfdwindowhandle_t parentWindow = {}) noexcept {
-    const nfdpickfoldernargs_t args{defaultPath, parentWindow};
+                                      nfdwindowhandle_t parentWindow = {},
+                                      const nfdnchar_t* title = nullptr,
+                                      const nfdnchar_t* acceptLabel = nullptr,
+                                      const nfdnchar_t* cancelLabel = nullptr) noexcept {
+    const nfdpickfoldernargs_t args{defaultPath, parentWindow, title, acceptLabel, cancelLabel};
     return ::NFD_PickFolderMultipleN_With(&outPaths, &args);
 }
 
@@ -117,8 +140,12 @@ inline nfdresult_t OpenDialog(nfdu8char_t*& outPath,
                               const nfdu8filteritem_t* filterList = nullptr,
                               nfdfiltersize_t filterCount = 0,
                               const nfdu8char_t* defaultPath = nullptr,
-                              nfdwindowhandle_t parentWindow = {}) noexcept {
-    const nfdopendialogu8args_t args{filterList, filterCount, defaultPath, parentWindow};
+                              nfdwindowhandle_t parentWindow = {},
+                              const nfdu8char_t* title = nullptr,
+                              const nfdu8char_t* acceptLabel = nullptr,
+                              const nfdu8char_t* cancelLabel = nullptr) noexcept {
+    const nfdopendialogu8args_t args{
+        filterList, filterCount, defaultPath, parentWindow, title, acceptLabel, cancelLabel};
     return ::NFD_OpenDialogU8_With(&outPath, &args);
 }
 
@@ -126,8 +153,12 @@ inline nfdresult_t OpenDialogMultiple(const nfdpathset_t*& outPaths,
                                       const nfdu8filteritem_t* filterList = nullptr,
                                       nfdfiltersize_t filterCount = 0,
                                       const nfdu8char_t* defaultPath = nullptr,
-                                      nfdwindowhandle_t parentWindow = {}) noexcept {
-    const nfdopendialogu8args_t args{filterList, filterCount, defaultPath, parentWindow};
+                                      nfdwindowhandle_t parentWindow = {},
+                                      const nfdu8char_t* title = nullptr,
+                                      const nfdu8char_t* acceptLabel = nullptr,
+                                      const nfdu8char_t* cancelLabel = nullptr) noexcept {
+    const nfdopendialogu8args_t args{
+        filterList, filterCount, defaultPath, parentWindow, title, acceptLabel, cancelLabel};
     return ::NFD_OpenDialogMultipleU8_With(&outPaths, &args);
 }
 
@@ -136,23 +167,38 @@ inline nfdresult_t SaveDialog(nfdu8char_t*& outPath,
                               nfdfiltersize_t filterCount = 0,
                               const nfdu8char_t* defaultPath = nullptr,
                               const nfdu8char_t* defaultName = nullptr,
-                              nfdwindowhandle_t parentWindow = {}) noexcept {
-    const nfdsavedialogu8args_t args{
-        filterList, filterCount, defaultPath, defaultName, parentWindow};
+                              nfdwindowhandle_t parentWindow = {},
+                              const nfdu8char_t* title = nullptr,
+                              const nfdu8char_t* acceptLabel = nullptr,
+                              const nfdu8char_t* cancelLabel = nullptr) noexcept {
+    const nfdsavedialogu8args_t args{filterList,
+                                     filterCount,
+                                     defaultPath,
+                                     defaultName,
+                                     parentWindow,
+                                     title,
+                                     acceptLabel,
+                                     cancelLabel};
     return ::NFD_SaveDialogU8_With(&outPath, &args);
 }
 
 inline nfdresult_t PickFolder(nfdu8char_t*& outPath,
                               const nfdu8char_t* defaultPath = nullptr,
-                              nfdwindowhandle_t parentWindow = {}) noexcept {
-    const nfdpickfolderu8args_t args{defaultPath, parentWindow};
+                              nfdwindowhandle_t parentWindow = {},
+                              const nfdu8char_t* title = nullptr,
+                              const nfdu8char_t* acceptLabel = nullptr,
+                              const nfdu8char_t* cancelLabel = nullptr) noexcept {
+    const nfdpickfolderu8args_t args{defaultPath, parentWindow, title, acceptLabel, cancelLabel};
     return ::NFD_PickFolderU8_With(&outPath, &args);
 }
 
 inline nfdresult_t PickFolderMultiple(const nfdpathset_t*& outPaths,
                                       const nfdu8char_t* defaultPath = nullptr,
-                                      nfdwindowhandle_t parentWindow = {}) noexcept {
-    const nfdpickfolderu8args_t args{defaultPath, parentWindow};
+                                      nfdwindowhandle_t parentWindow = {},
+                                      const nfdu8char_t* title = nullptr,
+                                      const nfdu8char_t* acceptLabel = nullptr,
+                                      const nfdu8char_t* cancelLabel = nullptr) noexcept {
+    const nfdpickfolderu8args_t args{defaultPath, parentWindow, title, acceptLabel, cancelLabel};
     return ::NFD_PickFolderMultipleU8_With(&outPaths, &args);
 }
 
