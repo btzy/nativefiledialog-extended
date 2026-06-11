@@ -15,6 +15,8 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
+    - name: Check version
+      run: clang-format --version
     - name: Format code
       run: find src/ test/ -iname '*.c' -or -iname '*.cpp' -or -iname '*.m' -or -iname '*.mm' -or -iname '*.h' -or -iname '*.hpp' | xargs clang-format -i -style=file
     - name: Check diff
@@ -28,7 +30,7 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
-    - name: Install Dependencies
+    - name: Install dependencies
       run: sudo apt-get update && sudo apt-get install dos2unix
     - name: Convert to Unix line endings
       run: dos2unix */*
@@ -105,7 +107,7 @@ jobs:
       uses: actions/checkout@v4
       with:
         submodules: true
-    - name: Install Dependencies
+    - name: Install dependencies
       run: sudo apt-get update && sudo apt-get install ${{ matrix.portal.dep }} ${{ matrix.wayland.dep }}
     - name: Configure
       run: mkdir build && mkdir install && cd build && cmake -DCMAKE_INSTALL_PREFIX="../install" -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=${{ matrix.compiler.c }} -DCMAKE_CXX_COMPILER=${{ matrix.compiler.cpp }} -DCMAKE_CXX_STANDARD=${{ matrix.cppstd }} -DCMAKE_C_FLAGS="-Wall -Wextra -Wshadow -Werror -pedantic" -DCMAKE_CXX_FLAGS="-Wall -Wextra -Wshadow -Werror -pedantic" -DNFD_PORTAL=${{ matrix.portal.flag }} -DNFD_WAYLAND=${{ matrix.wayland.flag }} -DNFD_APPEND_EXTENSION=${{ matrix.autoappend.flag }} -DNFD_CASE_SENSITIVE_FILTER=${{ matrix.casesensitive.flag }} -DBUILD_SHARED_LIBS=${{ matrix.shared_lib.flag }} -DNFD_BUILD_TESTS=ON ..
@@ -237,7 +239,7 @@ jobs:
       uses: actions/checkout@v4
       with:
         submodules: true
-    - name: Install Dependencies
+    - name: Install dependencies
       run: sudo apt-get update && sudo apt-get install ${{ matrix.portal.dep }} ${{ matrix.wayland.dep }} libsdl2-dev libsdl2-ttf-dev
     - name: Configure
       run: mkdir build && mkdir install && cd build && cmake -DCMAKE_INSTALL_PREFIX="../install" -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS="-Wall -Wextra -Wshadow -Werror -pedantic" -DCMAKE_CXX_FLAGS="-Wall -Wextra -Wshadow -Werror -pedantic" -DNFD_PORTAL=${{ matrix.portal.flag }} -DNFD_WAYLAND=${{ matrix.wayland.flag }} -DNFD_APPEND_EXTENSION=OFF -DNFD_BUILD_TESTS=OFF -DNFD_BUILD_SDL2_TESTS=ON ..
@@ -266,7 +268,7 @@ jobs:
       uses: actions/checkout@v4
       with:
         submodules: true
-    - name: Install Dependencies
+    - name: Install dependencies
       run: sudo apt-get update && sudo apt-get install ${{ matrix.portal.dep }} ${{ matrix.wayland.dep }} libglfw3-dev
     - name: Configure
       run: mkdir build && mkdir install && cd build && cmake -DCMAKE_INSTALL_PREFIX="../install" -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS="-Wall -Wextra -Wshadow -Werror -pedantic" -DCMAKE_CXX_FLAGS="-Wall -Wextra -Wshadow -Werror -pedantic" -DNFD_PORTAL=${{ matrix.portal.flag }} -DNFD_WAYLAND=${{ matrix.wayland.flag }} -DNFD_APPEND_EXTENSION=OFF -DNFD_BUILD_TESTS=OFF -DNFD_BUILD_GLFW3_TESTS=ON ..
@@ -288,7 +290,7 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
-    - name: Install Dependencies
+    - name: Install dependencies
       run: brew install sdl2 sdl2_ttf
     - name: Configure
       run: mkdir build && mkdir install && cd build && cmake -DCMAKE_INSTALL_PREFIX="../install" -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS="-Wall -Wextra -Wshadow -Werror -pedantic" -DCMAKE_CXX_FLAGS="-Wall -Wextra -Wshadow -Werror -pedantic" -DNFD_BUILD_TESTS=OFF -DNFD_BUILD_SDL2_TESTS=ON ..
@@ -310,7 +312,7 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
-    - name: Install Dependencies
+    - name: Install dependencies
       run: brew install glfw
     - name: Configure
       run: mkdir build && mkdir install && cd build && cmake -DCMAKE_INSTALL_PREFIX="../install" -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS="-Wall -Wextra -Wshadow -Werror -pedantic" -DCMAKE_CXX_FLAGS="-Wall -Wextra -Wshadow -Werror -pedantic" -DNFD_BUILD_TESTS=OFF -DNFD_BUILD_GLFW3_TESTS=ON ..
@@ -334,7 +336,7 @@ jobs:
       uses: actions/checkout@v4
     - name: Install pkgconfiglite
       run: choco install pkgconfiglite
-    - name: Install Dependencies
+    - name: Install dependencies
       run: vcpkg integrate install && vcpkg install sdl2 sdl2-ttf --triplet=x64-windows-release
     - name: Configure
       run: mkdir build && mkdir install && cd build && cmake -DCMAKE_INSTALL_PREFIX="../install" -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake" -DVCPKG_TARGET_TRIPLET="x64-windows-release" -DNFD_BUILD_TESTS=OFF -DNFD_BUILD_SDL2_TESTS=ON ..
@@ -358,7 +360,7 @@ jobs:
       uses: actions/checkout@v4
     - name: Install pkgconfiglite
       run: choco install pkgconfiglite
-    - name: Install Dependencies
+    - name: Install dependencies
       run: vcpkg integrate install && vcpkg install glfw3 --triplet=x64-windows-release
     - name: Configure
       run: mkdir build && mkdir install && cd build && cmake -DCMAKE_INSTALL_PREFIX="../install" -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake" -DVCPKG_TARGET_TRIPLET="x64-windows-release" -DNFD_BUILD_TESTS=OFF -DNFD_BUILD_GLFW3_TESTS=ON ..
