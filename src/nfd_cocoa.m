@@ -235,8 +235,10 @@ nfdresult_t NFD_OpenDialogN_With_Impl(nfdversion_t version,
     // We haven't needed to bump the interface version yet.
     (void)version;
 
-    nfdresult_t result = NFD_CANCEL;
-    @autoreleasepool {
+    __block nfdresult_t result = NFD_CANCEL;
+    dispatch_sync(dispatch_get_main_queue(), ^{
+        NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
+
         NSWindow* keyWindow = GetNativeWindowHandle(&args->parentWindow);
         if (keyWindow) {
             [keyWindow makeKeyAndOrderFront:nil];
@@ -261,7 +263,9 @@ nfdresult_t NFD_OpenDialogN_With_Impl(nfdversion_t version,
 
         // return focus to the key window (i.e. main window)
         [keyWindow makeKeyAndOrderFront:nil];
-    }
+
+        [pool release];
+    });
     return result;
 }
 
@@ -295,8 +299,10 @@ nfdresult_t NFD_OpenDialogMultipleN_With_Impl(nfdversion_t version,
     // We haven't needed to bump the interface version yet.
     (void)version;
 
-    nfdresult_t result = NFD_CANCEL;
-    @autoreleasepool {
+    __block nfdresult_t result = NFD_CANCEL;
+    dispatch_sync(dispatch_get_main_queue(), ^{
+        NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
+
         NSWindow* keyWindow = GetNativeWindowHandle(&args->parentWindow);
         if (keyWindow) {
             [keyWindow makeKeyAndOrderFront:nil];
@@ -326,7 +332,9 @@ nfdresult_t NFD_OpenDialogMultipleN_With_Impl(nfdversion_t version,
 
         // return focus to the key window (i.e. main window)
         [keyWindow makeKeyAndOrderFront:nil];
-    }
+
+        [pool release];
+    });
     return result;
 }
 
@@ -362,8 +370,10 @@ nfdresult_t NFD_SaveDialogN_With_Impl(nfdversion_t version,
     // We haven't needed to bump the interface version yet.
     (void)version;
 
-    nfdresult_t result = NFD_CANCEL;
-    @autoreleasepool {
+    __block nfdresult_t result = NFD_CANCEL;
+    dispatch_sync(dispatch_get_main_queue(), ^{
+        NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
+
         NSWindow* keyWindow = GetNativeWindowHandle(&args->parentWindow);
         if (keyWindow) {
             [keyWindow makeKeyAndOrderFront:nil];
@@ -394,7 +404,9 @@ nfdresult_t NFD_SaveDialogN_With_Impl(nfdversion_t version,
 
         // return focus to the key window (i.e. main window)
         [keyWindow makeKeyAndOrderFront:nil];
-    }
+
+        [pool release];
+    });
     return result;
 }
 
@@ -424,8 +436,10 @@ nfdresult_t NFD_PickFolderN_With_Impl(nfdversion_t version,
     // We haven't needed to bump the interface version yet.
     (void)version;
 
-    nfdresult_t result = NFD_CANCEL;
-    @autoreleasepool {
+    __block nfdresult_t result = NFD_CANCEL;
+    dispatch_sync(dispatch_get_main_queue(), ^{
+        NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
+
         NSWindow* keyWindow = GetNativeWindowHandle(&args->parentWindow);
         if (keyWindow) {
             [keyWindow makeKeyAndOrderFront:nil];
@@ -450,7 +464,9 @@ nfdresult_t NFD_PickFolderN_With_Impl(nfdversion_t version,
 
         // return focus to the key window (i.e. main window)
         [keyWindow makeKeyAndOrderFront:nil];
-    }
+
+        [pool release];
+    });
     return result;
 }
 
@@ -476,8 +492,10 @@ nfdresult_t NFD_PickFolderMultipleN_With_Impl(nfdversion_t version,
     // We haven't needed to bump the interface version yet.
     (void)version;
 
-    nfdresult_t result = NFD_CANCEL;
-    @autoreleasepool {
+    __block nfdresult_t result = NFD_CANCEL;
+    dispatch_sync(dispatch_get_main_queue(), ^{
+        NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
+
         NSWindow* keyWindow = GetNativeWindowHandle(&args->parentWindow);
         if (keyWindow) {
             [keyWindow makeKeyAndOrderFront:nil];
@@ -507,7 +525,9 @@ nfdresult_t NFD_PickFolderMultipleN_With_Impl(nfdversion_t version,
 
         // return focus to the key window (i.e. main window)
         [keyWindow makeKeyAndOrderFront:nil];
-    }
+
+        [pool release];
+    });
     return result;
 }
 
