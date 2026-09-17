@@ -14,7 +14,7 @@ jobs:
     
     steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
     - name: Install dependencies
       run: sudo apt-get update && sudo apt-get install clang-format-20
     - name: Check version
@@ -31,7 +31,7 @@ jobs:
     
     steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
     - name: Install dependencies
       run: sudo apt-get update && sudo apt-get install dos2unix
     - name: Convert to Unix line endings
@@ -106,7 +106,7 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
       with:
         submodules: true
     - name: Install dependencies
@@ -116,7 +116,7 @@ jobs:
     - name: Build
       run: cmake --build build --target install
     - name: Upload test binaries
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: Ubuntu ${{ matrix.os.name }} - ${{ matrix.compiler.name }}, ${{ matrix.portal.name }}, ${{ matrix.wayland.name }}, ${{ matrix.autoappend.name }}, ${{ matrix.casesensitive.name }}, ${{ matrix.shared_lib.name }}, C++${{ matrix.cppstd }}
         path: |
@@ -135,13 +135,13 @@ jobs:
     
     steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
     - name: Configure
       run: mkdir build && mkdir install && cd build && cmake -DCMAKE_INSTALL_PREFIX="../install" -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS="-Wall -Wextra -Wshadow -Werror -pedantic" -DCMAKE_CXX_FLAGS="-Wall -Wextra -Wshadow -Werror -pedantic" -DBUILD_SHARED_LIBS=${{ matrix.shared_lib.flag }} -DNFD_BUILD_TESTS=ON ..
     - name: Build
       run: cmake --build build --target install
     - name: Upload test binaries
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: MacOS ${{ matrix.os.name }} - Clang, ${{ matrix.shared_lib.name }}
         path: |
@@ -159,13 +159,13 @@ jobs:
     
     steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
     - name: Configure
       run: mkdir build && mkdir install && cd build && cmake -DCMAKE_INSTALL_PREFIX="../install" -DBUILD_SHARED_LIBS=${{ matrix.shared_lib.flag }} -DNFD_BUILD_TESTS=ON ..
     - name: Build
       run: cmake --build build --target install --config Release
     - name: Upload test binaries
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: Windows latest - MSVC, ${{ matrix.shared_lib.name }}
         path: |
@@ -179,13 +179,13 @@ jobs:
     
     steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
     - name: Configure
       run: mkdir build && mkdir install && cd build && cmake -DCMAKE_INSTALL_PREFIX="../install" -T ClangCL -DNFD_BUILD_TESTS=ON ..
     - name: Build
       run: cmake --build build --target install --config Release
     - name: Upload test binaries
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: Windows latest - Clang, Static
         path: |
@@ -203,7 +203,7 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
     - name: Set up MinGW-w64
       uses: msys2/setup-msys2@v2
       with:
@@ -217,7 +217,7 @@ jobs:
     - name: Build
       run: cmake --build build --target install
     - name: Upload test binaries
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: Windows latest - MinGW, Static
         path: |
@@ -236,7 +236,7 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
       with:
         submodules: true
     - name: Install dependencies
@@ -246,7 +246,7 @@ jobs:
     - name: Build
       run: cmake --build build --target install
     - name: Upload test binaries
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: Ubuntu latest - GCC, ${{ matrix.portal.name }}, ${{ matrix.wayland.name }}, Static, SDL2
         path: |
@@ -266,7 +266,7 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
       with:
         submodules: true
     - name: Install dependencies
@@ -276,7 +276,7 @@ jobs:
     - name: Build
       run: cmake --build build --target install
     - name: Upload test binaries
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: Ubuntu 26.04 - GCC, ${{ matrix.portal.name }}, ${{ matrix.wayland.name }}, Static, SDL3
         path: |
@@ -295,7 +295,7 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
       with:
         submodules: true
     - name: Install dependencies
@@ -305,7 +305,7 @@ jobs:
     - name: Build
       run: cmake --build build --target install
     - name: Upload test binaries
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: Ubuntu latest - GCC, ${{ matrix.portal.name }}, ${{ matrix.wayland.name }}, Static, GLFW3
         path: |
@@ -319,7 +319,7 @@ jobs:
     
     steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
     - name: Install dependencies
       run: brew install sdl2 sdl2_ttf
     - name: Configure
@@ -327,7 +327,7 @@ jobs:
     - name: Build
       run: cmake --build build --target install
     - name: Upload test binaries
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: MacOS latest - Clang, Static, SDL2
         path: |
@@ -341,7 +341,7 @@ jobs:
     
     steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
     - name: Install dependencies
       run: brew install sdl3 sdl3_ttf
     - name: Configure
@@ -349,7 +349,7 @@ jobs:
     - name: Build
       run: cmake --build build --target install
     - name: Upload test binaries
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: MacOS latest - Clang, Static, SDL3
         path: |
@@ -363,7 +363,7 @@ jobs:
     
     steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
     - name: Install dependencies
       run: brew install glfw
     - name: Configure
@@ -371,7 +371,7 @@ jobs:
     - name: Build
       run: cmake --build build --target install
     - name: Upload test binaries
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: MacOS latest - Clang, Static, GLFW3
         path: |
@@ -385,7 +385,7 @@ jobs:
     
     steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
     - name: Install pkgconfiglite
       run: choco install pkgconfiglite
     - name: Install dependencies
@@ -395,7 +395,7 @@ jobs:
     - name: Build
       run: cmake --build build --target install --config Release
     - name: Upload test binaries
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: Windows latest - MSVC, Static, SDL2
         path: |
@@ -409,7 +409,7 @@ jobs:
     
     steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
     - name: Install pkgconfiglite
       run: choco install pkgconfiglite
     - name: Install dependencies
@@ -419,7 +419,7 @@ jobs:
     - name: Build
       run: cmake --build build --target install --config Release
     - name: Upload test binaries
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: Windows latest - MSVC, Static, SDL3
         path: |
@@ -433,7 +433,7 @@ jobs:
     
     steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
     - name: Install pkgconfiglite
       run: choco install pkgconfiglite
     - name: Install dependencies
@@ -443,7 +443,7 @@ jobs:
     - name: Build
       run: cmake --build build --target install --config Release
     - name: Upload test binaries
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: Windows latest - MSVC, Static, GLFW3
         path: |
