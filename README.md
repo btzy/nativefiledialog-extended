@@ -313,7 +313,7 @@ Macros that might be defined by `nfd.h`:
 
 ## Usage with a Platform Abstraction Framework
 
-NFDe is known to work with SDL2 and GLFW, and should also work with other platform abstraction framworks.  This section explains how to use NFDe properly with such frameworks.
+NFDe is known to work with SDL2, SDL3, and GLFW, and should also work with other platform abstraction framworks.  This section explains how to use NFDe properly with such frameworks.
 
 ### Initialization order
 
@@ -361,7 +361,25 @@ Each time you want to show a dialog, call the following function to retrieve the
 NFD_GetNativeWindowFromSDLWindow(sdlWindow /* SDL_Window* */, &args.parentWindow);
 ```
 
-See `test_sdl.c` for an example.
+See `test_sdl2.c` for an example.
+
+#### SDL3
+
+If using SDL3, include `<nfd_sdl3.h>` and do the following:
+
+Call the following function once, after `SDL_Init()` and `NFD_Init()` but before opening any file dialogs, to tell NFDe the `wl_display` your application is using (this function does nothing if your application isn't using Wayland):
+```C
+NFD_SetDisplayPropertiesFromSDL();
+```
+
+Each time you want to show a dialog, call the following function to retrieve the parent window handle and set the corresponding argument:
+```C
+NFD_GetNativeWindowFromSDLWindow(sdlWindow /* SDL_Window* */, &args.parentWindow);
+```
+
+See `test_sdl3.c` for an example.
+
+*Note:  SDL3 comes with its own file dialog API (e.g. `SDL_ShowFileDialogWithProperties()`), so you might not need NFDe if you are using SDL3.*
 
 #### GLFW3
 

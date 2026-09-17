@@ -1,25 +1,26 @@
-#define SDL_MAIN_HANDLED
-#include <SDL.h>
-#include <SDL_ttf.h>
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
+#include <SDL3_ttf/SDL_ttf.h>
 #include <nfd.h>
-#include <nfd_sdl2.h>
+#include <nfd_sdl3.h>
+#include <stdbool.h>
 #include <stddef.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-// Small program meant to demonstrate and test nfd_sdl2.h with SDL2.  Note that it quits immediately
-// when it encounters an error, without calling the opposite destroy/quit function.  A real-world
+// Small program meant to demonstrate and test nfd_sdl3.h with SDL3.  Note that it quits immediately
+// when it encounters an error, without calling the opposite destroy/quit function. A real-world
 // application should call destroy/quit appropriately.
-
 void show_error(const char* message, SDL_Window* window) {
-    if (SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error", message, window) != 0) {
+    if (!SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error", message, window)) {
         printf("SDL_ShowSimpleMessageBox failed: %s\n", SDL_GetError());
         return;
     }
 }
 
 void show_path(const char* path, SDL_Window* window) {
-    if (SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "Success", path, window) != 0) {
+    if (!SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "Success", path, window)) {
         printf("SDL_ShowSimpleMessageBox failed: %s\n", SDL_GetError());
         return;
     }
@@ -66,7 +67,7 @@ void show_paths(const nfdpathset_t* paths, SDL_Window* window) {
         NFD_PathSet_FreePathU8(path);
     }
 
-    if (SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "Success", message, window) != 0) {
+    if (!SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "Success", message, window)) {
         printf("SDL_ShowSimpleMessageBox failed: %s\n", SDL_GetError());
         free(message);
         return;
@@ -177,8 +178,14 @@ const char* font_file[] = {"C:\\Windows\\Fonts\\calibri.ttf"};
 const char* font_file[] = {"/System/Library/Fonts/SFNS.ttf"};
 #else
 const char* font_file[] = {
-    "/usr/share/fonts/truetype/noto/NotoSans-Regular.ttf",  // Ubuntu
+    "/usr/share/fonts/noto/NotoSans-Regular.ttf",           // Arch/OpenSUSE
+    "/usr/share/fonts/truetype/noto/NotoSans-Regular.ttf",  // Ubuntu/Debian
     "/usr/share/fonts/google-noto/NotoSans-Regular.ttf",    // Fedora
+
+    // Fallback if noto fonts are not found
+    "/usr/share/fonts/dejavu/DejaVuSans.ttf",             // Arch/OpenSUSE
+    "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",    // Ubuntu/Debian
+    "/usr/share/fonts/dejavu-sans-fonts/DejaVuSans.ttf",  // Fedora
 };
 #endif
 const size_t num_font_files = sizeof(font_file) / sizeof(const char*);
@@ -199,27 +206,19 @@ void (*button_handler[NUM_BUTTONS])(SDL_Window*) = {&opendialog_handler,
                                                     &pickfolder_handler,
                                                     &pickfoldermultiple_handler};
 
-#ifdef _WIN32
-int WINAPI WinMain(void)
-#else
-int main(void)
-#endif
-{
-#ifdef _WIN32
-    // Enable DPI awareness on Windows
-    SDL_SetHint("SDL_HINT_WINDOWS_DPI_AWARENESS", "permonitorv2");
-    SDL_SetHint("SDL_HINT_WINDOWS_DPI_SCALING", "1");
-#endif
+int main(int argc, char* argv[]) {
+    (void)argc;
+    (void)argv;
 
     // initialize SDL
-    if (SDL_Init(SDL_INIT_VIDEO) != 0) {
+    if (!SDL_Init(SDL_INIT_VIDEO)) {
         printf("SDL_Init failed: %s\n", SDL_GetError());
         return 0;
     }
 
     // initialize SDL_ttf
-    if (TTF_Init() != 0) {
-        printf("TTF_Init failed: %s\n", TTF_GetError());
+    if (!TTF_Init()) {
+        printf("TTF_Init failed: %s\n", SDL_GetError());
         return 0;
     }
 
@@ -230,40 +229,42 @@ int main(void)
     }
 
     // create window
-    SDL_Window* const window = SDL_CreateWindow("Welcome",
-                                                SDL_WINDOWPOS_UNDEFINED,
-                                                SDL_WINDOWPOS_UNDEFINED,
-                                                BUTTON_WIDTH,
-                                                BUTTON_HEIGHT * NUM_BUTTONS,
-                                                SDL_WINDOW_ALLOW_HIGHDPI);
+    SDL_Window* const window = SDL_CreateWindow(
+        "Welcome", BUTTON_WIDTH, BUTTON_HEIGHT * NUM_BUTTONS, SDL_WINDOW_HIGH_PIXEL_DENSITY);
     if (!window) {
         printf("SDL_CreateWindow failed: %s\n", SDL_GetError());
         return 0;
     }
 
     // this gives NFD the wl_display* on Wayland; this is needed to set the parent window
-    if (!NFD_SetDisplayPropertiesFromSDLWindow(window)) {
-        printf("NFD_SetDisplayPropertiesFromSDLWindow failed: %s\n", SDL_GetError());
+    if (!NFD_SetDisplayPropertiesFromSDL()) {
+        printf("NFD_SetDisplayPropertiesFromSDL failed: %s\n", SDL_GetError());
     }
 
-    // create renderer
-    SDL_Renderer* const renderer =
-        SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    float window_scale = SDL_GetWindowDisplayScale(window);
+    window_scale = window_scale == 0.0f ? 1.0f : window_scale;
+
+    // Create renderer
+    SDL_Renderer* const renderer = SDL_CreateRenderer(window, NULL);
     if (!renderer) {
         printf("SDL_CreateRenderer failed: %s\n", SDL_GetError());
         return 0;
     }
+
+    // Properly support HiDPI
+    SDL_SetRenderLogicalPresentation(
+        renderer, BUTTON_WIDTH, BUTTON_HEIGHT * NUM_BUTTONS, SDL_LOGICAL_PRESENTATION_STRETCH);
 
     // prepare the buttons and handlers
     SDL_Texture* textures_normal[NUM_BUTTONS][NUM_STATES];
 
     TTF_Font* font = NULL;
     for (size_t i = 0; i != num_font_files; ++i) {
-        font = TTF_OpenFont(font_file[i], 20);
+        font = TTF_OpenFont(font_file[i], 20.0f * window_scale);
         if (font) break;
     }
     if (!font) {
-        printf("TTF_OpenFont failed: %s\n", TTF_GetError());
+        printf("TTF_OpenFont failed: %s\n", SDL_GetError());
         return 0;
     }
 
@@ -274,43 +275,46 @@ int main(void)
     const uint8_t text_alpha[NUM_STATES] = {153, 204, 255};
 
     for (size_t i = 0; i != NUM_BUTTONS; ++i) {
-        SDL_Surface* const text_surface = TTF_RenderUTF8_Blended(font, button_text[i], text_color);
+        SDL_Surface* const text_surface =
+            TTF_RenderText_Blended(font, button_text[i], 0, text_color);
         if (!text_surface) {
-            printf("TTF_RenderUTF8_Blended failed: %s\n", TTF_GetError());
+            printf("TTF_RenderUTF8_Blended failed: %s\n", SDL_GetError());
             return 0;
         }
 
-        if (SDL_SetSurfaceBlendMode(text_surface, SDL_BLENDMODE_BLEND) != 0) {
+        if (!SDL_SetSurfaceBlendMode(text_surface, SDL_BLENDMODE_BLEND)) {
             printf("SDL_SetSurfaceBlendMode failed: %s\n", SDL_GetError());
             return 0;
         }
 
         for (size_t j = 0; j != NUM_STATES; ++j) {
-            SDL_Surface* button_surface =
-                SDL_CreateRGBSurface(0, BUTTON_WIDTH, BUTTON_HEIGHT, 32, 0, 0, 0, 0);
+            SDL_Surface* button_surface = SDL_CreateSurface((int)(BUTTON_WIDTH * window_scale),
+                                                            (int)(BUTTON_HEIGHT * window_scale),
+                                                            SDL_PIXELFORMAT_RGBA32);
             if (!button_surface) {
                 printf("SDL_CreateRGBSurface failed: %s\n", SDL_GetError());
                 return 0;
             }
 
-            if (SDL_FillRect(button_surface,
-                             NULL,
-                             SDL_MapRGBA(button_surface->format,
-                                         back_color[j].r,
-                                         back_color[j].g,
-                                         back_color[j].b,
-                                         back_color[j].a)) != 0) {
+            if (!SDL_FillSurfaceRect(button_surface,
+                                     NULL,
+                                     SDL_MapRGBA(SDL_GetPixelFormatDetails(button_surface->format),
+                                                 NULL,
+                                                 back_color[j].r,
+                                                 back_color[j].g,
+                                                 back_color[j].b,
+                                                 back_color[j].a))) {
                 printf("SDL_FillRect failed: %s\n", SDL_GetError());
                 return 0;
             }
 
             SDL_SetSurfaceAlphaMod(text_surface, text_alpha[j]);
 
-            SDL_Rect dstrect = {(BUTTON_WIDTH - text_surface->w) / 2,
-                                (BUTTON_HEIGHT - text_surface->h) / 2,
+            SDL_Rect dstrect = {((int)(BUTTON_WIDTH * window_scale) - text_surface->w) / 2,
+                                ((int)(BUTTON_HEIGHT * window_scale) - text_surface->h) / 2,
                                 text_surface->w,
                                 text_surface->h};
-            if (SDL_BlitSurface(text_surface, NULL, button_surface, &dstrect) != 0) {
+            if (!SDL_BlitSurface(text_surface, NULL, button_surface, &dstrect)) {
                 printf("SDL_BlitSurface failed: %s\n", SDL_GetError());
                 return 0;
             }
@@ -321,12 +325,12 @@ int main(void)
                 return 0;
             }
 
-            SDL_FreeSurface(button_surface);
+            SDL_DestroySurface(button_surface);
 
             textures_normal[i][j] = texture;
         }
 
-        SDL_FreeSurface(text_surface);
+        SDL_DestroySurface(text_surface);
     }
 
     TTF_CloseFont(font);
@@ -338,58 +342,56 @@ int main(void)
     do {
         // render
         for (size_t i = 0; i != NUM_BUTTONS; ++i) {
-            const SDL_Rect rect = {0, (int)i * BUTTON_HEIGHT, BUTTON_WIDTH, BUTTON_HEIGHT};
-            SDL_RenderCopy(
-                renderer, textures_normal[i][button_index == i ? pressed ? 2 : 1 : 0], NULL, &rect);
+            const SDL_FRect rect = {
+                0.0f, (float)i * BUTTON_HEIGHT, (float)BUTTON_WIDTH, (float)BUTTON_HEIGHT};
+            int button_state = button_index == i ? (pressed ? 2 : 1) : 0;
+            SDL_RenderTexture(renderer, textures_normal[i][button_state], NULL, &rect);
         }
         SDL_RenderPresent(renderer);
 
         // process events
         SDL_Event event;
-        if (SDL_WaitEvent(&event) == 0) {
+        if (!SDL_WaitEvent(&event)) {
             printf("SDL_WaitEvent failed: %s\n", SDL_GetError());
             return 0;
         }
         do {
             switch (event.type) {
-                case SDL_QUIT: {
+                case SDL_EVENT_QUIT:
                     quit = true;
                     break;
-                }
-                case SDL_WINDOWEVENT: {
-                    switch (event.window.event) {
-                        case SDL_WINDOWEVENT_CLOSE:
-                            quit = true;
-                            break;
-                        case SDL_WINDOWEVENT_LEAVE:
-                            button_index = (size_t)-1;
-                            break;
-                    }
+
+                case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
+                    quit = true;
                     break;
-                }
-                case SDL_MOUSEMOTION: {
+
+                case SDL_EVENT_WINDOW_MOUSE_LEAVE:
+                    button_index = (size_t)-1;
+                    break;
+
+                case SDL_EVENT_MOUSE_MOTION: {
                     if (event.motion.x < 0 || event.motion.x >= BUTTON_WIDTH ||
                         event.motion.y < 0) {
                         button_index = (size_t)-1;
                         break;
                     }
-                    const int index = event.motion.y / BUTTON_HEIGHT;
+                    const int index = (int)(event.motion.y / BUTTON_HEIGHT);
                     if (index < 0 || index >= NUM_BUTTONS) {
                         button_index = (size_t)-1;
                         break;
                     }
-                    button_index = index;
-                    pressed = event.motion.state & SDL_BUTTON(1);
+                    button_index = (size_t)index;
+                    pressed = (event.motion.state & SDL_BUTTON_LMASK) != 0;
                     break;
                 }
-                case SDL_MOUSEBUTTONDOWN: {
-                    if (event.button.button == 1) {
+                case SDL_EVENT_MOUSE_BUTTON_DOWN: {
+                    if (event.button.button == SDL_BUTTON_LEFT) {
                         pressed = true;
                     }
                     break;
                 }
-                case SDL_MOUSEBUTTONUP: {
-                    if (event.button.button == 1) {
+                case SDL_EVENT_MOUSE_BUTTON_UP: {
+                    if (event.button.button == SDL_BUTTON_LEFT) {
                         pressed = false;
                         if (button_index != (size_t)-1) {
                             (*button_handler[button_index])(window);
@@ -398,7 +400,7 @@ int main(void)
                     break;
                 }
             }
-        } while (SDL_PollEvent(&event) != 0);
+        } while (SDL_PollEvent(&event));
     } while (!quit);
 
     // destroy textures

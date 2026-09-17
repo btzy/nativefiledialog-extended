@@ -4,6 +4,7 @@ set(PUBLIC_HEADER_FILES
   include/nfd.h
   include/nfd.hpp
   include/nfd_sdl2.h
+  include/nfd_sdl3.h
   include/nfd_glfw3.h)
 
 set(SOURCE_FILES ${PUBLIC_HEADER_FILES})
