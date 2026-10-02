@@ -544,9 +544,12 @@ void AppendSaveFileQueryDictEntryFilters(DBusMessageIter& sub_iter,
         if (defaultName) {
             const nfdnchar_t* p = defaultName;
             while (*p) ++p;
-            while (*--p != '.');
-            ++p;
-            if (*p) extn = p;
+            // Scan backwards for the '.', being careful not to read past the start of the string
+            while (p != defaultName && *--p != '.');
+            if (*p == '.') {
+                ++p;
+                if (*p) extn = p;
+            }
         }
         bool extn_matched = false;
         size_t selected_filter_index;
