@@ -256,6 +256,11 @@ There is also an SDL2 example, which needs to be enabled separately with `-DNFD_
 
 Compiled examples (including the SDL2 example) are also uploaded as artefacts to GitHub Actions, and may be downloaded from there.
 
+On macOS, building with `-DNFD_BUILD_TESTS=ON` also enables native filter
+regressions. Run `ctest --test-dir build --output-on-failure` to exercise the
+modern and legacy AppKit filtering APIs without opening or saving files. These
+tests require access to the macOS window server (a logged-in desktop session).
+
 ## File Filter Syntax
 
 Files can be filtered by file extension groups:
@@ -270,7 +275,7 @@ A list of file filters can be passed as an argument when invoking the library.
 
 A wildcard filter is always added to every dialog.
 
-*Note: On macOS, the file dialogs do not have friendly names and there is no way to switch between filters, so the filter specifications are combined (e.g. "c,cpp,cc,h,hpp").  The filter specification is also never explicitly shown to the user.  This is usual macOS behaviour and users expect it.*
+*Note: On macOS, open and save dialogs display a File type dropdown with the friendly names of the supplied filter groups and an All files option. The first group is selected initially; selecting All files removes extension restrictions. With no filters, all files are allowed and no dropdown is shown.*
 
 *Note 2: You must ensure that the specification string is non-empty and that every file extension has at least one character.  Otherwise, bad things might ensue (i.e. undefined behaviour).*
 

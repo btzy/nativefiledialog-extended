@@ -47,6 +47,12 @@ if(NOT DEFINED CMAKE_CXX_STANDARD)
   endif()
 endif()
 
+# Enable Objective-C before configuring any .m targets, including the backend.
+if(APPLE AND NFD_BUILD_TESTS)
+  enable_language(OBJC)
+  enable_testing()
+endif()
+
 add_subdirectory(src)
 
 if(${NFD_BUILD_TESTS} OR ${NFD_BUILD_SDL2_TESTS} OR ${NFD_BUILD_SDL3_TESTS} OR ${NFD_BUILD_GLFW3_TESTS})
