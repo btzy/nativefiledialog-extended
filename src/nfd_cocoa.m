@@ -132,20 +132,19 @@ static NSArray* BuildAllowedFileTypes(const nfdnfilteritem_t* filterList,
     NSArray* _filterTypes;
 }
 - (id)initWithDialog:(NSSavePanel*)dialog
-            filters:(const nfdnfilteritem_t*)filters
-              count:(nfdfiltersize_t)count;
+             filters:(const nfdnfilteritem_t*)filters
+               count:(nfdfiltersize_t)count;
 - (void)filterChanged:(id)sender;
 @end
 
 @implementation NFDiFilterView
 - (id)initWithDialog:(NSSavePanel*)dialog
-            filters:(const nfdnfilteritem_t*)filters
-              count:(nfdfiltersize_t)count {
+             filters:(const nfdnfilteritem_t*)filters
+               count:(nfdfiltersize_t)count {
     self = [super initWithFrame:NSMakeRect(0, 0, 400, 36)];
     if (!self) return nil;
     _dialog = dialog;
-    _popup = [[NSPopUpButton alloc] initWithFrame:NSMakeRect(80, 4, 310, 26)
-                                      pullsDown:NO];
+    _popup = [[NSPopUpButton alloc] initWithFrame:NSMakeRect(80, 4, 310, 26) pullsDown:NO];
     NSMutableArray* types = [NSMutableArray array];
     BOOL hasAllFiles = NO;
     for (nfdfiltersize_t i = 0; i < count; ++i) {
@@ -170,7 +169,9 @@ static NSArray* BuildAllowedFileTypes(const nfdnfilteritem_t* filterList,
         }
     }
     if (!hasAllFiles) {
-        NSMenuItem* item = [[NSMenuItem alloc] initWithTitle:@"All files" action:NULL keyEquivalent:@""];
+        NSMenuItem* item = [[NSMenuItem alloc] initWithTitle:@"All files"
+                                                      action:NULL
+                                               keyEquivalent:@""];
         [[_popup menu] addItem:item];
         [item release];
         [types addObject:[NSNull null]];
@@ -239,8 +240,8 @@ static void AddFilterListToDialog(NSSavePanel* dialog,
     if (!filterCount) return;
     assert(filterList);
     NFDiFilterView* view = [[NFDiFilterView alloc] initWithDialog:dialog
-                                                       filters:filterList
-                                                         count:filterCount];
+                                                          filters:filterList
+                                                            count:filterCount];
     [dialog setAccessoryView:view];
     [view release];
     if ([dialog isKindOfClass:[NSOpenPanel class]]) {

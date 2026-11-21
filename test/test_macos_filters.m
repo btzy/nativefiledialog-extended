@@ -2,12 +2,13 @@
 // Include the backend so this test can configure panels through its private helper.
 #include "../src/nfd_cocoa.m"
 
-#define CHECK(...) do { \
-    if (!(__VA_ARGS__)) { \
-        fprintf(stderr, "FAIL line %d: %s\n", __LINE__, #__VA_ARGS__); \
-        exit(1); \
-    } \
-} while (0)
+#define CHECK(...)                                                         \
+    do {                                                                   \
+        if (!(__VA_ARGS__)) {                                              \
+            fprintf(stderr, "FAIL line %d: %s\n", __LINE__, #__VA_ARGS__); \
+            exit(1);                                                       \
+        }                                                                  \
+    } while (0)
 
 static NSPopUpButton* FindPopup(NSView* view) {
     if ([view isKindOfClass:[NSPopUpButton class]]) return (NSPopUpButton*)view;
@@ -48,19 +49,19 @@ static void CheckPanel(NSSavePanel* panel) {
     CHECK([[popup itemTitleAtIndex:1] isEqualToString:@"Données"]);
     CHECK([[popup itemTitleAtIndex:2] isEqualToString:@"All files"]);
     CHECK([popup indexOfSelectedItem] == 0);
-    CHECK([Extensions(panel) isEqualToArray:@[@"stl", @"xml", @"zip"]]);
+    CHECK([Extensions(panel) isEqualToArray:@[ @"stl", @"xml", @"zip" ]]);
     CHECK(![panel allowsOtherFileTypes]);
     if ([panel isKindOfClass:[NSOpenPanel class]]) {
         CHECK([(NSOpenPanel*)panel isAccessoryViewDisclosed]);
     }
 
     SelectFilter(popup, 1);
-    CHECK([Extensions(panel) isEqualToArray:@[@"bxy", @"syn"]]);
+    CHECK([Extensions(panel) isEqualToArray:@[ @"bxy", @"syn" ]]);
     SelectFilter(popup, 2);
     CHECK([Extensions(panel) count] == 0);
     CHECK([panel allowsOtherFileTypes]);
     SelectFilter(popup, 0);
-    CHECK([Extensions(panel) isEqualToArray:@[@"stl", @"xml", @"zip"]]);
+    CHECK([Extensions(panel) isEqualToArray:@[ @"stl", @"xml", @"zip" ]]);
     CHECK(![panel allowsOtherFileTypes]);
 
     // Reusing a panel must discard the previous selector and restrictions.
@@ -71,14 +72,15 @@ static void CheckPanel(NSSavePanel* panel) {
 
     // Direct NFD callers may explicitly include a wildcard; do not duplicate it.
     const nfdnfilteritem_t explicitAll[] = {
-        {"All files", "*"}, {"Text files", "txt"},
+        {"All files", "*"},
+        {"Text files", "txt"},
     };
     AddFilterListToDialog(panel, explicitAll, 2);
     popup = FindPopup([panel accessoryView]);
     CHECK([popup numberOfItems] == 2);
     CHECK([Extensions(panel) count] == 0);
     SelectFilter(popup, 1);
-    CHECK([Extensions(panel) isEqualToArray:@[@"txt"]]);
+    CHECK([Extensions(panel) isEqualToArray:@[ @"txt" ]]);
 
     const nfdnfilteritem_t allOnly[] = {{"All files", "*"}};
     AddFilterListToDialog(panel, allOnly, 1);
@@ -86,17 +88,18 @@ static void CheckPanel(NSSavePanel* panel) {
     CHECK([Extensions(panel) count] == 0);
 
     const nfdnfilteritem_t duplicateNames[] = {
-        {"Data", "txt"}, {"Data", "csv"},
+        {"Data", "txt"},
+        {"Data", "csv"},
     };
     AddFilterListToDialog(panel, duplicateNames, 2);
     popup = FindPopup([panel accessoryView]);
     CHECK([popup numberOfItems] == 3);
-    CHECK([Extensions(panel) isEqualToArray:@[@"txt"]]);
+    CHECK([Extensions(panel) isEqualToArray:@[ @"txt" ]]);
     SelectFilter(popup, 1);
-    CHECK([Extensions(panel) isEqualToArray:@[@"csv"]]);
+    CHECK([Extensions(panel) isEqualToArray:@[ @"csv" ]]);
 
     AddFilterListToDialog(panel, filters, 2);
-    CHECK([Extensions(panel) isEqualToArray:@[@"stl", @"xml", @"zip"]]);
+    CHECK([Extensions(panel) isEqualToArray:@[ @"stl", @"xml", @"zip" ]]);
     AddFilterListToDialog(panel, NULL, 0);
 }
 
