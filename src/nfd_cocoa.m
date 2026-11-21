@@ -181,7 +181,9 @@ static NSArray* BuildAllowedFileTypes(const nfdnfilteritem_t* filterList,
     [_popup selectItemAtIndex:0];
     [_popup sizeToFit];
     NSRect frame = [_popup frame];
-    frame.size.width = MAX(frame.size.width, 240);
+    if (frame.size.width < 240) {
+        frame.size.width = 240;
+    }
     [_popup setFrame:frame];
     [self setFrameSize:NSMakeSize(NSMaxX(frame) + 10, 36)];
     [_popup setAutoresizingMask:NSViewWidthSizable];
