@@ -124,24 +124,129 @@ static NSArray* BuildAllowedFileTypes(const nfdnfilteritem_t* filterList,
 }
 #endif
 
+// Local patch: retain the action target with the accessory view. The panel owns
+// the view, so the view must not retain the panel (which would create a cycle).
+@interface NFDiFilterView : NSView {
+    NSSavePanel* _dialog;
+    NSPopUpButton* _popup;
+    NSArray* _filterTypes;
+}
+- (id)initWithDialog:(NSSavePanel*)dialog
+             filters:(const nfdnfilteritem_t*)filters
+               count:(nfdfiltersize_t)count;
+- (void)filterChanged:(id)sender;
+@end
+
+@implementation NFDiFilterView
+- (id)initWithDialog:(NSSavePanel*)dialog
+             filters:(const nfdnfilteritem_t*)filters
+               count:(nfdfiltersize_t)count {
+    self = [super initWithFrame:NSMakeRect(0, 0, 400, 36)];
+    if (!self) return nil;
+    _dialog = dialog;
+    _popup = [[NSPopUpButton alloc] initWithFrame:NSMakeRect(80, 4, 310, 26) pullsDown:NO];
+    NSMutableArray* types = [NSMutableArray array];
+    BOOL hasAllFiles = NO;
+    for (nfdfiltersize_t i = 0; i < count; ++i) {
+        NSString* spec = [NSString stringWithUTF8String:filters[i].spec];
+        BOOL allFiles = [spec isEqualToString:@"*"] || [spec isEqualToString:@"*.*"];
+        NSString* name = filters[i].name ? [NSString stringWithUTF8String:filters[i].name] : nil;
+        if (![name length]) name = allFiles ? @"All files" : spec;
+        // Add menu items directly: addItemWithTitle replaces duplicate titles,
+        // but two groups with the same friendly name still have distinct specs.
+        NSMenuItem* item = [[NSMenuItem alloc] initWithTitle:name action:NULL keyEquivalent:@""];
+        [[_popup menu] addItem:item];
+        [item release];
+        if (allFiles) {
+            [types addObject:[NSNull null]];
+            hasAllFiles = YES;
+        } else {
+#if NFD_MACOS_ALLOWEDCONTENTTYPES == 1
+            [types addObject:BuildAllowedContentTypes(filters + i, 1)];
+#else
+            [types addObject:BuildAllowedFileTypes(filters + i, 1)];
+#endif
+        }
+    }
+    if (!hasAllFiles) {
+        NSMenuItem* item = [[NSMenuItem alloc] initWithTitle:@"All files"
+                                                      action:NULL
+                                               keyEquivalent:@""];
+        [[_popup menu] addItem:item];
+        [item release];
+        [types addObject:[NSNull null]];
+    }
+    _filterTypes = [types copy];
+    [_popup setTarget:self];
+    [_popup setAction:@selector(filterChanged:)];
+    [_popup selectItemAtIndex:0];
+    [_popup sizeToFit];
+    NSRect frame = [_popup frame];
+    if (frame.size.width < 240) {
+        frame.size.width = 240;
+    }
+    [_popup setFrame:frame];
+    [self setFrameSize:NSMakeSize(NSMaxX(frame) + 10, 36)];
+    [_popup setAutoresizingMask:NSViewWidthSizable];
+    [self addSubview:_popup];
+
+    NSTextField* label = [[NSTextField alloc] initWithFrame:NSMakeRect(0, 8, 76, 20)];
+    [label setStringValue:@"File type:"];
+    [label setEditable:NO];
+    [label setSelectable:NO];
+    [label setBordered:NO];
+    [label setDrawsBackground:NO];
+    [label setFont:[NSFont systemFontOfSize:[NSFont systemFontSize]]];
+    [self addSubview:label];
+    [label release];
+    [_popup setAccessibilityLabel:@"File type"];
+    [self filterChanged:_popup];
+    return self;
+}
+
+- (void)filterChanged:(id)sender {
+    (void)sender;
+    NSInteger index = [_popup indexOfSelectedItem];
+    if (index < 0 || (NSUInteger)index >= [_filterTypes count]) return;
+    id types = [_filterTypes objectAtIndex:(NSUInteger)index];
+    BOOL allFiles = types == [NSNull null];
+#if NFD_MACOS_ALLOWEDCONTENTTYPES == 1
+    [_dialog setAllowedContentTypes:allFiles ? @[] : types];
+#else
+    [_dialog setAllowedFileTypes:allFiles ? nil : types];
+#endif
+    [_dialog setAllowsOtherFileTypes:allFiles];
+}
+
+- (void)dealloc {
+    [_popup setTarget:nil];
+    [_popup release];
+    [_filterTypes release];
+    [super dealloc];
+}
+@end
+
 static void AddFilterListToDialog(NSSavePanel* dialog,
                                   const nfdnfilteritem_t* filterList,
                                   nfdfiltersize_t filterCount) {
-    // note: NSOpenPanel inherits from NSSavePanel.
-
-    if (!filterCount) return;
-
-    assert(filterList);
-
-// Make NSArray of file types and set it on the dialog
-// We use setAllowedFileTypes or setAllowedContentTypes depending on the deployment target
+    // Clear prior state as Cocoa can reuse its native panel objects.
+    [dialog setAccessoryView:nil];
 #if NFD_MACOS_ALLOWEDCONTENTTYPES == 1
-    NSArray* allowedContentTypes = BuildAllowedContentTypes(filterList, filterCount);
-    [dialog setAllowedContentTypes:allowedContentTypes];
+    [dialog setAllowedContentTypes:@[]];
 #else
-    NSArray* allowedFileTypes = BuildAllowedFileTypes(filterList, filterCount);
-    [dialog setAllowedFileTypes:allowedFileTypes];
+    [dialog setAllowedFileTypes:nil];
 #endif
+    [dialog setAllowsOtherFileTypes:YES];
+    if (!filterCount) return;
+    assert(filterList);
+    NFDiFilterView* view = [[NFDiFilterView alloc] initWithDialog:dialog
+                                                          filters:filterList
+                                                            count:filterCount];
+    [dialog setAccessoryView:view];
+    [view release];
+    if ([dialog isKindOfClass:[NSOpenPanel class]]) {
+        [(NSOpenPanel*)dialog setAccessoryViewDisclosed:YES];
+    }
 }
 
 static void SetDefaultPath(NSSavePanel* dialog, const nfdnchar_t* defaultPath) {
@@ -388,10 +493,6 @@ nfdresult_t NFD_SaveDialogN_With_Impl(nfdversion_t version,
 
         NSSavePanel* dialog = [NSSavePanel savePanel];
         [dialog setExtensionHidden:NO];
-        // allow other file types, to give the user an escape hatch since you can't select "*.*" on
-        // Mac
-        [dialog setAllowsOtherFileTypes:TRUE];
-
         // Build the filter list
         AddFilterListToDialog(dialog, args->filterList, args->filterCount);
 

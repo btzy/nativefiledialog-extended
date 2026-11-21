@@ -1,4 +1,25 @@
 if(${NFD_BUILD_TESTS})
+  if(APPLE)
+    foreach(mode IN ITEMS modern legacy)
+      # The modern API is available only when targeting macOS 11 or newer.
+      if(mode STREQUAL "modern" AND NOT NFD_USE_ALLOWEDCONTENTTYPES)
+        continue()
+      endif()
+      add_executable(test_macos_filters_${mode} test_macos_filters.m)
+      target_include_directories(test_macos_filters_${mode} PRIVATE ../src/include)
+      target_link_libraries(test_macos_filters_${mode} PRIVATE "-framework AppKit")
+      if(mode STREQUAL "modern")
+        target_compile_definitions(test_macos_filters_${mode} PRIVATE NFD_MACOS_ALLOWEDCONTENTTYPES=1)
+        target_link_libraries(test_macos_filters_${mode} PRIVATE "-framework UniformTypeIdentifiers")
+      else()
+        target_compile_definitions(test_macos_filters_${mode} PRIVATE NFD_MACOS_ALLOWEDCONTENTTYPES=0)
+        target_compile_options(test_macos_filters_${mode} PRIVATE -Wno-deprecated-declarations)
+      endif()
+      add_test(NAME macos_filters_${mode} COMMAND test_macos_filters_${mode})
+      set_tests_properties(macos_filters_${mode} PROPERTIES TIMEOUT 30 RUN_SERIAL TRUE)
+    endforeach()
+  endif()
+
   set(TEST_LIST
     test_opendialog.c
     test_opendialog_cpp.cpp
